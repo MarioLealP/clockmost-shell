@@ -39,7 +39,10 @@ Item {
             anchors.fill: parent
             source: Qt.resolvedUrl("assets/topo-plate.svg")
             fillMode: Image.PreserveAspectCrop // CSS object-fit: cover
-            sourceSize.height: Theme.plateHeight * 2
+            // render big and let mipmapping smooth it down: the 1px strokes alias into streaks otherwise
+            sourceSize.height: Theme.plateHeight * 4
+            smooth: true
+            mipmap: true
             opacity: 0.22 // strokes are plain #111 + stroke-opacity: QtSvg (SVG Tiny) ignores rgba() colours
         }
 
