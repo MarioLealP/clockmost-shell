@@ -8,14 +8,22 @@ CCTab {
 
     code: "NC-" + String(Notifs.records.length).padStart(2, "0") + " · " + Notifs.groups.length + " GROUPS"
 
-    // read on leave, so the unread rows stay bright while you look at them
-    Component.onDestruction: Notifs.markAllRead()
+    // opening the tab reads everything (the bell's diamond goes at once, Mario); the rows that were new when it
+    // opened stay bright while you look at them
+    property var fresh: []
+    Component.onCompleted: {
+        fresh = Notifs.records.filter(r => !r.read).map(r => r.n);
+        Notifs.markAllRead();
+    }
+    function isFresh(rec) {
+        return fresh.includes(rec.n);
+    }
 
     CCHeader {
         title: "NOTIFICATIONS"
         sub: Notifs.groups.length + " SOURCES · SINCE LOGIN"
-        count: String(Notifs.unread)
-        countLabel: "UNREAD"
+        count: String(root.fresh.length)
+        countLabel: "NEW"
     }
 
     ToggleTile {
@@ -129,9 +137,9 @@ CCTab {
                         elide: Text.ElideRight
                         textFormat: Text.StyledText
                         text: it.modelData.n.summary.replace(/</g, "&lt;")
-                            + (it.modelData.n.body ? " <font color='" + (it.modelData.read ? Theme.faint : Theme.dim) + "'>· "
+                            + (it.modelData.n.body ? " <font color='" + (!root.isFresh(it.modelData) ? Theme.faint : Theme.dim) + "'>· "
                                 + it.modelData.n.body.replace(/<[^>]+>/g, "").replace(/</g, "&lt;").replace(/\s*\n\s*/g, " ") + "</font>" : "")
-                        color: it.modelData.read ? Theme.dim : Theme.ink
+                        color: root.isFresh(it.modelData) ? Theme.ink : Theme.dim
                         font.family: Theme.body
                         font.pixelSize: 13
                     }
