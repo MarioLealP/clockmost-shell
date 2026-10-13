@@ -51,11 +51,32 @@ PanelWindow {
         scale: root.s
         transformOrigin: Item.TopLeft
 
+        // tether from the plate's tri-band down to the panel (only when it hangs under the plate);
+        // outside the panel because the panel clips its children
+        Rectangle {
+            visible: panel.underPlate
+            opacity: root.openP
+            x: scaled.width / 2
+            y: panel.y - 12
+            width: 1
+            height: 11
+            color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.35)
+        }
+
         Item {
             id: panel
-            anchors.right: parent.right
-            anchors.rightMargin: 16
-            y: 62 - 12 * (1 - root.openP)
+            // centred under the widget / pointer that opened it, kept 16px inside the screen
+            x: {
+                const maxX = scaled.width - width - 16;
+                return ControlCenter.anchorX < 0 ? maxX : Math.max(16, Math.min(maxX, ControlCenter.anchorX / root.s - width / 2));
+            }
+            Behavior on x {
+                enabled: root.openP > 0.99 // slide when re-targeted while open; appear in place otherwise
+                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+            }
+            // under the hanging clock plate: drop below it (the calendar mock: top 112, tethered to the tri-band)
+            readonly property bool underPlate: x < scaled.width / 2 + Theme.plateWidth / 2 && x + width > scaled.width / 2 - Theme.plateWidth / 2
+            y: (underPlate ? 112 : 62) - 12 * (1 - root.openP)
             opacity: root.openP
             width: rail.width + 1 + content.width
             height: Math.max(rail.implicitHeight + 20, content.height)

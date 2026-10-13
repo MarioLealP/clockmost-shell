@@ -9,6 +9,7 @@ ShellRoot {
         target: "controlcenter"
         function open(tab: string): void { ControlCenter.show(tab, ""); }
         function toggle(tab: string): void { ControlCenter.toggle(tab, ""); }
+        function openAt(tab: string, x: real): void { ControlCenter.show(tab, "", x); }
         function close(): void { ControlCenter.close(); }
     }
 

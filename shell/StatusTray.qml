@@ -9,8 +9,8 @@ Rectangle {
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool muted: sink?.audio?.muted ?? false
 
-    function cc(tab) {
-        ControlCenter.toggle(tab, QsWindow.window?.screen?.name ?? "");
+    function cc(tab, cx) {
+        ControlCenter.toggle(tab, QsWindow.window?.screen?.name ?? "", cx);
     }
     function isOpen(tab) {
         return ControlCenter.open && ControlCenter.tab === tab;
@@ -84,20 +84,20 @@ Rectangle {
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 9; height: 18; color: "transparent"
             Rectangle { anchors.centerIn: parent; width: 1; height: 18; color: Qt.rgba(1, 1, 1, 0.10) } }
 
-        TrayIcon { path: Icons.clipboard; accent: Theme.magenta; open: root.isOpen("clipboard"); onClicked: root.cc("clipboard") }
+        TrayIcon { path: Icons.clipboard; accent: Theme.magenta; open: root.isOpen("clipboard"); onClicked: cx => root.cc("clipboard", cx) }
         TrayIcon {
             path: root.muted ? Icons.volumeMuted : Icons.volume
             accent: root.muted ? Theme.faint : Theme.cyan
             open: root.isOpen("home")
-            onClicked: root.cc("home") // the mock: volume icon = quick settings
+            onClicked: cx => root.cc("home", cx) // the mock: volume icon = quick settings
             onMiddleClicked: if (root.sink?.audio) root.sink.audio.muted = !root.sink.audio.muted
         }
-        TrayIcon { path: Icons.bluetooth; accent: "#5aa7ff"; open: root.isOpen("bluetooth"); onClicked: root.cc("bluetooth") }
-        TrayIcon { path: Icons.vpn; accent: Theme.green; open: root.isOpen("network"); onClicked: root.cc("network") }
+        TrayIcon { path: Icons.bluetooth; accent: "#5aa7ff"; open: root.isOpen("bluetooth"); onClicked: cx => root.cc("bluetooth", cx) }
+        TrayIcon { path: Icons.vpn; accent: Theme.green; open: root.isOpen("network"); onClicked: cx => root.cc("network", cx) }
 
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 9; height: 18; color: "transparent"
             Rectangle { anchors.centerIn: parent; width: 1; height: 18; color: Qt.rgba(1, 1, 1, 0.10) } }
 
-        TrayIcon { path: Icons.bell; accent: Theme.orange; open: root.isOpen("notifications"); onClicked: root.cc("notifications") }
+        TrayIcon { path: Icons.bell; accent: Theme.orange; open: root.isOpen("notifications"); onClicked: cx => root.cc("notifications", cx) }
     }
 }

@@ -25,7 +25,8 @@ Column {
     }
     function clock(seconds) {
         const s = Math.max(0, Math.floor(seconds || 0));
-        return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+        const mm = String(Math.floor(s % 3600 / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+        return s >= 3600 ? Math.floor(s / 3600) + ":" + mm : mm; // live streams run for hours
     }
 
     width: 432

@@ -14,7 +14,8 @@ Rectangle {
 
     function clock(seconds) {
         const s = Math.max(0, Math.floor(seconds || 0));
-        return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+        const mm = String(Math.floor(s % 3600 / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+        return s >= 3600 ? Math.floor(s / 3600) + ":" + mm : mm; // live streams run for hours
     }
 
     implicitWidth: row.implicitWidth + 12
@@ -38,7 +39,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: ControlCenter.toggle("media", QsWindow.window?.screen?.name ?? "")
+        onClicked: ControlCenter.toggle("media", QsWindow.window?.screen?.name ?? "", root.mapToItem(null, root.width / 2, 0).x)
     }
 
     Row {

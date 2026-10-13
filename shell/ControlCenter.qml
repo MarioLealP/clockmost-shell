@@ -21,20 +21,22 @@ Singleton {
     property bool open: false
     property string tab: "home"
     property string screenName: "" // the panel opens on the screen whose bar was used
+    property real anchorX: -1 // screen x the panel centres under (the clicked widget / pointer); -1 = right side
 
     // same widget again = close (the mock: "click the open icon again")
-    function toggle(tabId, screen) {
+    function toggle(tabId, screen, x) {
         if (open && tab === tabId) {
             open = false;
         } else {
-            show(tabId, screen);
+            show(tabId, screen, x);
         }
     }
 
-    function show(tabId, screen) {
+    function show(tabId, screen, x) {
         tab = tabId;
         if (screen)
             screenName = screen;
+        anchorX = x ?? -1;
         open = true;
     }
 

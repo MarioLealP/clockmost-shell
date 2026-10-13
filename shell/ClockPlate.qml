@@ -147,7 +147,7 @@ Item {
         width: Theme.plateWidth
         height: Theme.plateHeight
         cursorShape: Qt.PointingHandCursor
-        onClicked: ControlCenter.toggle("calendar", QsWindow.window?.screen?.name ?? "")
+        onClicked: ControlCenter.toggle("calendar", QsWindow.window?.screen?.name ?? "", root.mapToItem(null, root.width / 2, 0).x)
     }
 
     // the one tri-band, hanging under the plate

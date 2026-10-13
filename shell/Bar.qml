@@ -118,7 +118,7 @@ PanelWindow {
         // right-click anywhere on the bar = the control center's home (Noctalia habit)
         TapHandler {
             acceptedButtons: Qt.RightButton
-            onTapped: ControlCenter.show("home", root.screen?.name ?? "")
+            onTapped: eventPoint => ControlCenter.show("home", root.screen?.name ?? "", eventPoint.scenePosition.x)
         }
 
         BarRing {

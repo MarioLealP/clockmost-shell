@@ -8,7 +8,7 @@ Item {
     property color accent: Theme.ink2
     property bool attention: false
     property bool open: false // its control-center tab is showing
-    signal clicked
+    signal clicked(real cx)
     signal middleClicked
 
     width: 36
@@ -48,6 +48,6 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-        onClicked: mouse => mouse.button === Qt.MiddleButton ? root.middleClicked() : root.clicked()
+        onClicked: mouse => mouse.button === Qt.MiddleButton ? root.middleClicked() : root.clicked(root.mapToItem(null, root.width / 2, 0).x)
     }
 }
