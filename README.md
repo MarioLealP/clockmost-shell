@@ -12,8 +12,7 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   time/date + tri-band, band blur via ext-background-effect), Felt chip (static), live workspace chips from
   kwin-bridge (click = switch, app-coloured window marks, attention diamond), live wing. Next: the right side (now
   playing, weather, tray, user), the reveal motion, then the control center. Bar scales down below 1920px wide (VM).
-  Bridge binary lives at `~/.local/bin/kwin-bridge`. Old next-line: the widgets (workspaces from kwin-bridge, Felt
-  chip, now playing, weather, tray, user), the reveal motion, then the control center.
+  Bridge binary lives at `~/.local/bin/kwin-bridge`.
   Gotcha: QtSvg (SVG Tiny) ignores `rgba()` stroke colours - assets use `#rrggbb` + `stroke-opacity`.
 
 Build the bridge: `cd bridge && cargo build --release` (checks: `just check`).
