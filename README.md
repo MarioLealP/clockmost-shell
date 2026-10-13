@@ -25,3 +25,12 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   Gotcha: QtSvg (SVG Tiny) ignores `rgba()` stroke colours - assets use `#rrggbb` + `stroke-opacity`.
 
 Build the bridge: `cd bridge && cargo build --release` (checks: `just check`).
+
+## Control center scope (Mario 2026-10-13)
+
+Panels drop from their bar widget, styled from the mocks in `ds-topbar-v2.html?state=...`:
+quick settings (`quick`, user chip / right-click), calendar (`cal`, clock plate), media (`media`, now playing),
+notifications (`notif` + popups `pop`, bell), clipboard (`clip`, Klipper). Detail views (important): audio
+(devices + per-app volume), network, bluetooth - opened from quick-settings tiles, inside the same panel.
+Nice to have: weather forecast. Not wanted: monitor/brightness, system monitor, screen time, power.
+Compared to Noctalia's 12 control-center tabs: mocks cover 4 fully, 3 partly (those three detail views), 5 dropped.
