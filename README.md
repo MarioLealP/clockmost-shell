@@ -35,7 +35,9 @@ clipboard), right-click on the bar = home, outside click / Esc closes. IPC:
 `quickshell ipc --pid <pid> call controlcenter open|toggle <tab>` / `... close`. Done: HOME (= the quick-settings mock;
 live ethernet, bluetooth, VPN via nmcli, night light via kwinrc NightColor, output/mic levels, now playing; DND and
 game mode wait for notifications / gamemode); AUDIO (output/input device pickers + levels, per-app volume/mute with a live
-  PwNodePeakMonitor line). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
+  PwNodePeakMonitor line); NETWORK (wired card: connection name, interface, speed, IPv4/gateway/DNS/MAC from nmcli,
+  connect/disconnect; Wi-Fi list + switch when a Wi-Fi device exists - known/open networks only, PSK entry later,
+  untested in the wired VM; every NM vpn/wireguard connection with a switch). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
   Other tabs: placeholders, built next one at a time.
 
 ## Control center scope (Mario 2026-10-13)

@@ -94,7 +94,7 @@ PanelWindow {
                 width: item ? item.width : 432
                 height: item ? item.implicitHeight : 200
                 onLoaded: if (item.minHeight !== undefined) item.minHeight = Qt.binding(() => rail.implicitHeight + 20)
-                sourceComponent: ({ home: homeTab, audio: audioTab })[ControlCenter.tab] ?? placeholder
+                sourceComponent: ({ home: homeTab, audio: audioTab, network: networkTab })[ControlCenter.tab] ?? placeholder
             }
 
             // corner brackets: top-left, bottom-right (14px, 2px)
@@ -121,6 +121,10 @@ PanelWindow {
     Component {
         id: audioTab
         CCAudio {}
+    }
+    Component {
+        id: networkTab
+        CCNetwork {}
     }
     Component {
         id: placeholder
