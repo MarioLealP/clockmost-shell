@@ -1,0 +1,16 @@
+[package]
+publish = false
+name = "kwin-bridge"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.104"
+serde = "1.0.229"
+zbus = { version = "5.19.0", default-features = false, features = ["blocking-api", "async-io"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
