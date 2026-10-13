@@ -34,7 +34,9 @@ tab (volume icon = home, middle-click = mute; clock = calendar; now playing = me
 clipboard), right-click on the bar = home, outside click / Esc closes. IPC:
 `quickshell ipc --pid <pid> call controlcenter open|toggle <tab>` / `... close`. Done: HOME (= the quick-settings mock;
 live ethernet, bluetooth, VPN via nmcli, night light via kwinrc NightColor, output/mic levels, now playing; DND and
-game mode wait for notifications / gamemode). Other tabs: placeholders, built next one at a time.
+game mode wait for notifications / gamemode); AUDIO (output/input device pickers + levels, per-app volume/mute with a live
+  PwNodePeakMonitor line). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
+  Other tabs: placeholders, built next one at a time.
 
 ## Control center scope (Mario 2026-10-13)
 
