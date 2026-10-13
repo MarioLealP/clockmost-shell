@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=clockmost shell
+Comment=Quickshell running the clockmost shell; grants KWin's window screencast for the dock's live previews
+Exec=/usr/bin/quickshell
+NoDisplay=true
+X-KDE-Wayland-Interfaces=zkde_screencast_unstable_v1

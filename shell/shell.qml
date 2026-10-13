@@ -20,6 +20,11 @@ ShellRoot {
     }
 
     IpcHandler {
+        target: "dock"
+        function preview(key: string): void { DockApps.forcedPreview = key; }
+    }
+
+    IpcHandler {
         target: "drawer"
         function toggle(): void { Drawer.toggle(); }
         function open(): void { Drawer.open = true; }

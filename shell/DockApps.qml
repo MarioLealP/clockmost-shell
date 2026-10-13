@@ -51,6 +51,8 @@ Singleton {
                 out.push(make(k));
         return out;
     }
+    // IPC `dock preview <key>`: open a slot's window preview without a pointer (testing; "" closes)
+    property string forcedPreview: ""
     readonly property int running: slots.filter(s => s.windows.length).length
 
     // the mock's two-letter codes: curated where the mock names them, else first letter + the next consonant

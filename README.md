@@ -86,5 +86,12 @@ app lifts 10px with a yellow frame and pointer. Left click = launch / focus / mi
 new instance, right = pin / unpin. Pins: ~/.local/state/clockmost-shell/dock-pins.json (default = the mock's pins
 that are installed). Downloads: files from the last 24h in ~/Downloads, indeterminate sweep while a .part /
 .crdownload exists (browsers don't publish totals); click opens the folder.
+Hover on an app with windows = the window preview panel (DockPreview + WindowCard, in the dock's plate material):
+one card per window with a LIVE preview, title and an ACTIVE / MINIMIZED tag, click = focus that window. Live
+previews are KWin window screencasts (zkde_screencast) through KDE's own QML - `org.kde.taskmanager`
+ScreencastingRequest + `org.kde.pipewire` PipeWireSourceItem, exactly what Plasma's taskbar tooltips use (Alt+Tab's
+thumbnails only work inside KWin). KWin only grants the protocol to executables named by a desktop file:
+install `install/org.clockmost.shell.desktop` to `~/.local/share/applications/` and run `kbuildsycoca6`
+(KWin didn't see it until the cache was rebuilt). IPC for testing: `dock preview <desktop-id>` / `dock preview ""`.
 Gotchas: Quickshell only detects `pragma Singleton` on its own line near the top (DockApps); a singleton literally
 named `Dock` also failed - kept as `DockApps`.

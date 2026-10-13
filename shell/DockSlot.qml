@@ -212,7 +212,8 @@ Item {
         z: 10
         anchors.horizontalCenter: parent.horizontalCenter
         y: root.height - 82 - height // CSS bottom: 82px from the slot's bottom
-        opacity: root.hovered ? 1 : 0
+        // apps with windows get the window preview panel instead (DockPreview)
+        opacity: root.hovered && !root.slot.windows.length ? 1 : 0
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: 140 } }
         title: root.slot.name

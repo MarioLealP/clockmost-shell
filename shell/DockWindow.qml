@@ -13,7 +13,7 @@ PanelWindow {
     id: root
 
     readonly property real s: Math.min(1, width / 1920)
-    readonly property int above: 56 // room above the plate for the focus lift + hover labels
+    readonly property int above: 270 // room above the plate: focus lift, hover labels, the window preview panel
     readonly property int plateH: 84
     readonly property int gapBottom: 14
 
@@ -31,7 +31,64 @@ PanelWindow {
         return KWin.windowsOn(KWin.current).some(w => !w.minimized && w.output === scr.name
             && w.y + w.h > top && w.y < scr.y + scr.height && w.x < right && w.x + w.w > left);
     }
-    readonly property bool hovered: plateHover.hovered || edge.containsMouse
+    readonly property bool hovered: plateHover.hovered || edge.containsMouse || preview.hovered
+
+    // window preview (DockPreview): opens 250ms after hovering a slot with windows (at once when already open, so
+    // sliding along the dock follows), stays while the pointer is on the slot or the panel
+    property var hoverItem: null
+    property string previewKey: ""
+    property real previewCx: 0
+    readonly property var previewSlot: previewKey ? DockApps.slots.find(s => s.key === previewKey && s.windows.length) ?? null : null
+    function slotHover(item) {
+        if (item.hovered) {
+            hoverItem = item;
+            if (previewKey)
+                showPreview();
+            else
+                previewOpen.restart();
+        } else if (hoverItem === item) {
+            hoverItem = null;
+            previewOpen.stop();
+            previewClose.restart();
+        }
+    }
+    function showPreview() {
+        const it = hoverItem;
+        if (!it || !it.slot.windows.length) {
+            previewKey = "";
+            return;
+        }
+        previewKey = it.slot.key;
+        previewIcon = it.icon;
+        previewCx = it.mapToItem(slide, it.width / 2, 0).x;
+    }
+    property string previewIcon: ""
+    Connections {
+        target: DockApps
+        function onForcedPreviewChanged() {
+            const it = slotItems().find(i => i.slot.key === DockApps.forcedPreview);
+            if (it) {
+                root.hoverItem = it;
+                root.showPreview();
+                root.hoverItem = null;
+            } else {
+                root.previewKey = "";
+            }
+        }
+    }
+    function slotItems() {
+        return row.children.filter(c => c.slot !== undefined);
+    }
+    Timer {
+        id: previewOpen
+        interval: 250
+        onTriggered: root.showPreview()
+    }
+    Timer {
+        id: previewClose
+        interval: 300
+        onTriggered: if (!root.hoverItem && !preview.hovered) root.previewKey = ""
+    }
     property bool lingering: false
     readonly property bool shown: !covered || hovered || lingering || Drawer.open
 
@@ -62,7 +119,20 @@ PanelWindow {
     // the plate's backdrop-filter: blur(22px) (saturate(1.2) has no KWin counterpart)
     BackgroundEffect.blurRegion: p > 0.3 ? blurRect : null
     Region {
+        id: previewRect
+        x: Math.round(preview.x * root.s)
+        y: Math.round((preview.y + slide.y) * root.s)
+        width: root.previewSlot ? Math.round(preview.width * root.s) : 0
+        height: root.previewSlot ? Math.round(preview.height * root.s) : 0
+    }
+    Region {
         id: blurRect
+        Region {
+            x: previewRect.x
+            y: previewRect.y
+            width: previewRect.width
+            height: previewRect.height
+        }
         x: Math.round(root.px)
         y: Math.round(root.py + slide.y * root.s)
         width: Math.round(root.plateW * root.s)
@@ -77,6 +147,12 @@ PanelWindow {
         width: Math.round(root.plateW * root.s)
         height: Math.round(root.plateH * root.s)
         Region { item: edge }
+        Region {
+            x: previewRect.x
+            y: previewRect.y
+            width: previewRect.width
+            height: previewRect.height
+        }
     }
     Region {
         id: hiddenMask
@@ -137,6 +213,20 @@ PanelWindow {
                 }
             }
 
+            DockPreview {
+                id: preview
+                slot: root.previewSlot
+                icon: root.previewIcon
+                // above the slot, kept on screen
+                x: Math.max(16, Math.min(parent.width - width - 16, root.previewCx - width / 2))
+                y: plate.y - 20 - height
+                pointerX: root.previewCx - x
+                opacity: root.previewSlot ? 1 : 0
+                visible: opacity > 0
+                Behavior on opacity { NumberAnimation { duration: 160 } }
+                onHoveredChanged: if (!hovered) previewClose.restart()
+            }
+
             Row {
                 id: row
                 x: plate.x + 16
@@ -173,9 +263,11 @@ PanelWindow {
                 Repeater {
                     model: DockApps.pinnedSlots
                     DockSlot {
+                        id: dslot
                         required property var modelData
                         slot: modelData
                         anchors.verticalCenter: parent.verticalCenter
+                        onHoveredChanged: root.slotHover(dslot)
                     }
                 }
                 // pinned | open-but-not-pinned (Mario: couldn't tell them apart) - the mock's own divider
@@ -185,9 +277,11 @@ PanelWindow {
                 Repeater {
                     model: DockApps.openSlots
                     DockSlot {
+                        id: dslot
                         required property var modelData
                         slot: modelData
                         anchors.verticalCenter: parent.verticalCenter
+                        onHoveredChanged: root.slotHover(dslot)
                     }
                 }
                 DockDivider {}
