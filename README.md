@@ -60,3 +60,12 @@ notifications (`notif` + popups `pop`, bell), clipboard (`clip`, Klipper). Detai
 (devices + per-app volume), network, bluetooth - opened from quick-settings tiles, inside the same panel.
 Nice to have: weather forecast. Not wanted: monitor/brightness, system monitor, screen time, power.
 Compared to Noctalia's 12 control-center tabs: mocks cover 4 fully, 3 partly (those three detail views), 5 dropped.
+
+## App drawer (ds-app-drawer)
+
+Win toggles it (the bridge's Meta-tap event) and the bar is shown while it's open; Esc / outside click / launching
+closes it. Centred 980x600, white head fading to frosted glass, 7x3 sockets of 120px tiles (real icon or initial,
+category code BRW/COM/MUS/..., colour underbar), search at the bottom (type, arrows, Enter). Apps = the .desktop
+entries minus plumbing (`Apps.hidden`), ordered by launch count (~/.local/state/clockmost-shell/app-usage.json).
+Motion per the mock: fade 280ms + slide up 60px over 500ms, then tiles fade in over their sockets (150ms); close
+fades in place. IPC: `quickshell ipc --pid <pid> call drawer toggle|close`. Paging for more than 21 apps: not yet.

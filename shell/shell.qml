@@ -13,6 +13,17 @@ ShellRoot {
         function close(): void { ControlCenter.close(); }
     }
 
+    IpcHandler {
+        target: "drawer"
+        function toggle(): void { Drawer.toggle(); }
+        function close(): void { Drawer.close(); }
+    }
+
+    // the app drawer and notification popups live on the first screen
+    DrawerWindow {
+        screen: Quickshell.screens[0]
+    }
+
     // notification popups on the first screen
     NotifPopups {
         screen: Quickshell.screens[0]
