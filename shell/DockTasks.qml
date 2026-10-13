@@ -1,8 +1,9 @@
-// ds-dock-v2 .dl slot: the downloads stack. Tile rgba(30,32,37,.7) with the yellow corner cut + underbar; three
-// 6px outlined bars (left/right 12, top 14/21/28, 1px rgba(241,241,244,.5)); count badge 700 9px mono #111 on ink
-// (right 4, top 4, padding 1/4); a 2px progress track (left/right 6, bottom 7) while something is downloading -
-// browsers don't publish the total, so the 64% fill of the mock sweeps instead.
+// The task-manager button, where ds-dock-v2's downloads stack was (Mario: keep the stack icon). Same tile: rgba(30,32,37,.7)
+// with the yellow corner cut + underbar; three 6px outlined bars (left/right 12, top 14/21/28, 1px
+// rgba(241,241,244,.5)). No count / progress. Click = Plasma's System Monitor, or top in kitty until one is
+// installed (our own task manager replaces this later).
 import QtQuick
+import Quickshell
 
 Item {
     id: root
@@ -41,51 +42,6 @@ Item {
                 border.color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.5)
             }
         }
-        Rectangle {
-            visible: Downloads.recent > 0
-            anchors.right: parent.right
-            anchors.rightMargin: 4
-            y: 4
-            width: cnt.implicitWidth + 8
-            height: cnt.implicitHeight + 2
-            color: Theme.ink
-            Text {
-                id: cnt
-                anchors.centerIn: parent
-                text: Downloads.recent
-                color: "#111111"
-                font.family: Theme.mono
-                font.weight: Font.Bold
-                font.pixelSize: 9
-            }
-        }
-        Item {
-            visible: Downloads.active
-            x: 6
-            width: 56 - 12
-            height: 2
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 7
-            clip: true
-            Rectangle {
-                anchors.fill: parent
-                color: Qt.rgba(1, 1, 1, 0.15)
-            }
-            Rectangle {
-                id: sweep
-                width: parent.width * 0.64
-                height: 2
-                color: Theme.yellow
-                NumberAnimation on x {
-                    running: Downloads.active
-                    loops: Animation.Infinite
-                    from: -sweep.width
-                    to: 56 - 12
-                    duration: 1400
-                    easing.type: Easing.InOutCubic
-                }
-            }
-        }
         Canvas {
             width: 12
             height: 12
@@ -122,8 +78,8 @@ Item {
         opacity: area.containsMouse ? 1 : 0
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: 140 } }
-        title: "Downloads"
-        sub: (Downloads.active ? "DOWNLOADING · " : "") + Downloads.recent + " TODAY"
+        title: "Task manager"
+        sub: "PROCESSES · " + KWin.windows.length + " WIN"
     }
 
     MouseArea {
@@ -131,6 +87,12 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: Downloads.open()
+        onClicked: {
+            const e = DesktopEntries.byId("org.kde.plasma-systemmonitor");
+            if (e)
+                e.execute();
+            else
+                Quickshell.execDetached(["kitty", "--title", "Task manager", "top"]);
+        }
     }
 }

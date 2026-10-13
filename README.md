@@ -79,13 +79,13 @@ appears left focus on the window below).
 
 The bar's partner at the bottom, per screen. Smart hide like the bar: shown while no window covers it, slides down
 when covered (leaving the dashed handle); bottom edge / hover / the drawer being open bring it back. Contents:
-DOCK cap, the drawer button (= Win), pinned apps then any running unpinned app, the downloads stack, the
-RUNNING / WIN cap. Slot = tile with the app's own icon in true colour (Mario: no tinting), corner cut + underbar +
+DOCK cap, the drawer button (= Win), pinned apps | running unpinned apps, the RUNNING / WIN cap. The mock's
+downloads stack became the task-manager button (same stacked-bars tile, Mario 2026-10-14; browsers don't publish
+download totals, so it could never show progress): Plasma's System Monitor, or top in kitty until one's installed. Slot = tile with the app's own icon in true colour (Mario: no tinting), corner cut + underbar +
 window-count bars in the app colour, orange diamond on attention / unread notifications, hover label; the focused
 app lifts 10px with a yellow frame and pointer. Left click = launch / focus / minimize (cycles windows), middle =
 new instance, right = pin / unpin. Pins: ~/.local/state/clockmost-shell/dock-pins.json (default = the mock's pins
-that are installed). Downloads: files from the last 24h in ~/Downloads, indeterminate sweep while a .part /
-.crdownload exists (browsers don't publish totals); click opens the folder.
+that are installed).
 Hover on an app with windows = the window preview panel (DockPreview + WindowCard, in the dock's plate material):
 one card per window with a LIVE preview, title and an ACTIVE / MINIMIZED tag, click = focus that window. Live
 previews are KWin window screencasts (zkde_screencast) through KDE's own QML - `org.kde.taskmanager`

@@ -285,7 +285,8 @@ PanelWindow {
                     }
                 }
                 DockDivider {}
-                DockDownloads {
+                // the task-manager button, in the mock's downloads-stack spot (Mario)
+                DockTasks {
                     anchors.verticalCenter: parent.verticalCenter
                 }
                 DockDivider {}
