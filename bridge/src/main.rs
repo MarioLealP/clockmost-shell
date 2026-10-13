@@ -45,7 +45,7 @@ impl Bridge {
         emit(r#"{"event":"reveal"}"#);
     }
 
-    /// From the shell: a window command for the script, e.g. {"op":"activate","id":"{uuid}"}.
+    /// From the shell: a window command for the script, e.g. {"op":"activate"|"minimize"|"close","id":"{uuid}"}.
     fn command(&self, json: String) {
         // unbounded, so this never blocks; the channel only closes with the process
         let _ = self.tx.try_send(json);

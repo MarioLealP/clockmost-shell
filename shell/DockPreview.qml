@@ -111,6 +111,7 @@ Item {
                     icon: root.icon
                     c: root.slot ? AppColors.of(root.slot.app) : Theme.cyan
                     onActivated: KWin.command("activate", modelData.id)
+                    onCloseRequested: KWin.command("close", modelData.id)
                 }
             }
         }

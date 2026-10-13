@@ -20,6 +20,7 @@ Item {
     property string icon: ""
     readonly property bool sel: win.active
     signal activated
+    signal closeRequested
 
     width: 220
     height: 124 + 28 + 2
@@ -142,7 +143,9 @@ Item {
         id: area
         anchors.fill: parent
         hoverEnabled: true
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.activated()
+        // left = focus this window, middle = close it (Mario)
+        onClicked: mouse => mouse.button === Qt.MiddleButton ? root.closeRequested() : root.activated()
     }
 }

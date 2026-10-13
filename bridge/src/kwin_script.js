@@ -74,6 +74,8 @@ function run(json) {
         workspace.activeWindow = w;
     } else if (cmd.op === "minimize") {
         w.minimized = true;
+    } else if (cmd.op === "close") {
+        w.closeWindow();
     }
 }
 

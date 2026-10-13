@@ -7,7 +7,7 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
 - `bridge/` - `kwin-bridge` (Rust): KWin has no workspace/window-list Wayland protocol for Quickshell, so it loads
   a KWin script that sends JSON snapshots over D-Bus (`org.clockmost.KWinBridge`), printed one per line on
   stdout for the bar. Workspace switching goes straight to KWin's `/VirtualDesktopManager`. Window commands go the
-  other way: the shell calls `Command(json)` (`{"op":"activate"|"minimize","id":...}`), the script long-polls
+  other way: the shell calls `Command(json)` (`{"op":"activate"|"minimize"|"close","id":...}`), the script long-polls
   `Next` (answers "" after 20s, inside callDBus's 25s timeout) and runs them.
 - `shell/` - the Quickshell config. Run: `quickshell -p shell` (in the VM: `~/src/clockmost-shell/shell`).
   Done: the bar frame (band + hatch + ruler, CLOCKMOST mark, wings, crosshair ring, the hanging clock plate with live
@@ -87,7 +87,7 @@ app lifts 10px with a yellow frame and pointer. Left click = launch / focus / mi
 new instance, right = pin / unpin. Pins: ~/.local/state/clockmost-shell/dock-pins.json (default = the mock's pins
 that are installed).
 Hover on an app with windows = the window preview panel (DockPreview + WindowCard, in the dock's plate material):
-one card per window with a LIVE preview, title and an ACTIVE / MINIMIZED tag, click = focus that window. Live
+one card per window with a LIVE preview, title and an ACTIVE / MINIMIZED tag; click = focus that window, middle click = close it. Live
 previews are KWin window screencasts (zkde_screencast) through KDE's own QML - `org.kde.taskmanager`
 ScreencastingRequest + `org.kde.pipewire` PipeWireSourceItem, exactly what Plasma's taskbar tooltips use (Alt+Tab's
 thumbnails only work inside KWin). KWin only grants the protocol to executables named by a desktop file:
