@@ -21,6 +21,7 @@ Item {
     required property var slot
     readonly property color c: AppColors.of(slot.app)
     readonly property bool focused: slot.active
+    readonly property bool allMinimized: slot.windows.length > 0 && slot.windows.every(w => w.minimized)
     readonly property alias hovered: area.containsMouse
     // the app's own icon in true colour (Mario: no tinting); curated marks where we have one (the mock's firefox.svg)
     readonly property string curated: ({ "firefox": Qt.resolvedUrl("assets/logo-firefox.svg") })[slot.key.toLowerCase()] ?? ""
@@ -61,6 +62,9 @@ Item {
             width: 56
             height: 56
             clip: true
+            // every window minimized: the tile steps back
+            opacity: root.allMinimized ? 0.45 : 1
+            Behavior on opacity { NumberAnimation { duration: 180 } }
 
             Rectangle {
                 anchors.fill: parent
@@ -180,17 +184,25 @@ Item {
             }
         }
 
-        // window-count bars
+        // window-count bars: one per window - full 3px bar = on screen, flat 1px line at half strength = minimized
+        // (Mario: minimized and unfocused looked the same; not in the mock. A hollow 3px bar read as solid.)
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 56 + 5
             spacing: 3
             Repeater {
-                model: Math.min(root.slot.windows.length, 5)
-                Rectangle {
+                model: root.slot.windows.slice(0, 5)
+                Item {
+                    required property var modelData
                     width: 8
                     height: 3
-                    color: root.focused ? Theme.yellow : root.c
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: 8
+                        height: modelData.minimized ? 1 : 3
+                        opacity: modelData.minimized ? 0.5 : 1
+                        color: root.focused && !modelData.minimized ? Theme.yellow : root.c
+                    }
                 }
             }
         }

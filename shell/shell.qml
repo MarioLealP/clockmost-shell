@@ -13,9 +13,16 @@ ShellRoot {
         function close(): void { ControlCenter.close(); }
     }
 
+    // debugging: what the shell currently believes about KWin's windows
+    IpcHandler {
+        target: "kwin"
+        function windows(): string { return JSON.stringify(KWin.windows.map(w => ({ app: w.app, active: w.active, minimized: w.minimized }))); }
+    }
+
     IpcHandler {
         target: "drawer"
         function toggle(): void { Drawer.toggle(); }
+        function open(): void { Drawer.open = true; }
         function close(): void { Drawer.close(); }
     }
 
