@@ -33,6 +33,22 @@ Singleton {
     readonly property string lock: "M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4"
     readonly property string power: "M12 3v9 M6.3 7.5a8 8 0 1 0 11.4 0"
 
+    // bluetooth device types (BlueZ icon names)
+    readonly property string headphones: "M4 14v-2a8 8 0 0 1 16 0v2 M4 14h4v6H4z M16 14h4v6h-4z"
+    readonly property string mouse: "M7 4h10v16H7z M12 4v6"
+    readonly property string keyboard: "M3 7h18v10H3z M7 11h.01M11 11h.01M15 11h.01M8 14h8"
+    readonly property string phone: "M8 3h8v18H8z M11 18h2"
+
+    function device(blueZIcon) {
+        const i = blueZIcon || "";
+        if (i.startsWith("audio")) return headphones;
+        if (i === "input-mouse" || i === "input-tablet") return mouse;
+        if (i === "input-keyboard") return keyboard;
+        if (i === "input-gaming") return game;
+        if (i === "phone") return phone;
+        return bluetooth;
+    }
+
     function byName(name) {
         const map = { home: home, volume: volume, ethernet: ethernet, bluetooth: bluetooth, media: media, calendar: calendar,
             bell: bell, clipboard: clipboard };

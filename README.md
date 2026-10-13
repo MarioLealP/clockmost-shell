@@ -37,7 +37,9 @@ live ethernet, bluetooth, VPN via nmcli, night light via kwinrc NightColor, outp
 game mode wait for notifications / gamemode); AUDIO (output/input device pickers + levels, per-app volume/mute with a live
   PwNodePeakMonitor line); NETWORK (wired card: connection name, interface, speed, IPv4/gateway/DNS/MAC from nmcli,
   connect/disconnect; Wi-Fi list + switch when a Wi-Fi device exists - known/open networks only, PSK entry later,
-  untested in the wired VM; every NM vpn/wireguard connection with a switch). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
+  untested in the wired VM; every NM vpn/wireguard connection with a switch); BLUETOOTH (adapter switch, paired devices
+  with type icon / battery / click = connect-disconnect, SCAN + click-to-pair; needs `bluez` + `bluetooth.service` -
+  the VM has neither, so only the empty state is tested). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
   Other tabs: placeholders, built next one at a time.
 
 ## Control center scope (Mario 2026-10-13)
