@@ -27,14 +27,20 @@ PanelWindow {
     readonly property bool hovered: hudHover.hovered || edge.containsMouse
     readonly property bool shown: !covered || revealed || hovered
 
-    // 0 = hidden .. 1 = shown; the plate trails the band a little
+    // 0 = hidden .. 1 = shown. Reveal: the clock plate drops first, the band + groups follow (Mario);
+    // hide mirrors it: the band leaves first, then the plate pulls up. No overshoot (Mario: no bounce).
     property real bandP: shown ? 1 : 0
     property real plateP: shown ? 1 : 0
-    Behavior on bandP { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+    Behavior on bandP {
+        SequentialAnimation {
+            PauseAnimation { duration: root.shown ? 90 : 0 }
+            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+        }
+    }
     Behavior on plateP {
         SequentialAnimation {
-            PauseAnimation { duration: 60 }
-            NumberAnimation { duration: 280; easing.type: Easing.OutQuart } // no overshoot (Mario: no bounce)
+            PauseAnimation { duration: root.shown ? 0 : 90 }
+            NumberAnimation { duration: 280; easing.type: Easing.OutQuart }
         }
     }
 
