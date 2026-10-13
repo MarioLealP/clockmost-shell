@@ -2,6 +2,7 @@
 // sockets with app tiles on top, search at the bottom. Motion per the mock: open = fade 280ms + slide up 60px
 // (500ms ease-out), then the tiles fade in over their sockets (150ms); close = fade in place (exits never move).
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 
@@ -13,6 +14,9 @@ PanelWindow {
     readonly property int rows: 3
     property string query: ""
     property int selected: 0
+    // the keyboard selection only shows once it means something: a query typed (Enter = top match) or arrows used
+    property bool keyed: false
+    readonly property bool showSelection: keyed || query !== ""
     readonly property var results: Apps.search(query)
     readonly property var shownApps: results.slice(0, cols * rows)
     readonly property int running: {
@@ -39,13 +43,26 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "clockmost-drawer"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: Drawer.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    // exclusive from the moment the surface maps (it only exists while open or fading out): flipping it on in the
+    // same tick the window appears left KWin's keyboard focus on the window underneath
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    onVisibleChanged: if (visible) Qt.callLater(() => search.forceActiveFocus())
 
     mask: Region {
         item: Drawer.open ? catcher : null
     }
-    BackgroundEffect.blurRegion: Region {
-        item: Drawer.open ? drawer : null
+    // .glass backdrop-filter: blur(22px) - KWin's blur, behind the whole drawer rect in window coordinates (an
+    // item-based region doesn't follow the scaled parent). Off while closed: a zero-size region trips KWin's GL.
+    // Not translatable: saturate(1.2) (KWin's blur has no saturation) and the tiles' own 14px strength (KWin uses
+    // one strength per screen) - tiles get the same blur through their holes in the glass.
+    readonly property bool blurOn: root.p > 0.3 && root.width > 0
+    BackgroundEffect.blurRegion: blurOn ? blurRect : null
+    Region {
+        id: blurRect
+        x: Math.round((root.width - 980 * root.s) / 2)
+        y: Math.round((root.height - 600 * root.s) / 2 + frame.y * root.s - frame.restY * root.s)
+        width: Math.round(980 * root.s)
+        height: Math.round(600 * root.s)
     }
 
     Connections {
@@ -55,6 +72,7 @@ PanelWindow {
                 root.query = "";
                 search.text = "";
                 root.selected = 0;
+                root.keyed = false;
                 openAnim.restart();
                 search.forceActiveFocus();
             } else {
@@ -66,8 +84,8 @@ PanelWindow {
     SequentialAnimation {
         id: openAnim
         ScriptAction { script: { root.tilesP = 0; } }
-        NumberAnimation { target: root; property: "p"; to: 1; duration: 500; easing.type: Easing.OutQuart }
-        NumberAnimation { target: root; property: "tilesP"; to: 1; duration: 150; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "p"; to: 1; duration: 500 } // linear clock; fade + SETTLE derive from it
+        NumberAnimation { target: root; property: "tilesP"; to: 1; duration: 150 }
     }
     NumberAnimation {
         id: closeAnim
@@ -75,7 +93,6 @@ PanelWindow {
         property: "p"
         to: 0
         duration: 280
-        easing.type: Easing.OutCubic
     }
 
     MouseArea {
@@ -91,30 +108,84 @@ PanelWindow {
         scale: root.s
         transformOrigin: Item.TopLeft
 
+        // moves and fades the drawer with its shadow. The mock's open frame (e = elapsed ms):
+        //   opacity = clamp(e / 280), translateY = 60 * (1 - SETTLE(e / 500)), SETTLE = 1 - (1 - t)^4
+        // close = opacity 1 -> 0 over 280ms linear, no movement (exits never move).
         Item {
-            id: drawer
+            id: frame
+            readonly property real restY: (parent.height - 600) / 2
             width: 980
             height: 600
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: Drawer.open ? 60 * (1 - root.p) : 0
+            x: (parent.width - width) / 2
+            y: restY + (Drawer.open ? 60 * Math.pow(1 - root.p, 4) : 0)
             opacity: Drawer.open ? Math.min(1, root.p * 500 / 280) : root.p
-            clip: true
+
+            // .drawer box-shadow: 0 20px 60px rgba(0,0,0,.45)
+            RectangularShadow {
+                anchors.fill: parent
+                offset.y: 20
+                blur: 60
+                radius: 2
+                color: Qt.rgba(0, 0, 0, 0.45)
+            }
+        }
+
+        Item {
+            id: drawer
+            x: frame.x
+            y: frame.y
+            width: 980
+            height: 600
+            opacity: frame.opacity
+            // .drawer border-radius 2px + overflow hidden
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                maskEnabled: true
+                maskSource: drawerShape
+                maskThresholdMin: 0.5
+                maskSpreadAtMin: 1.0
+            }
 
             MouseArea {
                 anchors.fill: parent // swallow clicks inside the drawer
             }
 
-            // the glass: solid white head, fading to frosted dark
+            // .glass: linear-gradient(180deg, #fff 0%, #fff 16%, rgba(255,255,255,.7) 24%, rgba(230,232,238,.32) 40%,
+            // rgba(40,42,48,.5) 100%), with a 6px-rounded hole cut under every tile (the mock's SVG mask)
             Rectangle {
                 anchors.fill: parent
-                radius: 2
                 gradient: Gradient {
                     GradientStop { position: 0.00; color: "#FFFFFF" }
                     GradientStop { position: 0.16; color: "#FFFFFF" }
                     GradientStop { position: 0.24; color: Qt.rgba(1, 1, 1, 0.7) }
                     GradientStop { position: 0.40; color: Qt.rgba(230 / 255, 232 / 255, 238 / 255, 0.32) }
                     GradientStop { position: 1.00; color: Qt.rgba(40 / 255, 42 / 255, 48 / 255, 0.5) }
+                }
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    maskEnabled: true
+                    maskInverted: true
+                    maskSource: holes
+                    maskThresholdMin: 0.5
+                    maskSpreadAtMin: 1.0
+                }
+            }
+            Item {
+                id: holes
+                anchors.fill: parent
+                visible: false
+                layer.enabled: true
+                Repeater {
+                    model: root.cols * root.rows
+                    Rectangle {
+                        required property int index
+                        x: grid.x + (index % root.cols) * 134
+                        y: grid.y + Math.floor(index / root.cols) * 134
+                        width: 120
+                        height: 120
+                        radius: 6
+                        color: "white"
+                    }
                 }
             }
 
@@ -166,27 +237,17 @@ PanelWindow {
                         readonly property var entry: root.shownApps[index] ?? null
                         width: 120
                         height: 120
-                        // the empty socket (dot grid), fading out as the tile fades in
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: 6
-                            color: Qt.rgba(70 / 255, 74 / 255, 82 / 255, 0.3)
-                            border.width: 1
-                            border.color: Qt.rgba(1, 1, 1, 0.18)
+                        // .tile.empty: the socket under every cell, fading out as the app tile fades in over it
+                        TileFrame {
+                            empty: true
                             opacity: cell.entry ? 1 - root.tilesP : 1
-                            DotGrid {
-                                anchors.fill: parent
-                                anchors.margins: 2
-                                pitch: 9
-                                color: Qt.rgba(1, 1, 1, 0.16)
-                            }
                         }
                         Loader {
                             active: !!cell.entry
                             opacity: root.tilesP
                             sourceComponent: AppTile {
                                 entry: cell.entry
-                                selected: cell.index === root.selected
+                                selected: root.showSelection && cell.index === root.selected
                                 onActivated: root.launch(cell.entry)
                             }
                         }
@@ -194,8 +255,10 @@ PanelWindow {
                 }
             }
 
-            // search (bottom)
+            // .search: 44px, 1px rgba(255,255,255,.22) border, 6px corners, rgba(20,21,24,.55),
+            // inset 0 2px 8px rgba(0,0,0,.5); padding 0 16px, gap 12px; 13px mono .14em #8a8e96; b = #FFFA00 700 .1em
             Rectangle {
+                id: searchBox
                 x: 24
                 width: parent.width - 48
                 height: 44
@@ -203,8 +266,20 @@ PanelWindow {
                 anchors.bottomMargin: 22
                 radius: 6
                 color: Qt.rgba(20 / 255, 21 / 255, 24 / 255, 0.55)
-                border.width: 1
-                border.color: Qt.rgba(1, 1, 1, 0.22)
+                InsetShadow {
+                    anchors.margins: 1 // inset shadows sit inside the border (padding box)
+                    radius: 5
+                    offsetY: 2
+                    blur: 8
+                    color: Qt.rgba(0, 0, 0, 0.5)
+                }
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 6
+                    color: "transparent"
+                    border.width: 1
+                    border.color: Qt.rgba(1, 1, 1, 0.22)
+                }
                 Text {
                     id: prompt
                     x: 16
@@ -214,6 +289,7 @@ PanelWindow {
                     font.family: Theme.mono
                     font.weight: Font.Bold
                     font.pixelSize: 13
+                    font.letterSpacing: Theme.em(13, 0.1)
                 }
                 TextInput {
                     id: search
@@ -222,10 +298,10 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    color: Theme.ink
+                    color: "#e8e9ec"
                     font.family: Theme.mono
                     font.pixelSize: 13
-                    font.letterSpacing: Theme.em(13, 0.1)
+                    font.letterSpacing: Theme.em(13, 0.14)
                     selectionColor: Theme.yellow
                     selectedTextColor: Theme.plateInk
                     clip: true
@@ -236,10 +312,10 @@ PanelWindow {
                     Keys.onEscapePressed: Drawer.close()
                     Keys.onReturnPressed: if (root.shownApps[root.selected]) root.launch(root.shownApps[root.selected])
                     Keys.onEnterPressed: if (root.shownApps[root.selected]) root.launch(root.shownApps[root.selected])
-                    Keys.onLeftPressed: root.selected = Math.max(0, root.selected - 1)
-                    Keys.onRightPressed: root.selected = Math.min(root.shownApps.length - 1, root.selected + 1)
-                    Keys.onUpPressed: root.selected = Math.max(0, root.selected - root.cols)
-                    Keys.onDownPressed: root.selected = Math.min(root.shownApps.length - 1, root.selected + root.cols)
+                    Keys.onLeftPressed: { root.keyed = true; root.selected = Math.max(0, root.selected - 1); }
+                    Keys.onRightPressed: { root.keyed = true; root.selected = Math.min(root.shownApps.length - 1, root.selected + 1); }
+                    Keys.onUpPressed: { root.keyed = true; root.selected = Math.max(0, root.selected - root.cols); }
+                    Keys.onDownPressed: { root.keyed = true; root.selected = Math.min(root.shownApps.length - 1, root.selected + root.cols); }
                     Text {
                         visible: !search.text
                         anchors.verticalCenter: parent.verticalCenter
@@ -247,6 +323,18 @@ PanelWindow {
                         color: "#8a8e96"
                         font: search.font
                     }
+                }
+            }
+
+            Item {
+                id: drawerShape
+                anchors.fill: parent
+                visible: false
+                layer.enabled: true
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 2
+                    color: "white"
                 }
             }
         }
