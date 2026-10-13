@@ -15,9 +15,11 @@ struct Bridge;
 
 fn emit(line: &str) {
     let mut out = std::io::stdout().lock();
-    // stdout closing means the bar went away; nothing useful to do about it here
-    let _ = writeln!(out, "{line}");
-    let _ = out.flush();
+    // stdout closed = the shell that started us is gone: exit instead of lingering as an orphan that keeps the
+    // D-Bus name (a restarted shell's bridge then replaces it)
+    if writeln!(out, "{line}").and_then(|()| out.flush()).is_err() {
+        std::process::exit(0);
+    }
 }
 
 #[interface(name = "org.clockmost.KWinBridge")]
