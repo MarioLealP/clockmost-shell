@@ -53,12 +53,14 @@ PanelWindow {
         }
 
         BarLeft {
+            id: left
             x: 20
             anchors.verticalCenter: band.verticalCenter
         }
 
         BarWing {
             leftSide: true
+            visible: x > left.x + left.width + 12 // wings give way to the widget groups
             label: KWin.currentDesktop
                 ? "WS " + String(KWin.currentDesktop.number).padStart(2, "0") + " · " + KWin.windowsOn(KWin.current).length + " WIN"
                 : ""
@@ -74,9 +76,18 @@ PanelWindow {
         }
 
         BarWing {
+            id: rightWing
             leftSide: false
+            visible: x + width + 12 < right.x
             anchors.left: plate.right
             anchors.leftMargin: 16
+            anchors.verticalCenter: band.verticalCenter
+        }
+
+        BarRight {
+            id: right
+            anchors.right: parent.right
+            anchors.rightMargin: 20
             anchors.verticalCenter: band.verticalCenter
         }
     }
