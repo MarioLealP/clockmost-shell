@@ -39,7 +39,8 @@ game mode wait for notifications / gamemode); AUDIO (output/input device pickers
   connect/disconnect; Wi-Fi list + switch when a Wi-Fi device exists - known/open networks only, PSK entry later,
   untested in the wired VM; every NM vpn/wireguard connection with a switch); BLUETOOTH (adapter switch, paired devices
   with type icon / battery / click = connect-disconnect, SCAN + click-to-pair; needs `bluez` + `bluetooth.service` -
-  the VM has neither, so only the empty state is tested). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
+  the VM has neither, so only the empty state is tested); CALENDAR (= the calendar mock: month nav, ISO week column, today
+  boxed, weekends dim; UPCOMING empty until a calendar source is picked). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
   MEDIA waits for the Spotify skin (Mario 2026-10-13): lyrics + up-next aren't in MPRIS, so they likely come from a
   Spicetify extension in that skin - build both together. Other tabs: placeholders, built next one at a time.
 

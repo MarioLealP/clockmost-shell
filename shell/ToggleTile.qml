@@ -75,7 +75,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             size: 20
             path: root.icon
-            color: root.on ? "#fffbb0" : Theme.dim
+            color: root.on ? root.accent : Theme.dim // mock colour pass: .tgt.on svg { color: var(--c) }
         }
         Column {
             anchors.verticalCenter: parent.verticalCenter

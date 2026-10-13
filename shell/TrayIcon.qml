@@ -38,8 +38,8 @@ Item {
         width: parent.width - 22
         y: parent.height - 4 - 2
         height: 2
-        color: root.accent
-        opacity: 0.85
+        color: root.open ? Theme.yellow : root.accent // mock: .ti.open::after { background: yellow }
+        opacity: root.open ? 1 : 0.85
     }
 
     MouseArea {
