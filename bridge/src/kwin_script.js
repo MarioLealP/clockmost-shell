@@ -50,3 +50,8 @@ workspace.windowActivated.connect(snapshot);
 workspace.currentDesktopChanged.connect(snapshot);
 workspace.desktopsChanged.connect(snapshot);
 snapshot();
+
+// a real-keyboard way to open the drawer: Win is eaten by Windows/VMware in the test VM (Mario: "put it on some
+// other key"). Same call as the Win tap. Rebind in System Settings > Shortcuts > KWin if it collides.
+registerShortcut("clockmost-drawer", "clockmost: app drawer", "Alt+Space", () =>
+    callDBus("org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge", "Reveal"));
