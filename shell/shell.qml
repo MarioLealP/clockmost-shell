@@ -1,14 +1,29 @@
-// clockmost-shell entry point: one Endfield bar per screen.
+// clockmost-shell entry point: one Endfield bar + control center per screen.
+// IPC (keybinds, scripts): quickshell ipc --pid <pid> call controlcenter open|toggle <tab>  /  ... close
 import QtQuick
 import Quickshell
+import Quickshell.Io
 
 ShellRoot {
+    IpcHandler {
+        target: "controlcenter"
+        function open(tab: string): void { ControlCenter.show(tab, ""); }
+        function toggle(tab: string): void { ControlCenter.toggle(tab, ""); }
+        function close(): void { ControlCenter.close(); }
+    }
+
     Variants {
         model: Quickshell.screens
 
-        Bar {
+        Scope {
+            id: perScreen
             required property var modelData
-            screen: modelData
+            Bar {
+                screen: perScreen.modelData
+            }
+            CCWindow {
+                screen: perScreen.modelData
+            }
         }
     }
 }

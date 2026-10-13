@@ -2,6 +2,7 @@
 // Source: the first MPRIS player that is playing (else the first one). Nothing playing = muted slab.
 import QtQuick
 import QtQuick.Shapes
+import Quickshell
 import Quickshell.Services.Mpris
 
 Rectangle {
@@ -32,6 +33,12 @@ Rectangle {
         repeat: true
         running: root.playing
         onTriggered: root.player.positionChanged()
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: ControlCenter.toggle("media", QsWindow.window?.screen?.name ?? "")
     }
 
     Row {

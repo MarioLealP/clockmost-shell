@@ -26,6 +26,16 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
 
 Build the bridge: `cd bridge && cargo build --release` (checks: `just check`).
 
+## Control center (built so far)
+
+One panel under the bar (right), vertical tab rail (Mario: "the vertical side bar noctalia has, so i can swap
+between"): HOME / AUDIO / NETWORK / BLUETOOTH / MEDIA / CALENDAR / NOTIFICATIONS / CLIPBOARD. Bar widgets open their
+tab (volume icon = home, middle-click = mute; clock = calendar; now playing = media; bluetooth; VPN = network; bell;
+clipboard), right-click on the bar = home, outside click / Esc closes. IPC:
+`quickshell ipc --pid <pid> call controlcenter open|toggle <tab>` / `... close`. Done: HOME (= the quick-settings mock;
+live ethernet, bluetooth, VPN via nmcli, night light via kwinrc NightColor, output/mic levels, now playing; DND and
+game mode wait for notifications / gamemode). Other tabs: placeholders, built next one at a time.
+
 ## Control center scope (Mario 2026-10-13)
 
 Panels drop from their bar widget, styled from the mocks in `ds-topbar-v2.html?state=...`:

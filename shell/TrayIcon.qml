@@ -7,7 +7,9 @@ Item {
     property string path: ""
     property color accent: Theme.ink2
     property bool attention: false
+    property bool open: false // its control-center tab is showing
     signal clicked
+    signal middleClicked
 
     width: 36
     height: 36
@@ -24,7 +26,7 @@ Item {
         height: 18
         Glyph {
             path: root.path
-            color: area.containsMouse ? Theme.ink : Theme.ink2
+            color: root.open ? Theme.yellow : area.containsMouse ? Theme.ink : Theme.ink2
         }
         AttentionPin {
             visible: root.attention
@@ -45,6 +47,7 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+        onClicked: mouse => mouse.button === Qt.MiddleButton ? root.middleClicked() : root.clicked()
     }
 }

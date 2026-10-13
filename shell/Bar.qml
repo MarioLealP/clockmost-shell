@@ -25,7 +25,7 @@ PanelWindow {
     }
     property bool revealed: false
     readonly property bool hovered: hudHover.hovered || edge.containsMouse
-    readonly property bool shown: !covered || revealed || hovered
+    readonly property bool shown: !covered || revealed || hovered || ControlCenter.open
 
     // 0 = hidden .. 1 = shown. Reveal: the clock plate drops first, the band + groups follow (Mario);
     // hide mirrors it: the band leaves first, then the plate pulls up. No overshoot (Mario: no bounce).
@@ -114,6 +114,11 @@ PanelWindow {
 
         HoverHandler {
             id: hudHover
+        }
+        // right-click anywhere on the bar = the control center's home (Noctalia habit)
+        TapHandler {
+            acceptedButtons: Qt.RightButton
+            onTapped: ControlCenter.show("home", root.screen?.name ?? "")
         }
 
         BarRing {

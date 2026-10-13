@@ -56,6 +56,7 @@ Singleton {
                 }
             } else {
                 console.warn("weather: HTTP", xhr.status, url);
+                retry.restart(); // services blip (503s happen): try again in a minute, not in 15
             }
         };
         xhr.open("GET", url);
@@ -87,6 +88,12 @@ Singleton {
     }
 
     Component.onCompleted: locate()
+
+    Timer {
+        id: retry
+        interval: 60 * 1000
+        onTriggered: isNaN(root.lat) ? root.locate() : root.refresh()
+    }
 
     Timer {
         interval: 15 * 60 * 1000

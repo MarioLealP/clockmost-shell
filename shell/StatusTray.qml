@@ -1,5 +1,6 @@
 // .tray: one grouped plate - weather readout, status icons, notifications - with corner brackets.
 import QtQuick
+import Quickshell
 import Quickshell.Services.Pipewire
 
 Rectangle {
@@ -7,6 +8,13 @@ Rectangle {
 
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool muted: sink?.audio?.muted ?? false
+
+    function cc(tab) {
+        ControlCenter.toggle(tab, QsWindow.window?.screen?.name ?? "");
+    }
+    function isOpen(tab) {
+        return ControlCenter.open && ControlCenter.tab === tab;
+    }
 
     implicitWidth: row.implicitWidth + 12
     implicitHeight: 38
@@ -76,18 +84,20 @@ Rectangle {
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 9; height: 18; color: "transparent"
             Rectangle { anchors.centerIn: parent; width: 1; height: 18; color: Qt.rgba(1, 1, 1, 0.10) } }
 
-        TrayIcon { path: Icons.clipboard; accent: Theme.magenta }
+        TrayIcon { path: Icons.clipboard; accent: Theme.magenta; open: root.isOpen("clipboard"); onClicked: root.cc("clipboard") }
         TrayIcon {
             path: root.muted ? Icons.volumeMuted : Icons.volume
             accent: root.muted ? Theme.faint : Theme.cyan
-            onClicked: if (root.sink?.audio) root.sink.audio.muted = !root.sink.audio.muted
+            open: root.isOpen("home")
+            onClicked: root.cc("home") // the mock: volume icon = quick settings
+            onMiddleClicked: if (root.sink?.audio) root.sink.audio.muted = !root.sink.audio.muted
         }
-        TrayIcon { path: Icons.bluetooth; accent: "#5aa7ff" }
-        TrayIcon { path: Icons.vpn; accent: Theme.green }
+        TrayIcon { path: Icons.bluetooth; accent: "#5aa7ff"; open: root.isOpen("bluetooth"); onClicked: root.cc("bluetooth") }
+        TrayIcon { path: Icons.vpn; accent: Theme.green; open: root.isOpen("network"); onClicked: root.cc("network") }
 
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 9; height: 18; color: "transparent"
             Rectangle { anchors.centerIn: parent; width: 1; height: 18; color: Qt.rgba(1, 1, 1, 0.10) } }
 
-        TrayIcon { path: Icons.bell; accent: Theme.orange }
+        TrayIcon { path: Icons.bell; accent: Theme.orange; open: root.isOpen("notifications"); onClicked: root.cc("notifications") }
     }
 }

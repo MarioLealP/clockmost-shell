@@ -143,6 +143,13 @@ Item {
         }
     }
 
+    MouseArea {
+        width: Theme.plateWidth
+        height: Theme.plateHeight
+        cursorShape: Qt.PointingHandCursor
+        onClicked: ControlCenter.toggle("calendar", QsWindow.window?.screen?.name ?? "")
+    }
+
     // the one tri-band, hanging under the plate
     Row {
         y: Theme.plateHeight
