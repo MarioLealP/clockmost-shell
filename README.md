@@ -70,7 +70,9 @@ closes it. Centred 980x600, white head fading to frosted glass, 7x3 sockets of 1
 category code BRW/COM/MUS/..., colour underbar), search at the bottom (type, arrows, Enter). Apps = the .desktop
 entries minus plumbing (`Apps.hidden`), ordered by launch count (~/.local/state/clockmost-shell/app-usage.json).
 Motion per the mock: fade 280ms + slide up 60px over 500ms, then tiles fade in over their sockets (150ms); close
-fades in place. IPC: `quickshell ipc --pid <pid> call drawer toggle|close`. Paging for more than 21 apps: not yet.
+fades in place. IPC: `quickshell ipc --pid <pid> call drawer open|toggle|close`. More than 21 apps: whole-row
+scrolling (wheel, arrows follow the selection, PageUp/PageDown = 3 rows) - sockets and glass holes stay put, tiles
+step through them (180ms, 12px slide + fade), a 2px track with a yellow thumb right of the grid.
 Icons: the app's own icon, greyscale at rest, colour on hover / keyboard selection (Mario). Keyboard selection only
 shows once you type or use arrows. Keyboard focus is Exclusive from map time (switching it on as the window
 appears left focus on the window below).
