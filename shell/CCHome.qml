@@ -190,8 +190,9 @@ Column {
                 title: "DO NOT DISTURB"
                 index: "04"
                 accent: Theme.orange
-                available: false
-                status: "SOON"
+                on: Notifs.dnd
+                status: Notifs.dnd ? "ON · CRITICAL ONLY" : "OFF"
+                onClicked: Notifs.dnd = !Notifs.dnd
             }
             ToggleTile {
                 width: parent.cell

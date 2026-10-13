@@ -115,7 +115,7 @@ PanelWindow {
                 width: item ? item.width : 432
                 height: item ? item.implicitHeight : 200
                 onLoaded: if (item.minHeight !== undefined) item.minHeight = Qt.binding(() => rail.implicitHeight + 20)
-                sourceComponent: ({ home: homeTab, audio: audioTab, network: networkTab, bluetooth: bluetoothTab, calendar: calendarTab, clipboard: clipboardTab })[ControlCenter.tab] ?? placeholder
+                sourceComponent: ({ home: homeTab, audio: audioTab, network: networkTab, bluetooth: bluetoothTab, calendar: calendarTab, clipboard: clipboardTab, notifications: notificationsTab })[ControlCenter.tab] ?? placeholder
             }
 
             // corner brackets: top-left, bottom-right (14px, 2px)
@@ -158,6 +158,10 @@ PanelWindow {
     Component {
         id: clipboardTab
         CCClipboard {}
+    }
+    Component {
+        id: notificationsTab
+        CCNotifications {}
     }
     Component {
         id: placeholder

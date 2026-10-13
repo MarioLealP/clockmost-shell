@@ -45,7 +45,12 @@ game mode wait for notifications / gamemode); AUDIO (output/input device pickers
   D-Bus - text only, no per-item delete; our own pins in ~/.local/state/clockmost-shell/clip-pins.json; type tags TXT/URL/
   CMD/HEX; type to search, Up/Down, Enter = copy + close, Ctrl+P pin, Del unpin). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
   MEDIA waits for the Spotify skin (Mario 2026-10-13): lyrics + up-next aren't in MPRIS, so they likely come from a
-  Spicetify extension in that skin - build both together. Other tabs: placeholders, built next one at a time.
+  Spicetify extension in that skin - build both together. NOTIFICATIONS: the shell IS the notification server (claims org.freedesktop.Notifications at
+  startup - Plasma's on-demand service is only a stub waiting for plasmashell's panel applet, which we don't have);
+  popups (the mock's cards, top-right, 6s / critical stays, actions, progress hint, image) + the notification-centre
+  tab (groups, CLEAR / CLEAR ALL, read on leaving), DND (critical still shows), bell diamond = unread.
+  Autostart (VM): ~/.config/autostart/clockmost-shell.desktop; noctalia.desktop has Hidden=true.
+  Other tabs: placeholders, built next one at a time.
 
 ## Control center scope (Mario 2026-10-13)
 

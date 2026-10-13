@@ -13,6 +13,11 @@ ShellRoot {
         function close(): void { ControlCenter.close(); }
     }
 
+    // notification popups on the first screen
+    NotifPopups {
+        screen: Quickshell.screens[0]
+    }
+
     Variants {
         model: Quickshell.screens
 

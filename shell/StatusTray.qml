@@ -98,6 +98,12 @@ Rectangle {
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 9; height: 18; color: "transparent"
             Rectangle { anchors.centerIn: parent; width: 1; height: 18; color: Qt.rgba(1, 1, 1, 0.10) } }
 
-        TrayIcon { path: Icons.bell; accent: Theme.orange; open: root.isOpen("notifications"); onClicked: cx => root.cc("notifications", cx) }
+        TrayIcon {
+            path: Notifs.dnd ? Icons.dnd : Icons.bell
+            accent: Theme.orange
+            attention: Notifs.unread > 0 // the orange diamond
+            open: root.isOpen("notifications")
+            onClicked: cx => root.cc("notifications", cx)
+        }
     }
 }
