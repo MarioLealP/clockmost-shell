@@ -13,6 +13,10 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   kwin-bridge (click = switch, app-coloured window marks, attention diamond), live wing; right side: now playing (MPRIS,
   first playing player, art, elapsed, animated meter), weather (location from the IP via ipinfo.io + Open-Meteo, no keys;
   on a VPN = exit location), status tray (volume live via PipeWire, click = mute), user chip. Wings hide when crowded.
+  Smart hide (Mario 2026-10-13, like Noctalia's): shown while no window covers the band+plate area, slides away
+  when covered; Win tap (kwinrc `[ModifierOnlyShortcuts] Meta=org.clockmost.KWinBridge,/Bridge,org.clockmost.KWinBridge,Reveal`)
+  or the pointer on the top-edge strip reveals it; leaving hides it again. No reserved space. Motion: band 220ms
+  OutCubic, plate +60ms 300ms OutBack, groups ease in.
   Next (was: the right side (now
   playing, weather, tray, user), the reveal motion, then the control center. Bar scales down below 1920px wide (VM).
   Bridge binary lives at `~/.local/bin/kwin-bridge`.

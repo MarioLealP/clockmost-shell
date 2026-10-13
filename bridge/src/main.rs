@@ -13,14 +13,23 @@ use zbus::{blocking::connection, interface};
 
 struct Bridge;
 
+fn emit(line: &str) {
+    let mut out = std::io::stdout().lock();
+    // stdout closing means the bar went away; nothing useful to do about it here
+    let _ = writeln!(out, "{line}");
+    let _ = out.flush();
+}
+
 #[interface(name = "org.clockmost.KWinBridge")]
 impl Bridge {
     /// Called by the KWin script with a JSON snapshot.
     fn update(&self, json: String) {
-        let mut out = std::io::stdout().lock();
-        // stdout closing means the bar went away; nothing useful to do about it here
-        let _ = writeln!(out, "{json}");
-        let _ = out.flush();
+        emit(&json);
+    }
+
+    /// Bound to a Win-key tap in KWin (kwinrc [ModifierOnlyShortcuts] Meta): asks the bar to reveal itself.
+    fn reveal(&self) {
+        emit(r#"{"event":"reveal"}"#);
     }
 }
 

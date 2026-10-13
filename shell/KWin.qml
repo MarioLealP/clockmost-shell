@@ -14,6 +14,9 @@ Singleton {
 
     readonly property var currentDesktop: desktops.find(d => d.id === current) ?? null
 
+    // a Win-key tap (KWin modifier-only shortcut -> bridge Reveal)
+    signal revealRequested
+
     function windowsOn(desktopId) {
         return windows.filter(w => w.onAll || w.desktops.includes(desktopId));
     }
@@ -32,6 +35,10 @@ Singleton {
             onRead: line => {
                 try {
                     const s = JSON.parse(line);
+                    if (s.event === "reveal") {
+                        root.revealRequested();
+                        return;
+                    }
                     root.desktops = s.desktops;
                     root.windows = s.windows;
                     root.current = s.current;
