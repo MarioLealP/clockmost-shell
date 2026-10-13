@@ -29,8 +29,9 @@ Singleton {
         return m < 1 ? "NOW" : m < 60 ? m + "M" : m < 1440 ? Math.floor(m / 60) + "H" : Math.floor(m / 1440) + "D";
     }
 
+    // compare by the Notification object: delegates get a *copy* of the record, so record identity never matches
     function hidePopup(rec) {
-        popups = popups.filter(p => p !== rec);
+        popups = popups.filter(p => p.n !== rec.n);
     }
     function markAllRead() {
         if (unread === 0)

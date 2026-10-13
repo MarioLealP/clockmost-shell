@@ -23,10 +23,21 @@ Item {
     Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     Component.onCompleted: shown = true
 
+    // leave the way it came (slide right + fade), then drop out of the stack
+    function close() {
+        shown = false;
+        leave.start();
+    }
+    Timer {
+        id: leave
+        interval: 220
+        onTriggered: Notifs.hidePopup(root.rec)
+    }
+
     Timer {
         running: root.n.urgency !== NotificationUrgency.Critical && root.n.expireTimeout !== 0 && !hover.hovered
         interval: root.n.expireTimeout > 0 ? root.n.expireTimeout : 6000
-        onTriggered: Notifs.hidePopup(root.rec)
+        onTriggered: root.close()
     }
     HoverHandler {
         id: hover
@@ -202,7 +213,7 @@ Item {
         cursorShape: root.defaultAction ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: {
             root.defaultAction?.invoke();
-            Notifs.hidePopup(root.rec);
+            root.close();
         }
     }
 
@@ -225,7 +236,7 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: Notifs.hidePopup(root.rec)
+            onClicked: root.close()
         }
     }
 
