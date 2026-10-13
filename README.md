@@ -16,7 +16,7 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   Smart hide (Mario 2026-10-13, like Noctalia's): shown while no window covers the band+plate area, slides away
   when covered; Win tap (kwinrc `[ModifierOnlyShortcuts] Meta=org.clockmost.KWinBridge,/Bridge,org.clockmost.KWinBridge,Reveal`)
   or the pointer on the top-edge strip reveals it; leaving hides it again. No reserved space. Motion: band 220ms
-  OutCubic, plate +60ms 300ms OutBack, groups ease in.
+  OutCubic, plate +60ms 280ms OutQuart (no bounce), groups ease in.
   Next (was: the right side (now
   playing, weather, tray, user), the reveal motion, then the control center. Bar scales down below 1920px wide (VM).
   Bridge binary lives at `~/.local/bin/kwin-bridge`.

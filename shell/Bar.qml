@@ -27,14 +27,14 @@ PanelWindow {
     readonly property bool hovered: hudHover.hovered || edge.containsMouse
     readonly property bool shown: !covered || revealed || hovered
 
-    // 0 = hidden .. 1 = shown; the plate trails the band a little and overshoots
+    // 0 = hidden .. 1 = shown; the plate trails the band a little
     property real bandP: shown ? 1 : 0
     property real plateP: shown ? 1 : 0
     Behavior on bandP { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     Behavior on plateP {
         SequentialAnimation {
             PauseAnimation { duration: 60 }
-            NumberAnimation { duration: 300; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+            NumberAnimation { duration: 280; easing.type: Easing.OutQuart } // no overshoot (Mario: no bounce)
         }
     }
 
