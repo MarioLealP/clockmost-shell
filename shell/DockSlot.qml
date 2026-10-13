@@ -1,0 +1,231 @@
+// One dock app slot = ds-dock-v2's .slot, rule by rule (after its colour pass):
+//   .tile       56px square, 1px rgba(255,255,255,.10) border, inset 0 2px 10px rgba(0,0,0,.55),
+//               background linear-gradient(180deg, rgba(58,62,70,.5) 25%, mix(c 42%, rgba(30,32,37,.6)) 100%)
+//   .topo       cover, opacity .35
+//   .lg / .lt   28px icon / 700 20px letter in c, centred at top 44% (real icons stay in their own colours)
+//   ::before    12px corner cut, top-left, c
+//   .cd         7px mono .12em at left 4 / bottom 6, mix(c 70%, #fff) at .7
+//   .ub         3px underbar, c
+//   .wb2        a 8x3 bar per window, 3px apart, 5px under the tile, c
+//   .focus      tile + bars lifted 10px, 2px yellow border, yellow underbar + bars, drop 0 8px 20px rgba(0,0,0,.5),
+//               yellow 8x6 pointer above
+//   .notif.pin  the orange diamond at the tile's top-right (window wants attention / unread notifications)
+//   .tip        hover label above the slot (DockTip)
+import QtQuick
+import QtQuick.Effects // RectangularShadow
+import Quickshell
+
+Item {
+    id: root
+
+    required property var slot
+    readonly property color c: AppColors.of(slot.app)
+    readonly property bool focused: slot.active
+    readonly property alias hovered: area.containsMouse
+    // the app's own icon in true colour (Mario: no tinting); curated marks where we have one (the mock's firefox.svg)
+    readonly property string curated: ({ "firefox": Qt.resolvedUrl("assets/logo-firefox.svg") })[slot.key.toLowerCase()] ?? ""
+    readonly property string icon: curated || (slot.entry ? Quickshell.iconPath(slot.entry.icon || "", true) : "")
+    readonly property bool alert: slot.windows.some(w => w.attention)
+        || Notifs.records.some(r => !r.read && slot.entry && (r.n.appName || "").toLowerCase() === slot.entry.name.toLowerCase())
+
+    function mix(a, b, t) {
+        return Qt.rgba(a.r * t + b.r * (1 - t), a.g * t + b.g * (1 - t), a.b * t + b.b * (1 - t), a.a * t + b.a * (1 - t));
+    }
+
+    width: 56
+    height: 56 + 5 + 3
+
+    property real lift: focused ? 1 : 0
+    Behavior on lift { NumberAnimation { duration: 260; easing.type: Easing.OutQuart } }
+
+    Item {
+        id: body
+        width: parent.width
+        height: parent.height
+        y: -10 * root.lift
+
+        // focus drop shadow 0 8px 20px rgba(0,0,0,.5)
+        RectangularShadow {
+            x: 0
+            y: 0
+            width: 56
+            height: 56
+            offset.y: 8
+            blur: 20
+            color: Qt.rgba(0, 0, 0, 0.5)
+            opacity: root.lift
+        }
+
+        Item {
+            id: tile
+            width: 56
+            height: 56
+            clip: true
+
+            Rectangle {
+                anchors.fill: parent
+                gradient: Gradient {
+                    GradientStop { position: 0.25; color: Qt.rgba(58 / 255, 62 / 255, 70 / 255, 0.5) }
+                    GradientStop { position: 1.0; color: root.mix(root.c, Qt.rgba(30 / 255, 32 / 255, 37 / 255, 0.6), 0.42) }
+                }
+            }
+            Image {
+                anchors.fill: parent
+                source: Qt.resolvedUrl("assets/topo-card.svg")
+                sourceSize.width: width
+                sourceSize.height: height
+                opacity: 0.35
+            }
+            InsetShadow {
+                radius: 0
+                offsetY: 2
+                blur: 10
+                color: Qt.rgba(0, 0, 0, root.focused ? 0.5 : 0.55)
+            }
+
+            Image {
+                id: logo
+                visible: root.icon !== ""
+                x: (parent.width - width) / 2
+                y: parent.height * 0.44 - height / 2
+                width: 28
+                height: 28
+                source: root.icon
+                sourceSize.width: 64
+                sourceSize.height: 64
+                smooth: true
+            }
+            Text {
+                visible: root.icon === ""
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: parent.height * 0.44 - height / 2
+                text: root.slot.name.charAt(0).toUpperCase()
+                color: root.c
+                font.family: Theme.body
+                font.weight: Font.Bold
+                font.pixelSize: 20
+            }
+
+            // ::before corner cut: linear-gradient(135deg, c 50%, transparent 50%) in 12x12
+            Canvas {
+                width: 12
+                height: 12
+                property color c: root.c
+                onCChanged: requestPaint()
+                onPaint: {
+                    const ctx = getContext("2d");
+                    ctx.reset();
+                    ctx.fillStyle = c;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(12, 0);
+                    ctx.lineTo(0, 12);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+
+            Text {
+                x: 4
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 6
+                text: DockApps.code(root.slot)
+                color: root.mix(root.c, Qt.rgba(1, 1, 1, 1), 0.7)
+                opacity: 0.7
+                font.family: Theme.mono
+                font.pixelSize: 7
+                font.letterSpacing: Theme.em(7, 0.12)
+            }
+
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: 3
+                color: root.focused ? Theme.yellow : root.c
+            }
+
+            // border: 1px rgba(255,255,255,.10), focus 2px yellow
+            Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                border.width: root.focused ? 2 : 1
+                border.color: root.focused ? Theme.yellow : Qt.rgba(1, 1, 1, 0.10)
+            }
+        }
+
+        AttentionPin {
+            visible: root.alert
+            anchors.top: tile.top
+            anchors.right: tile.right
+        }
+
+        // focus pointer: border-top 6px yellow, 4px sides -> an 8x6 down triangle, 13px above the lifted tile
+        Canvas {
+            visible: root.lift > 0.01
+            opacity: root.lift
+            x: (56 - 8) / 2
+            y: -9
+            width: 8
+            height: 6
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                ctx.fillStyle = Theme.yellow;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(8, 0);
+                ctx.lineTo(4, 6);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        // window-count bars
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 56 + 5
+            spacing: 3
+            Repeater {
+                model: Math.min(root.slot.windows.length, 5)
+                Rectangle {
+                    width: 8
+                    height: 3
+                    color: root.focused ? Theme.yellow : root.c
+                }
+            }
+        }
+    }
+
+    DockTip {
+        z: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.height - 82 - height // CSS bottom: 82px from the slot's bottom
+        opacity: root.hovered ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 140 } }
+        title: root.slot.name
+        sub: {
+            const ws = root.slot.windows;
+            if (!ws.length)
+                return root.slot.pinned ? "PINNED" : "";
+            const t = (ws.find(w => w.active) ?? ws[0]).title;
+            return ws.length + (ws.length === 1 ? " WINDOW · " : " WINDOWS · ") + (t.length > 28 ? t.slice(0, 27) + "…" : t);
+        }
+    }
+
+    MouseArea {
+        id: area
+        anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+        cursorShape: Qt.PointingHandCursor
+        onClicked: mouse => {
+            if (mouse.button === Qt.LeftButton)
+                DockApps.activate(root.slot);
+            else if (mouse.button === Qt.MiddleButton)
+                DockApps.launch(root.slot);
+            else
+                DockApps.togglePin(root.slot);
+        }
+    }
+}

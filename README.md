@@ -6,7 +6,9 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
 
 - `bridge/` - `kwin-bridge` (Rust): KWin has no workspace/window-list Wayland protocol for Quickshell, so it loads
   a KWin script that sends JSON snapshots over D-Bus (`org.clockmost.KWinBridge`), printed one per line on
-  stdout for the bar. Workspace switching goes straight to KWin's `/VirtualDesktopManager`.
+  stdout for the bar. Workspace switching goes straight to KWin's `/VirtualDesktopManager`. Window commands go the
+  other way: the shell calls `Command(json)` (`{"op":"activate"|"minimize","id":...}`), the script long-polls
+  `Next` (answers "" after 20s, inside callDBus's 25s timeout) and runs them.
 - `shell/` - the Quickshell config. Run: `quickshell -p shell` (in the VM: `~/src/clockmost-shell/shell`).
   Done: the bar frame (band + hatch + ruler, CLOCKMOST mark, wings, crosshair ring, the hanging clock plate with live
   time/date + tri-band, band blur via ext-background-effect), Felt chip (static), live workspace chips from
@@ -69,3 +71,20 @@ category code BRW/COM/MUS/..., colour underbar), search at the bottom (type, arr
 entries minus plumbing (`Apps.hidden`), ordered by launch count (~/.local/state/clockmost-shell/app-usage.json).
 Motion per the mock: fade 280ms + slide up 60px over 500ms, then tiles fade in over their sockets (150ms); close
 fades in place. IPC: `quickshell ipc --pid <pid> call drawer toggle|close`. Paging for more than 21 apps: not yet.
+Icons: the app's own icon, greyscale at rest, colour on hover / keyboard selection (Mario). Keyboard selection only
+shows once you type or use arrows. Keyboard focus is Exclusive from map time (switching it on as the window
+appears left focus on the window below).
+
+## Dock (ds-dock-v2)
+
+The bar's partner at the bottom, per screen. Smart hide like the bar: shown while no window covers it, slides down
+when covered (leaving the dashed handle); bottom edge / hover / the drawer being open bring it back. Contents:
+DOCK cap, the drawer button (= Win), pinned apps then any running unpinned app, the downloads stack, the
+RUNNING / WIN cap. Slot = tile with the app's own icon in true colour (Mario: no tinting), corner cut + underbar +
+window-count bars in the app colour, orange diamond on attention / unread notifications, hover label; the focused
+app lifts 10px with a yellow frame and pointer. Left click = launch / focus / minimize (cycles windows), middle =
+new instance, right = pin / unpin. Pins: ~/.local/state/clockmost-shell/dock-pins.json (default = the mock's pins
+that are installed). Downloads: files from the last 24h in ~/Downloads, indeterminate sweep while a .part /
+.crdownload exists (browsers don't publish totals); click opens the folder.
+Gotchas: Quickshell only detects `pragma Singleton` on its own line near the top (DockApps); a singleton literally
+named `Dock` also failed - kept as `DockApps`.

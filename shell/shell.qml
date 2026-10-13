@@ -41,6 +41,9 @@ ShellRoot {
             CCWindow {
                 screen: perScreen.modelData
             }
+            DockWindow {
+                screen: perScreen.modelData
+            }
         }
     }
 }

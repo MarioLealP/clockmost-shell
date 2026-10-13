@@ -27,6 +27,20 @@ Singleton {
         switcher.running = true;
     }
 
+    // window commands, run by the bridge's KWin script: "activate" (unminimize, switch desktop, focus) / "minimize"
+    function command(op, id) {
+        const p = cmdProc.createObject(root, {
+            command: ["busctl", "--user", "call", "org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge",
+                "Command", "s", JSON.stringify({ op: op, id: id })]
+        });
+        p.exited.connect(() => p.destroy());
+        p.running = true;
+    }
+    Component {
+        id: cmdProc
+        Process {}
+    }
+
     Process {
         id: bridge
         command: [Quickshell.env("HOME") + "/.local/bin/kwin-bridge"]

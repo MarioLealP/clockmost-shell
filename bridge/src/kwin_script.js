@@ -56,3 +56,37 @@ snapshot();
 // other key"). Same call as the Win tap. Rebind in System Settings > Shortcuts > KWin if it collides.
 registerShortcut("clockmost-app-drawer", "clockmost: app drawer", "Ctrl+Alt+Space", () =>
     callDBus("org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge", "Reveal"));
+
+// commands from the shell (the dock): long-poll the bridge's Next, run what comes back, ask again
+function findWindow(id) {
+    return workspace.windowList().find(w => w.internalId.toString() === id);
+}
+
+function run(json) {
+    const cmd = JSON.parse(json);
+    const w = findWindow(cmd.id);
+    if (!w)
+        return;
+    if (cmd.op === "activate") {
+        w.minimized = false;
+        if (!w.onAllDesktops && !w.desktops.includes(workspace.currentDesktop))
+            workspace.currentDesktop = w.desktops[0];
+        workspace.activeWindow = w;
+    } else if (cmd.op === "minimize") {
+        w.minimized = true;
+    }
+}
+
+function poll() {
+    callDBus("org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge", "Next", json => {
+        if (json) {
+            try {
+                run(json);
+            } catch (e) {
+                print("clockmost-bridge: bad command " + json + ": " + e);
+            }
+        }
+        poll();
+    });
+}
+poll();
