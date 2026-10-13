@@ -171,7 +171,19 @@ PanelWindow {
                 }
                 DockDivider {}
                 Repeater {
-                    model: DockApps.slots
+                    model: DockApps.pinnedSlots
+                    DockSlot {
+                        required property var modelData
+                        slot: modelData
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+                // pinned | open-but-not-pinned (Mario: couldn't tell them apart) - the mock's own divider
+                DockDivider {
+                    visible: DockApps.openSlots.length > 0
+                }
+                Repeater {
+                    model: DockApps.openSlots
                     DockSlot {
                         required property var modelData
                         slot: modelData

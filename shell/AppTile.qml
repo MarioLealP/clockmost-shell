@@ -81,7 +81,8 @@ TileFrame {
         y: parent.height * 0.06
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
-        text: "· " + Apps.code(root.entry)
+        textFormat: Text.StyledText
+        text: "· " + Apps.code(root.entry) + (DockApps.isPinned(root.entry.id) ? " · <font color='" + Theme.yellow + "'>PIN</font>" : "")
         color: "#6c6f76"
         font.family: Theme.mono
         font.pixelSize: 10
@@ -108,7 +109,9 @@ TileFrame {
         id: area
         anchors.fill: parent
         hoverEnabled: true
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.activated()
+        // right click = pin / unpin in the dock
+        onClicked: mouse => mouse.button === Qt.RightButton ? DockApps.togglePin(root.entry.id) : root.activated()
     }
 }

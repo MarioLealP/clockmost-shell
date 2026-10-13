@@ -80,9 +80,15 @@ Singleton {
         if (s.entry)
             Apps.launch(s.entry);
     }
-    // right click: pin / unpin
-    function togglePin(s) {
-        stored = s.pinned ? pins.filter(k => k !== s.key) : pins.concat([s.key]);
+    readonly property var pinnedSlots: slots.filter(s => s.pinned)
+    readonly property var openSlots: slots.filter(s => !s.pinned)
+
+    // right click (dock tile or drawer tile): pin / unpin by desktop id
+    function isPinned(id) {
+        return pins.includes(id);
+    }
+    function togglePin(id) {
+        stored = isPinned(id) ? pins.filter(k => k !== id) : pins.concat([id]);
         pinsFile.setText(JSON.stringify(stored));
     }
 

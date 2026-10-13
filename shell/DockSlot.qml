@@ -225,7 +225,7 @@ Item {
             else if (mouse.button === Qt.MiddleButton)
                 DockApps.launch(root.slot);
             else
-                DockApps.togglePin(root.slot);
+                DockApps.togglePin(root.slot.key);
         }
     }
 }
