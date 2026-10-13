@@ -41,7 +41,9 @@ game mode wait for notifications / gamemode); AUDIO (output/input device pickers
   untested in the wired VM; every NM vpn/wireguard connection with a switch); BLUETOOTH (adapter switch, paired devices
   with type icon / battery / click = connect-disconnect, SCAN + click-to-pair; needs `bluez` + `bluetooth.service` -
   the VM has neither, so only the empty state is tested); CALENDAR (= the calendar mock: month nav, ISO week column, today
-  boxed, weekends dim; UPCOMING empty until a calendar source is picked). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
+  boxed, weekends dim; UPCOMING empty until a calendar source is picked); CLIPBOARD (= the clipboard mock: Klipper history over
+  D-Bus - text only, no per-item delete; our own pins in ~/.local/state/clockmost-shell/clip-pins.json; type tags TXT/URL/
+  CMD/HEX; type to search, Up/Down, Enter = copy + close, Ctrl+P pin, Del unpin). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
   MEDIA waits for the Spotify skin (Mario 2026-10-13): lyrics + up-next aren't in MPRIS, so they likely come from a
   Spicetify extension in that skin - build both together. Other tabs: placeholders, built next one at a time.
 
