@@ -144,8 +144,9 @@ PanelWindow {
                 id: leftWing
                 leftSide: true
                 x: hud.width / 2 - Theme.plateWidth / 2 - 16 - width
-                visible: x > left.x + left.width + 12 // wings give way to the widget groups
-                opacity: root.plateP
+                // shrinks to the space between the left group and the plate
+                room: hud.width / 2 - Theme.plateWidth / 2 - 16 - (20 + left.width + 12)
+                opacity: root.plateP * fitOpacity
                 label: KWin.currentDesktop
                     ? "WS " + String(KWin.currentDesktop.number).padStart(2, "0") + " · " + KWin.windowsOn(KWin.current).length + " WIN"
                     : ""
@@ -156,8 +157,8 @@ PanelWindow {
                 id: rightWing
                 leftSide: false
                 x: hud.width / 2 + Theme.plateWidth / 2 + 16
-                visible: x + width + 12 < right.x
-                opacity: root.plateP
+                room: (hud.width - 20 - right.width - 12) - x
+                opacity: root.plateP * fitOpacity
                 anchors.verticalCenter: band.verticalCenter
             }
 

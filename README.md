@@ -12,7 +12,9 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   time/date + tri-band, band blur via ext-background-effect), Felt chip (static), live workspace chips from
   kwin-bridge (click = switch, app-coloured window marks, attention diamond), live wing; right side: now playing (MPRIS,
   first playing player, art, elapsed, animated meter), weather (location from the IP via ipinfo.io + Open-Meteo, no keys;
-  on a VPN = exit location), status tray (volume live via PipeWire, click = mute), user chip. Wings hide when crowded.
+  on a VPN = exit location), status tray (volume live via PipeWire, click = mute), user chip. Wings shrink to fit (line first, then the print) and fade out when even that won't fit.
+  Design target = 1080p (1:1 with the mock); wider screens (the 3440 ultrawide) keep edge-anchored groups for now,
+  the empty band gets extra detail later (Mario 2026-10-13). Narrower than 1920 = the whole bar scales down.
   Smart hide (Mario 2026-10-13, like Noctalia's): shown while no window covers the band+plate area, slides away
   when covered; Win tap (kwinrc `[ModifierOnlyShortcuts] Meta=org.clockmost.KWinBridge,/Bridge,org.clockmost.KWinBridge,Reveal`)
   or the pointer on the top-edge strip reveals it; leaving hides it again. No reserved space. Motion: band 220ms
