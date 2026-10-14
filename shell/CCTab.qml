@@ -7,7 +7,9 @@ Item {
 
     property real minHeight: 0
     property string code: ""
+    property string codePrefix: "CLOCKMOST · "
     default property alias content: body.data
+    property alias actions: footer.actions // buttons on the footer's right
 
     width: 432
     implicitHeight: Math.max(minHeight, body.implicitHeight + footer.implicitHeight)
@@ -20,5 +22,6 @@ Item {
         id: footer
         anchors.bottom: parent.bottom
         code: root.code
+        prefix: root.codePrefix
     }
 }

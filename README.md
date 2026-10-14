@@ -46,8 +46,13 @@ game mode wait for notifications / gamemode); AUDIO (output/input device pickers
   boxed, weekends dim; UPCOMING empty until a calendar source is picked); CLIPBOARD (= the clipboard mock: Klipper history over
   D-Bus - text only, no per-item delete; our own pins in ~/.local/state/clockmost-shell/clip-pins.json; type tags TXT/URL/
   CMD/HEX; type to search, Up/Down, Enter = copy + close, Ctrl+P pin, Del unpin). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
-  MEDIA waits for the Spotify skin (Mario 2026-10-13): lyrics + up-next aren't in MPRIS, so they likely come from a
-  Spicetify extension in that skin - build both together. NOTIFICATIONS: the shell IS the notification server (claims org.freedesktop.Notifications at
+  MEDIA (= the media mock, ?state=media): cover on a slab of its colour, title / ARTIST / album + track no., visualizer
+  strip (phonograph-audio's 48 cava bars over ws://127.0.0.1:47862, connected only while the panel is open) with the
+  timer tag, click/drag seek bar, shuffle / prev / play / next / repeat (off -> all -> one), OPEN PHONOGRAPH (raises
+  the player). Any MPRIS player; no lyrics, no up next (Mario 2026-10-14: both live only inside the Spotify page - not
+  worth a page->shell channel). Accent = the cover's colour, shared with the bar chip (Media singleton): CoverSampler
+  draws the cover at 24px on the bar and Media.pick() takes the strongest chroma-weighted hue at the mock lavender's
+  lightness, grey covers stay quiet (Quickshell's ColorQuantizer only reads local files; covers are https). NOTIFICATIONS: the shell IS the notification server (claims org.freedesktop.Notifications at
   startup - Plasma's on-demand service is only a stub waiting for plasmashell's panel applet, which we don't have);
   popups (the mock's cards, top-right, 6s / critical stays, actions, progress hint, image) + the notification-centre
   tab (groups, CLEAR / CLEAR ALL, read on leaving), DND (critical still shows), bell diamond = unread.

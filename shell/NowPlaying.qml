@@ -1,31 +1,29 @@
 // .np: now-playing slab - lavender gradient, notched art square, title + ARTIST · elapsed, 5-bar meter.
-// Source: the first MPRIS player that is playing (else the first one). Nothing playing = muted slab.
+// Source + accent (the cover's colour): Media. Nothing playing = muted slab.
 import QtQuick
 import QtQuick.Shapes
 import Quickshell
-import Quickshell.Services.Mpris
 
 Rectangle {
     id: root
 
-    readonly property var players: Mpris.players.values
-    readonly property var player: players.find(p => p.isPlaying) ?? players[0] ?? null
-    readonly property bool playing: player?.isPlaying ?? false
+    readonly property var player: Media.player
+    readonly property bool playing: Media.playing
+    property color acc: Media.accent
+    Behavior on acc { ColorAnimation { duration: 1200; easing.type: Easing.InOutQuad } }
 
-    function clock(seconds) {
-        const s = Math.max(0, Math.floor(seconds || 0));
-        const mm = String(Math.floor(s % 3600 / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
-        return s >= 3600 ? Math.floor(s / 3600) + ":" + mm : mm; // live streams run for hours
+    function tint(a) {
+        return Qt.rgba(acc.r, acc.g, acc.b, a);
     }
 
     implicitWidth: row.implicitWidth + 12
     implicitHeight: 34
     border.width: 1
-    border.color: Qt.rgba(207 / 255, 198 / 255, 244 / 255, 0.22)
+    border.color: root.tint(0.22)
     gradient: Gradient {
         orientation: Gradient.Horizontal
-        GradientStop { position: 0; color: Qt.rgba(207 / 255, 198 / 255, 244 / 255, root.player ? 0.30 : 0.12) }
-        GradientStop { position: 1; color: Qt.rgba(207 / 255, 198 / 255, 244 / 255, 0.06) }
+        GradientStop { position: 0; color: root.tint(root.player ? 0.30 : 0.12) }
+        GradientStop { position: 1; color: root.tint(0.06) }
     }
 
     // position only updates when asked; tick it while playing
@@ -57,12 +55,13 @@ Rectangle {
                     strokeWidth: 0
                     fillGradient: LinearGradient {
                         x1: 0; y1: 0; x2: 34; y2: 34
-                        GradientStop { position: 0; color: "#e4ddfb" }
-                        GradientStop { position: 1; color: "#b9aee6" }
+                        GradientStop { position: 0; color: root.acc }
+                        GradientStop { position: 1; color: root.tint(0.7) }
                     }
                     PathSvg { path: "M0 0H27L34 7V34H0z" }
                 }
             }
+            CoverSampler {}
             Image {
                 anchors.fill: parent
                 source: root.player?.trackArtUrl ?? ""
@@ -91,7 +90,7 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 text: root.player
-                    ? ((root.player.trackArtist || root.player.identity || "").toUpperCase() + " · " + root.clock(root.player.position))
+                    ? ((root.player.trackArtist || root.player.identity || "").toUpperCase() + " · " + Media.clock(root.player.position))
                     : "MPRIS · IDLE"
                 color: "#b9b2d6"
                 font.family: Theme.mono
@@ -113,7 +112,7 @@ Rectangle {
                     anchors.bottom: parent.bottom
                     width: 2
                     height: modelData
-                    color: Qt.rgba(207 / 255, 198 / 255, 244 / 255, 0.8)
+                    color: root.tint(0.8)
                     opacity: root.player ? 1 : 0.35
                     Behavior on height { NumberAnimation { duration: 140; easing.type: Easing.OutQuad } }
                     Timer {

@@ -5,6 +5,7 @@ Item {
     id: root
 
     property string code: ""
+    property string prefix: "CLOCKMOST · "
     default property alias actions: actionsRow.data
 
     width: parent ? parent.width : 0
@@ -24,7 +25,7 @@ Item {
         }
         Micro {
             anchors.verticalCenter: parent.verticalCenter
-            text: "CLOCKMOST · " + root.code
+            text: root.prefix + root.code
         }
     }
     Row {
