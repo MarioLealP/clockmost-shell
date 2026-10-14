@@ -1,5 +1,5 @@
 // One app-tray item: the app's own icon (18px) on a 36x36 tile, with the status tray's 2px underline (orange =
-// the app wants attention).
+// the app wants attention). Tooltip = the app's name (500ms hover); right click = TrayMenu (TrayMenuWindow).
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
@@ -15,8 +15,10 @@ Item {
     height: 36
 
     function showMenu() {
-        const p = root.mapToItem(null, 0, root.height);
-        root.modelData.display(QsWindow.window, Math.round(p.x), Math.round(p.y));
+        // the Endfield tray menu (TrayMenuWindow), centred under this icon on this screen
+        const win = QsWindow.window;
+        const x = root.mapToItem(null, root.width / 2, 0).x;
+        TrayMenu.show(root.modelData, win?.screen?.name ?? "", x);
     }
 
     Rectangle {
@@ -39,6 +41,36 @@ Item {
         height: 2
         color: root.attention ? Theme.orange : Theme.ink2
         opacity: root.attention ? 1 : 0.35
+    }
+
+    Timer {
+        id: tipDelay
+        interval: 500
+        running: area.containsMouse && !TrayMenu.open
+    }
+    PopupWindow {
+        visible: area.containsMouse && !tipDelay.running && !TrayMenu.open && tip.text !== ""
+        anchor.item: root
+        anchor.rect.x: root.width / 2 - implicitWidth / 2
+        anchor.rect.y: root.height + 6
+        implicitWidth: tip.implicitWidth + 16
+        implicitHeight: 22
+        color: "transparent"
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(16 / 255, 17 / 255, 20 / 255, 0.95)
+            border.width: 1
+            border.color: Qt.rgba(1, 1, 1, 0.12)
+            Text {
+                id: tip
+                anchors.centerIn: parent
+                text: (root.modelData.tooltipTitle || root.modelData.title || root.modelData.id).toUpperCase()
+                color: Theme.ink2
+                font.family: Theme.mono
+                font.pixelSize: 10
+                font.letterSpacing: Theme.em(10, 0.14)
+            }
+        }
     }
 
     MouseArea {

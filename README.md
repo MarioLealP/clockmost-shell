@@ -48,9 +48,11 @@ The bar's right side: app tray, status tray, user chip; now playing moved left o
 Mario: "not enough space there for both media and tray and buttons"). `AppTray.qml` / `AppTrayIcon.qml`: the
 StatusNotifier icons (`Quickshell.Services.SystemTray`; Plasma's kded6 is the watcher) on a plate like the status
 tray, hidden while empty; 36px tiles, the app's own icon, underline orange = needs attention. Left = activate (menu
-for menu-only items), right = the app's menu, middle = secondary activate, wheel = scroll. The menu is Qt's platform
-menu (KDE style), which needs `//@ pragma UseQApplication` in shell.qml. Later: an Endfield-styled menu drawn from
-`QsMenuOpener`, and tooltips.
+for menu-only items), right = the app's menu, middle = secondary activate, wheel = scroll. The menu is our own
+(`TrayMenu` singleton + `TrayMenuWindow` per screen + `TrayMenuRow`, entries via `QsMenuOpener`): an overlay like the
+control center (outside click / Esc closes), the dock plate material + shadow, head = app name in mono caps + rule,
+rows Inter 12 (separators = rules, checks = yellow squares / radio diamonds, `›` submenus open in place with
+`‹ BACK`), fade + 12px slide 180ms. Hover 500ms = the app's name in a small plate (PopupWindow).
 
 ## Control center (built so far)
 

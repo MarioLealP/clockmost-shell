@@ -1,4 +1,3 @@
-//@ pragma UseQApplication
 // clockmost-shell entry point: one Endfield bar + control center per screen.
 // IPC (keybinds, scripts): quickshell ipc --pid <pid> call controlcenter open|toggle <tab>  /  ... close
 import QtQuick
@@ -61,6 +60,9 @@ ShellRoot {
                 screen: perScreen.modelData
             }
             CCWindow {
+                screen: perScreen.modelData
+            }
+            TrayMenuWindow {
                 screen: perScreen.modelData
             }
             DockWindow {
