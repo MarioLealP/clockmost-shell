@@ -120,10 +120,11 @@ Singleton {
                 pasteDelay.start();
         }
     }
-    // the panel has closed and handed keyboard focus back by now; Ctrl+V comes from clockmost-autoscroll
+    // Ctrl+V (from clockmost-autoscroll) once the panel is gone and KWin has handed the keyboard back to the app -
+    // that takes a while: 60ms after the copy was too early (measured in the VM), 400 works
     Timer {
         id: pasteDelay
-        interval: 60
+        interval: 400
         onTriggered: {
             root.pastePending = false;
             Autoscroll.paste();

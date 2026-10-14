@@ -39,6 +39,17 @@ CCTab {
         search.forceActiveFocus();
     }
     Component.onDestruction: Clipboard.watching = false
+    // the tab stays loaded while the panel is closed: take the keyboard again on every open (Win+V, Enter)
+    Connections {
+        target: ControlCenter
+        function onOpenChanged() {
+            if (ControlCenter.open) {
+                Clipboard.refresh();
+                root.selected = 0;
+                search.forceActiveFocus();
+            }
+        }
+    }
 
     // header: CLIPBOARD + micro, type counts on the right
     Item {
