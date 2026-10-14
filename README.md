@@ -43,8 +43,9 @@ game mode wait for notifications / gamemode); AUDIO (output/input device pickers
   untested in the wired VM; every NM vpn/wireguard connection with a switch); BLUETOOTH (adapter switch, paired devices
   with type icon / battery / click = connect-disconnect, SCAN + click-to-pair; needs `bluez` + `bluetooth.service` -
   the VM has neither, so only the empty state is tested); CALENDAR (= the calendar mock: month nav, ISO week column, today
-  boxed, weekends dim; UPCOMING empty until a calendar source is picked); CLIPBOARD (= the clipboard mock: Klipper history over
-  D-Bus - text only, no per-item delete; our own pins in ~/.local/state/clockmost-shell/clip-pins.json; type tags TXT/URL/
+  boxed, weekends dim; UPCOMING empty until a calendar source is picked); CLIPBOARD (= the clipboard mock: Klipper's history read from its
+  database (history3.sqlite, read-only) - text AND images (thumbnail + size, IMG tag; picked = wl-copy of the PNG),
+  real last-used ages; no per-item delete; our own pins in ~/.local/state/clockmost-shell/clip-pins.json; type tags TXT/URL/
   CMD/HEX; type to search, Up/Down, Enter = copy + close, Ctrl+P pin, Del unpin). Shared parts: CCTab (footer pinned, min height = rail), CCHeader, CCFooter, DeviceRow.
   MEDIA (= the media mock, ?state=media): cover on a slab of its colour, title / ARTIST / album + track no., visualizer
   strip (phonograph-audio's 48 cava bars over ws://127.0.0.1:47862, connected only while the panel is open) with the

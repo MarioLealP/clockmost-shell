@@ -31,6 +31,15 @@ ShellRoot {
         function close(): void { Drawer.close(); }
     }
 
+    // Win+V (KWin script shortcut). Here, not in Clipboard: a singleton only exists once something uses it, so a
+    // listener inside it would miss the first press after a (re)start
+    Connections {
+        target: KWin
+        function onClipboardRequested(x, y) {
+            Clipboard.openAtPointer(x, y);
+        }
+    }
+
     // the app drawer and notification popups live on the first screen
     DrawerWindow {
         screen: Quickshell.screens[0]

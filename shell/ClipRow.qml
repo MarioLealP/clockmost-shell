@@ -12,7 +12,7 @@ Item {
     property bool pinned: false
     property string ago: ""
     readonly property string kind: Clipboard.kind(text)
-    readonly property color tagColor: ({ TXT: Theme.ink2, URL: "#5aa7ff", CMD: Theme.green, HEX: Theme.orange })[kind] ?? Theme.ink2
+    readonly property color tagColor: ({ TXT: Theme.ink2, URL: "#5aa7ff", CMD: Theme.green, HEX: Theme.orange, IMG: Theme.magenta })[kind] ?? Theme.ink2
     signal clicked
     signal pinClicked
 
@@ -96,7 +96,26 @@ Item {
             height: 12
             color: root.kind === "HEX" ? root.text.trim() : "transparent"
         }
+        // an image: thumbnail (up to 48px tall) + its size
+        Image {
+            id: thumb
+            visible: root.kind === "IMG"
+            anchors.verticalCenter: parent.verticalCenter
+            source: visible ? "file://" + (Clipboard.images[root.text] ?? "") : ""
+            height: visible ? Math.min(48, implicitHeight) : 0
+            width: visible ? Math.min(parent.width - 80, implicitWidth * height / Math.max(1, implicitHeight)) : 0
+            fillMode: Image.PreserveAspectFit
+            asynchronous: true
+            mipmap: true // decoded at full size (8 rows at most): implicit size = the real size, for the label
+        }
+        Micro {
+            visible: root.kind === "IMG"
+            anchors.verticalCenter: parent.verticalCenter
+            text: thumb.status === Image.Ready ? thumb.implicitWidth + "×" + thumb.implicitHeight : ""
+            color: root.selected ? Theme.plateInk : Theme.faint
+        }
         Text {
+            visible: root.kind !== "IMG"
             width: parent.width - (root.kind === "HEX" ? 20 : 0)
             text: root.text.replace(/\s*\n\s*/g, " ⏎ ")
             maximumLineCount: 2

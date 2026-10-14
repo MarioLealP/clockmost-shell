@@ -11,13 +11,15 @@ CCTab {
     readonly property var recent: Clipboard.history.filter(t => !Clipboard.isPinned(t) && matches(t)).slice(0, 8)
     readonly property var all: pinned.concat(recent)
     readonly property var counts: {
-        const c = { TXT: 0, URL: 0, CMD: 0, HEX: 0 };
+        const c = { TXT: 0, URL: 0, CMD: 0, HEX: 0, IMG: 0 };
         for (const t of Clipboard.history)
             c[Clipboard.kind(t)]++;
         return c;
     }
 
     function matches(t) {
+        if (Clipboard.isImage(t))
+            return query === "" || "image".startsWith(query.toLowerCase());
         return query === "" || t.toLowerCase().includes(query.toLowerCase());
     }
     function choose(i) {
@@ -66,7 +68,7 @@ CCTab {
             columnSpacing: 8
             rowSpacing: 1
             Repeater {
-                model: ["TXT", "URL", "CMD", "HEX"]
+                model: ["TXT", "URL", "CMD", "HEX", "IMG"]
                 Repeater {
                     required property string modelData
                     model: [modelData, String(root.counts[modelData]).padStart(2, "0")]
