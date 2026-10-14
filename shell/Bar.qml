@@ -144,12 +144,21 @@ PanelWindow {
                 id: leftWing
                 leftSide: true
                 x: hud.width / 2 - Theme.plateWidth / 2 - 16 - width
-                // shrinks to the space between the left group and the plate
-                room: hud.width / 2 - Theme.plateWidth / 2 - 16 - (20 + left.width + 12)
+                // shrinks to the space between the left group + now playing and the plate
+                room: hud.width / 2 - Theme.plateWidth / 2 - 16 - (20 + left.width + 12 + media.width + 12)
                 opacity: root.plateP * fitOpacity
                 label: KWin.currentDesktop
                     ? "WS " + String(KWin.currentDesktop.number).padStart(2, "0") + " · " + KWin.windowsOn(KWin.current).length + " WIN"
                     : ""
+                anchors.verticalCenter: band.verticalCenter
+            }
+
+            // now playing, left of the wing: media > arrow > clock (Mario 2026-10-14; the right side needs the room for
+            // the app tray)
+            NowPlaying {
+                id: media
+                x: leftWing.x - 12 - width
+                opacity: root.bandP
                 anchors.verticalCenter: band.verticalCenter
             }
 

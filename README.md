@@ -42,6 +42,16 @@ Dev: one Cargo workspace (`bridge/`, `autoscroll/`); `cargo build --release`, ch
 from the checkout with `quickshell -p shell` (a `kwin-bridge` earlier on PATH than /usr/bin wins). Release:
 `release.sh X.Y.Z` (needs makepkg - run it on an Arch box) -> tag -> CI builds, scans, publishes.
 
+## App tray (Mario 2026-10-14)
+
+The bar's right side: app tray, status tray, user chip; now playing moved left of the clock (media > arrow > clock -
+Mario: "not enough space there for both media and tray and buttons"). `AppTray.qml` / `AppTrayIcon.qml`: the
+StatusNotifier icons (`Quickshell.Services.SystemTray`; Plasma's kded6 is the watcher) on a plate like the status
+tray, hidden while empty; 36px tiles, the app's own icon, underline orange = needs attention. Left = activate (menu
+for menu-only items), right = the app's menu, middle = secondary activate, wheel = scroll. The menu is Qt's platform
+menu (KDE style), which needs `//@ pragma UseQApplication` in shell.qml. Later: an Endfield-styled menu drawn from
+`QsMenuOpener`, and tooltips.
+
 ## Control center (built so far)
 
 One panel dropping under the bar, centred on the widget / pointer that opened it (kept on screen; slides when

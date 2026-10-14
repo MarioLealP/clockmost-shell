@@ -1,10 +1,10 @@
-// .right: now playing, the status tray plate, the user chip.
+// .right: the app tray (hidden while empty), the status tray plate, the user chip. Now playing: left of the clock (Bar).
 import QtQuick
 
 Row {
     spacing: 12
 
-    NowPlaying {
+    AppTray {
         anchors.verticalCenter: parent.verticalCenter
     }
     StatusTray {
