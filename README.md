@@ -18,8 +18,9 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   Design target = 1080p (1:1 with the mock); wider screens (the 3440 ultrawide) keep edge-anchored groups for now,
   the empty band gets extra detail later (Mario 2026-10-13). Narrower than 1920 = the whole bar scales down.
   Smart hide (Mario 2026-10-13, like Noctalia's): shown while no window covers the band+plate area, slides away
-  when covered; Win tap (kwinrc `[ModifierOnlyShortcuts] Meta=org.clockmost.KWinBridge,/Bridge,org.clockmost.KWinBridge,Reveal`)
-  or the pointer on the top-edge strip reveals it; leaving hides it again. No reserved space. Motion: band 220ms
+  when covered; a Win tap (the app drawer, which shows the bar while open - KWin global shortcut `clockmost-app-drawer`
+  = Meta + Ctrl+Alt+Space, set by setup.d; kwinrc `[ModifierOnlyShortcuts]` never fired on metal) or the pointer on
+  the top-edge strip reveals it; leaving hides it again. No reserved space. Motion: band 220ms
   OutCubic; reveal = plate first (280ms OutQuart, no bounce), band + groups +90ms; hide mirrors.
   Next (was: the right side (now
   playing, weather, tray, user), the reveal motion, then the control center. Bar scales down below 1920px wide (VM).
@@ -34,7 +35,7 @@ Quickshell config in `/usr/share/clockmost-shell` started by `/etc/xdg/autostart
 service (`modules-load.d/clockmost-uinput.conf` + udev rule `60-clockmost-uinput.rules`: group input, applied on
 install) and numlock on at the SDDM login screen (`/usr/lib/sddm/sddm.conf.d/10-clockmost-numlock.conf`).
 `clockmost-desktop-setup` runs every `/usr/share/clockmost-desktop/setup.d/*.sh` (other clockmost desktop packages add
-theirs): for this package the Win-tap reveal (kwinrc), Meta+V off Klipper, the sycoca refresh, setting aside a dev
+theirs): for this package Win = the app drawer (kglobalaccel; Plasma's launcher moved to Alt+F1), Meta+V off Klipper, the sycoca refresh, setting aside a dev
 autostart entry, removing Plasma's own panels, `kxkbrc` from the system XKB layout (KWin on Wayland reads only that;
 written once, a layout set in System Settings is kept) and numlock on at Plasma login (kcminputrc).
 Dev: one Cargo workspace (`bridge/`, `autoscroll/`); `cargo build --release`, checks `just check`; run the shell

@@ -40,7 +40,7 @@ impl Bridge {
         emit(&json);
     }
 
-    /// Bound to a Win-key tap in KWin (kwinrc [ModifierOnlyShortcuts] Meta): asks the bar to reveal itself.
+    /// Called by the KWin script's `clockmost-app-drawer` shortcut (Meta / Ctrl+Alt+Space): the shell toggles the drawer.
     fn reveal(&self) {
         emit(r#"{"event":"reveal"}"#);
     }

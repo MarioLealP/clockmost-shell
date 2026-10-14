@@ -2,11 +2,20 @@
 # clockmost-shell's per-user settings (see clockmost-desktop-setup).
 set -eu
 
-# Win tap = reveal the bar (KWin modifier-only shortcut -> kwin-bridge)
-kwriteconfig6 --file kwinrc --group ModifierOnlyShortcuts --key Meta \
-    "org.clockmost.KWinBridge,/Bridge,org.clockmost.KWinBridge,Reveal"
+# Win tap = the app drawer: Plasma 6 takes a lone Meta as a global shortcut (kwinrc [ModifierOnlyShortcuts] never fired
+# on metal), so bind it to the bridge's KWin action (+ Ctrl+Alt+Space), and take it off Plasma's launcher (Alt+F1 only;
+# the launcher went with Plasma's panel). Key codes: Meta 16777250, Ctrl+Alt+Space 201326624, Alt+F1 150994992.
+kwriteconfig6 --file kwinrc --group ModifierOnlyShortcuts --key Meta --delete
 qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
-echo "   Win tap reveals the bar"
+if busctl --user call org.kde.kglobalaccel /kglobalaccel org.kde.KGlobalAccel setForeignShortcutKeys 'asa(ai)' \
+    4 kwin clockmost-app-drawer kwin "clockmost: app drawer" 2 1 16777250 1 201326624 2>/dev/null &&
+    busctl --user call org.kde.kglobalaccel /kglobalaccel org.kde.KGlobalAccel setForeignShortcutKeys 'asa(ai)' \
+        4 plasmashell "activate application launcher" plasmashell "Activate Application Launcher" 1 1 150994992 \
+        2>/dev/null; then
+    echo "   Win tap opens the app drawer"
+else
+    echo "   Win tap: kglobalaccel not reachable - re-run inside the Plasma session"
+fi
 
 # Win+V = the shell's clipboard history: take Meta+V off Klipper's own popup (live, via KWin's shortcut service;
 # falls back to the config file, read at the next login)
