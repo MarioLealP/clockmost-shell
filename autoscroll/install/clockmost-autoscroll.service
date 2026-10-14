@@ -1,0 +1,23 @@
+[Unit]
+Description=clockmost-autoscroll: Windows-style middle-button autoscroll for every app
+After=systemd-udevd.service
+
+[Service]
+ExecStart=/usr/local/bin/clockmost-autoscroll
+DynamicUser=yes
+SupplementaryGroups=input
+RuntimeDirectory=clockmost-autoscroll
+RuntimeDirectoryMode=0755
+# mice + uinput only; nothing else
+DeviceAllow=char-input rw
+DeviceAllow=/dev/uinput rw
+DevicePolicy=closed
+ProtectSystem=strict
+ProtectHome=yes
+PrivateNetwork=yes
+NoNewPrivileges=yes
+RestrictAddressFamilies=AF_UNIX
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

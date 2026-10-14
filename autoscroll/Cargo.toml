@@ -1,0 +1,15 @@
+[package]
+publish = false
+name = "clockmost-autoscroll"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.104"
+evdev = "0.13.2"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }

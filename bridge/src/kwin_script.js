@@ -64,6 +64,13 @@ function findWindow(id) {
 
 function run(json) {
     const cmd = JSON.parse(json);
+    if (cmd.op === "cursor") {
+        // where the pointer is (the autoscroll anchor marker)
+        const p = workspace.cursorPos;
+        callDBus("org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge", "Update",
+            JSON.stringify({ event: "cursor", x: p.x, y: p.y }));
+        return;
+    }
     const w = findWindow(cmd.id);
     if (!w)
         return;

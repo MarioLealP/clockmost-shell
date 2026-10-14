@@ -56,6 +56,9 @@ ShellRoot {
             DockWindow {
                 screen: perScreen.modelData
             }
+            AutoscrollMarker {
+                screen: perScreen.modelData
+            }
         }
     }
 }

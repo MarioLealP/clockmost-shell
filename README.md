@@ -63,6 +63,17 @@ notifications (`notif` + popups `pop`, bell), clipboard (`clip`, Klipper). Detai
 Nice to have: weather forecast. Not wanted: monitor/brightness, system monitor, screen time, power.
 Compared to Noctalia's 12 control-center tabs: mocks cover 4 fully, 3 partly (those three detail views), 5 dropped.
 
+## Autoscroll (autoscroll/, Mario 2026-10-14)
+
+Windows-style middle-button autoscroll for every app (Linux has none). `clockmost-autoscroll` (Rust, evdev) grabs
+each mouse and re-emits it through a virtual twin untouched - except the middle button: a plain click passes through
+(paste, new tab, close tab; Firefox / the phonograph keep their own click-to-toggle autoscroll), held + moved = hi-res
+wheel events, faster with distance from the anchor, both axes. System service under a DynamicUser in `input`
+(install/clockmost-autoscroll.service, binary in /usr/local/bin) - the desktop user stays out of `input`, which can
+read keyboards. It tells the shell `start` / `dir x y` / `stop` on /run/clockmost-autoscroll/events; the shell asks
+KWin for the pointer position (bridge op `cursor`) and draws the anchor marker (Autoscroll + AutoscrollMarker).
+Handles relative mice and absolute pointers (VMs). Hotplug: rescans for mice every 2s.
+
 ## App drawer (ds-app-drawer)
 
 Win toggles it (the bridge's Meta-tap event) and the bar is shown while it's open; Esc / outside click / launching
