@@ -1,15 +1,18 @@
 //! clockmost-autoscroll: Windows-style middle-button autoscroll for every app (Mario 2026-10-14; Linux has none).
 //!
 //! Each mouse is grabbed and re-emitted through a virtual twin, untouched - except the middle button:
-//!   - middle click without moving   -> passed through as a normal middle click (paste, new tab, close tab, ...)
-//!   - middle held + moved past 8 px -> autoscroll: hi-res wheel events, faster the further the pointer is from
-//!     where the button went down (vertical and horizontal); release stops it
+//!   - middle click (no movement)    -> Windows' click-to-toggle (Mario): autoscroll until the next click of any
+//!     button (that click is swallowed, as on Windows). Except over apps with their own autoscroll (Firefox, the
+//!     phonograph): there the click passes through. The shell decides - see the socket protocol below.
+//!   - middle held + moved past 8 px -> autoscroll while held; release stops it
 //!
-//! Apps with their own click-to-toggle autoscroll (Firefox, the phonograph) still get it from the plain click.
+//! Scrolling = hi-res wheel events, faster the further the pointer is from the anchor, both axes.
 //!
 //! Runs as a system service under its own user (input group: mice only are grabbed; the desktop user stays out of
-//! `input`, which can read keyboards). The shell draws the anchor marker: it connects to the unix socket
-//! /run/clockmost-autoscroll/events and gets lines `start`, `dir <-1|0|1> <-1|0|1>`, `stop`.
+//! `input`, which can read keyboards). The shell connects to the unix socket /run/clockmost-autoscroll/events:
+//! it gets `start`, `dir <-1|0|1> <-1|0|1>`, `stop` (it draws the anchor marker), and on a plain middle click
+//! `query <n>` - it answers `toggle <n>` (autoscroll here) or `pass <n>` (hand the click to the app) within
+//! QUERY_WAIT, else the click passes. The number keeps a late answer from being read as the next one's.
 
 use std::io::Write;
 use std::os::unix::net::{UnixListener, UnixStream};
@@ -29,7 +32,44 @@ const TICK: Duration = Duration::from_millis(8);
 /// absolute pointers (VMs, tablets) report 0..max per axis; treat the range as this many pixels
 const ABS_SPAN_PX: f64 = 1920.0;
 
+const QUERY_WAIT: Duration = Duration::from_millis(250);
+static QUERY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
 type Listeners = Arc<Mutex<Vec<UnixStream>>>;
+
+/// ask the shell whether a plain middle click should toggle autoscroll here (false = pass the click on)
+fn ask_toggle(listeners: &Listeners) -> bool {
+    use std::io::BufRead;
+    let n = QUERY.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+    let deadline = Instant::now() + QUERY_WAIT;
+    let mut list = listeners.lock().expect("listeners lock");
+    for s in list.iter_mut() {
+        if s.write_all(format!("query {n}\n").as_bytes()).is_err() {
+            continue;
+        }
+        let Ok(r) = s.try_clone() else { continue };
+        let mut reader = std::io::BufReader::new(r);
+        loop {
+            let left = deadline.saturating_duration_since(Instant::now());
+            if left.is_zero() {
+                break;
+            }
+            let _ = reader.get_ref().set_read_timeout(Some(left));
+            let mut line = String::new();
+            match reader.read_line(&mut line) {
+                Ok(0) | Err(_) => break,
+                Ok(_) => {
+                    let mut it = line.split_whitespace();
+                    let (verb, id) = (it.next().unwrap_or(""), it.next().and_then(|x| x.parse::<u64>().ok()));
+                    if id == Some(n) {
+                        return verb == "toggle";
+                    } // an older answer: skip it
+                }
+            }
+        }
+    }
+    false
+}
 
 fn notify(listeners: &Listeners, line: &str) {
     let mut list = listeners.lock().expect("listeners lock");
@@ -39,6 +79,8 @@ fn notify(listeners: &Listeners, line: &str) {
 #[derive(Default)]
 struct State {
     pressed: bool,
+    toggled: bool, // click-to-toggle mode: runs until the next click
+    swallow: Vec<KeyCode>, // the stopping click's buttons - their releases are swallowed too
     scrolling: bool,
     dx: f64, // pointer offset from the anchor, px
     dy: f64,
@@ -148,22 +190,44 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
         let events: Vec<InputEvent> = dev.fetch_events().context("reading")?.collect();
         let mut pass = Vec::with_capacity(events.len());
         let mut s = st.lock().expect("state lock");
+        let st = &st;
         for ev in events {
             match ev.destructure() {
+                // toggle mode: the next press of any button stops it and is swallowed with its release
+                evdev::EventSummary::Key(_, k, 1) if s.toggled && is_button(k) => {
+                    notify(&listeners, "stop");
+                    let abs = s.abs;
+                    *s = State { abs, swallow: vec![k], ..State::default() };
+                    continue;
+                }
+                evdev::EventSummary::Key(_, k, 0) if s.swallow.contains(&k) => {
+                    s.swallow.retain(|x| *x != k);
+                    continue;
+                }
                 evdev::EventSummary::Key(_, KeyCode::BTN_MIDDLE, value) => {
                     if value == 1 {
                         *s = State { pressed: true, anchor_abs: s.abs, abs: s.abs, ..State::default() };
                     } else if value == 0 && s.pressed {
                         if s.scrolling {
-                            notify(&listeners, "stop");
+                            notify(&listeners, "stop"); // held + dragged: release ends it
+                            let abs = s.abs;
+                            *s = State { abs, ..State::default() };
                         } else {
-                            // a plain click: hand the press + release on
-                            pass.push(InputEvent::new(EventType::KEY.0, KeyCode::BTN_MIDDLE.0, 1));
-                            pass.push(InputEvent::new(EventType::SYNCHRONIZATION.0, 0, 0));
-                            pass.push(InputEvent::new(EventType::KEY.0, KeyCode::BTN_MIDDLE.0, 0));
+                            // a plain click: toggle autoscroll here, or hand it to the app (the shell decides)
+                            drop(s);
+                            let toggle = ask_toggle(&listeners);
+                            s = st.lock().expect("state lock");
+                            let abs = s.abs;
+                            if toggle {
+                                *s = State { pressed: true, toggled: true, scrolling: true, abs, anchor_abs: abs, ..State::default() };
+                                notify(&listeners, "start");
+                            } else {
+                                pass.push(InputEvent::new(EventType::KEY.0, KeyCode::BTN_MIDDLE.0, 1));
+                                pass.push(InputEvent::new(EventType::SYNCHRONIZATION.0, 0, 0));
+                                pass.push(InputEvent::new(EventType::KEY.0, KeyCode::BTN_MIDDLE.0, 0));
+                                *s = State { abs, ..State::default() };
+                            }
                         }
-                        let abs = s.abs;
-                        *s = State { abs, ..State::default() };
                     }
                     continue; // the original middle events never pass
                 }
@@ -194,6 +258,10 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
             out.lock().expect("out lock").emit(&pass).context("emitting")?;
         }
     }
+}
+
+fn is_button(k: KeyCode) -> bool {
+    (KeyCode::BTN_LEFT.0..=KeyCode::BTN_TASK.0).contains(&k.0)
 }
 
 /// a mouse: has a middle button and moves; not a virtual device (ours, ydotool, VM drag-and-drop helpers)

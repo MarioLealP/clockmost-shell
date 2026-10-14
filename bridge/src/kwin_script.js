@@ -65,10 +65,13 @@ function findWindow(id) {
 function run(json) {
     const cmd = JSON.parse(json);
     if (cmd.op === "cursor") {
-        // where the pointer is (the autoscroll anchor marker)
+        // where the pointer is, and the app of the topmost window under it (autoscroll: anchor + per-app rule)
         const p = workspace.cursorPos;
+        const under = workspace.stackingOrder.slice().reverse().find(w => !w.minimized && w.onCurrentDesktop !== false
+            && (w.normalWindow || w.dialog) && p.x >= w.frameGeometry.x && p.x < w.frameGeometry.x + w.frameGeometry.width
+            && p.y >= w.frameGeometry.y && p.y < w.frameGeometry.y + w.frameGeometry.height);
         callDBus("org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge", "Update",
-            JSON.stringify({ event: "cursor", x: p.x, y: p.y }));
+            JSON.stringify({ event: "cursor", x: p.x, y: p.y, app: under ? under.resourceClass : "", tag: cmd.id }));
         return;
     }
     const w = findWindow(cmd.id);

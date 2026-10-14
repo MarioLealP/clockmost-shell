@@ -17,7 +17,7 @@ Singleton {
     // a Win-key tap (KWin modifier-only shortcut -> bridge Reveal)
     signal revealRequested
     // the pointer's position, answering command("cursor") (global compositor coordinates)
-    signal cursorAt(real x, real y)
+    signal cursorAt(real x, real y, string app, string tag)
 
     function windowsOn(desktopId) {
         return windows.filter(w => w.onAll || w.desktops.includes(desktopId));
@@ -56,7 +56,7 @@ Singleton {
                         return;
                     }
                     if (s.event === "cursor") {
-                        root.cursorAt(s.x, s.y);
+                        root.cursorAt(s.x, s.y, s.app || "", s.tag || "");
                         return;
                     }
                     root.desktops = s.desktops;

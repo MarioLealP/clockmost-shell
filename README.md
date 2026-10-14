@@ -66,9 +66,12 @@ Compared to Noctalia's 12 control-center tabs: mocks cover 4 fully, 3 partly (th
 ## Autoscroll (autoscroll/, Mario 2026-10-14)
 
 Windows-style middle-button autoscroll for every app (Linux has none). `clockmost-autoscroll` (Rust, evdev) grabs
-each mouse and re-emits it through a virtual twin untouched - except the middle button: a plain click passes through
-(paste, new tab, close tab; Firefox / the phonograph keep their own click-to-toggle autoscroll), held + moved = hi-res
-wheel events, faster with distance from the anchor, both axes. System service under a DynamicUser in `input`
+each mouse and re-emits it through a virtual twin untouched - except the middle button: a plain click = Windows'
+click-to-toggle (scroll by distance from the anchor until the next click of any button, which is swallowed), held +
+moved = scroll while held. Over apps with their own autoscroll (`Autoscroll.ownAutoscroll`: Firefox, Spotify/the
+phonograph) the click passes through instead: the service asks the shell (`query n` -> `toggle n` / `pass n`, 250ms,
+else pass), the shell asks KWin for the window under the pointer (bridge op `cursor`). Kitty pastes on right click
+(mouse_map) since middle click is autoscroll now. System service under a DynamicUser in `input`
 (install/clockmost-autoscroll.service, binary in /usr/local/bin) - the desktop user stays out of `input`, which can
 read keyboards. It tells the shell `start` / `dir x y` / `stop` on /run/clockmost-autoscroll/events; the shell asks
 KWin for the pointer position (bridge op `cursor`) and draws the anchor marker (Autoscroll + AutoscrollMarker).
