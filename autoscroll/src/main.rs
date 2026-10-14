@@ -1,18 +1,19 @@
 //! clockmost-autoscroll: Windows-style middle-button autoscroll for every app (Mario 2026-10-14; Linux has none).
 //!
 //! Each mouse is grabbed and re-emitted through a virtual twin, untouched - except the middle button:
+//!   - only over the apps on the shell's whitelist (Mario 2026-10-14: everywhere else the middle button is the app's -
+//!     links, tabs, closing, dragging); the shell decides at press time - see the socket protocol below. There:
 //!   - middle click (no movement)    -> Windows' click-to-toggle (Mario): autoscroll until the next click of any
-//!     button (that click is swallowed, as on Windows). Except over apps with their own autoscroll (Firefox, the
-//!     phonograph): there the click passes through. The shell decides - see the socket protocol below.
+//!     button (that click is swallowed, as on Windows)
 //!   - middle held + moved past 8 px -> autoscroll while held; release stops it
 //!
 //! Scrolling = hi-res wheel events, faster the further the pointer is from the anchor, both axes.
 //!
 //! Runs as a system service under its own user (input group: mice only are grabbed; the desktop user stays out of
 //! `input`, which can read keyboards). The shell connects to the unix socket /run/clockmost-autoscroll/events:
-//! it gets `start`, `dir <-1|0|1> <-1|0|1>`, `stop` (it draws the anchor marker), and on a plain middle click
-//! `query <n>` - it answers `toggle <n>` (autoscroll here) or `pass <n>` (hand the click to the app) within
-//! QUERY_WAIT, else the click passes. The number keeps a late answer from being read as the next one's.
+//! it gets `start`, `dir <-1|0|1> <-1|0|1>`, `stop` (it draws the anchor marker), and on every middle press
+//! `query <n>` - it answers `toggle <n>` (autoscroll here) or `pass <n>` (the button is the app's, press to release)
+//! within QUERY_WAIT, else the button passes. The number keeps a late answer from being read as the next one's.
 //! The shell may also send `paste`: the service presses Ctrl+V on its own virtual keyboard, which can type nothing
 //! else (Win+V clipboard history pastes what you pick, as on Windows - Wayland gives a normal client no way to).
 
@@ -120,6 +121,7 @@ fn press_ctrl_v(kb: &mut VirtualDevice) -> Result<()> {
 #[derive(Default)]
 struct State {
     pressed: bool,
+    native: bool, // this middle press belongs to the app: press, moves and release pass untouched
     toggled: bool, // click-to-toggle mode: runs until the next click
     swallow: Vec<KeyCode>, // the stopping click's buttons - their releases are swallowed too
     scrolling: bool,
@@ -245,32 +247,32 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
                     s.swallow.retain(|x| *x != k);
                     continue;
                 }
+                evdev::EventSummary::Key(_, KeyCode::BTN_MIDDLE, 1) => {
+                    // whose press is it? asked now, not at release, so an app's middle-drag passes whole
+                    drop(s);
+                    let ours = ask_toggle(&listeners);
+                    s = st.lock().expect("state lock");
+                    let abs = s.abs;
+                    if ours {
+                        *s = State { pressed: true, anchor_abs: abs, abs, ..State::default() };
+                        continue; // held back: a click or a drag decides what it becomes
+                    }
+                    *s = State { native: true, abs, ..State::default() };
+                }
+                evdev::EventSummary::Key(_, KeyCode::BTN_MIDDLE, 0) if s.native => s.native = false,
                 evdev::EventSummary::Key(_, KeyCode::BTN_MIDDLE, value) => {
-                    if value == 1 {
-                        *s = State { pressed: true, anchor_abs: s.abs, abs: s.abs, ..State::default() };
-                    } else if value == 0 && s.pressed {
+                    if value == 0 && s.pressed {
+                        let abs = s.abs;
                         if s.scrolling {
                             notify(&listeners, "stop"); // held + dragged: release ends it
-                            let abs = s.abs;
                             *s = State { abs, ..State::default() };
                         } else {
-                            // a plain click: toggle autoscroll here, or hand it to the app (the shell decides)
-                            drop(s);
-                            let toggle = ask_toggle(&listeners);
-                            s = st.lock().expect("state lock");
-                            let abs = s.abs;
-                            if toggle {
-                                *s = State { pressed: true, toggled: true, scrolling: true, abs, anchor_abs: abs, ..State::default() };
-                                notify(&listeners, "start");
-                            } else {
-                                pass.push(InputEvent::new(EventType::KEY.0, KeyCode::BTN_MIDDLE.0, 1));
-                                pass.push(InputEvent::new(EventType::SYNCHRONIZATION.0, 0, 0));
-                                pass.push(InputEvent::new(EventType::KEY.0, KeyCode::BTN_MIDDLE.0, 0));
-                                *s = State { abs, ..State::default() };
-                            }
+                            // a plain click: Windows' click-to-toggle
+                            *s = State { pressed: true, toggled: true, scrolling: true, abs, anchor_abs: abs, ..State::default() };
+                            notify(&listeners, "start");
                         }
                     }
-                    continue; // the original middle events never pass
+                    continue; // our middle button never reaches the app
                 }
                 evdev::EventSummary::RelativeAxis(_, RelativeAxisCode::REL_X, v) if s.pressed => s.dx += v as f64,
                 evdev::EventSummary::RelativeAxis(_, RelativeAxisCode::REL_Y, v) if s.pressed => s.dy += v as f64,

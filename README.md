@@ -71,12 +71,20 @@ Compared to Noctalia's 12 control-center tabs: mocks cover 4 fully, 3 partly (th
 
 ## Autoscroll (autoscroll/, Mario 2026-10-14)
 
-Windows-style middle-button autoscroll for every app (Linux has none). `clockmost-autoscroll` (Rust, evdev) grabs
-each mouse and re-emits it through a virtual twin untouched - except the middle button: a plain click = Windows'
-click-to-toggle (scroll by distance from the anchor until the next click of any button, which is swallowed), held +
-moved = scroll while held. Over apps with their own autoscroll (`Autoscroll.ownAutoscroll`: Firefox, Spotify/the
-phonograph) the click passes through instead: the service asks the shell (`query n` -> `toggle n` / `pass n`, 250ms,
-else pass), the shell asks KWin for the window under the pointer (bridge op `cursor`). Win+V (Mario 2026-10-14, "as windows as possible"): the CLIPBOARD tab at the pointer (KWin script shortcut ->
+Windows-style middle-button autoscroll, **only for whitelisted apps** (Mario 2026-10-14: a system-wide version took
+the middle button from every app - Firefox tab close, Discord links, drags - "we do whitelist"). `clockmost-autoscroll`
+(Rust, evdev) grabs each mouse and re-emits it through a virtual twin untouched; on every middle press it asks the
+shell (`query n` -> `toggle n` / `pass n`, 250ms, else pass) - at press time, so an app's middle-drag passes whole.
+The shell answers toggle only when the window under the pointer (KWin, bridge op `cursor`; the shell's own layers
+never match) is in `Autoscroll.autoscrollApps` - **empty for now**: Firefox (`general.autoScroll`) and Spotify (the
+phonograph) have their own; with the list empty the shell answers pass without asking KWin. For a listed app: a plain
+click = Windows' click-to-toggle (until the next click of any button, which is swallowed), held + moved = scroll while
+held. System service under a DynamicUser in `input` (install/clockmost-autoscroll.service, binary in /usr/local/bin) -
+the desktop user stays out of `input`, which can read keyboards. It tells the shell `start` / `dir x y` / `stop` on
+/run/clockmost-autoscroll/events; the shell draws the anchor marker (Autoscroll + AutoscrollMarker). Handles relative
+mice and absolute pointers (VMs). Hotplug: rescans for mice every 2s. The same service owns Win+V's paste keyboard.
+
+Win+V (Mario 2026-10-14, "as windows as possible"): the CLIPBOARD tab at the pointer (KWin script shortcut ->
 bridge event `clipboard` -> Clipboard.openAtPointer; Ctrl+Alt+V too, for the VM); picking pastes into the app you were
 in - the service's own paste-only keyboard (KEY_LEFTCTRL + KEY_V, nothing else, at most every 300ms) presses Ctrl+V
 when the shell sends `paste` on the socket. From the bar it only copies. Klipper's own Meta+V popup is unbound

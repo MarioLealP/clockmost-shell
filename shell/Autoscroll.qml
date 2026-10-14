@@ -1,8 +1,8 @@
 // The system-wide autoscroll's state (clockmost-autoscroll, autoscroll/): the service sends `start`,
 // `dir <x> <y>`, `stop` over /run/clockmost-autoscroll/events; on start we ask KWin where the pointer is - that's
-// the anchor the marker (AutoscrollMarker) is drawn at. On a plain middle click it sends `query <n>`: we ask KWin
-// which app is under the pointer and answer `toggle <n>` (Windows click-to-toggle autoscroll) or `pass <n>` for
-// apps with their own autoscroll, which then get the click (Firefox, the phonograph).
+// the anchor the marker (AutoscrollMarker) is drawn at. On every middle press it sends `query <n>`: we ask KWin
+// which app is under the pointer and answer `toggle <n>` (our autoscroll) only for whitelisted apps, else `pass <n>`
+// - the middle button stays the app's (links, tabs, closing, drags; Mario 2026-10-14: "we do whitelist").
 pragma Singleton
 
 import QtQuick
@@ -17,8 +17,9 @@ Singleton {
     property int dirY: 0
     property real x: 0 // anchor, global coordinates
     property real y: 0
-    // apps that do their own (Windows-style) autoscroll, by window class
-    readonly property var ownAutoscroll: ["firefox", "spotify"]
+    // apps that get our autoscroll, by window class (lowercase). Empty for now (Mario): Firefox and Spotify (the
+    // phonograph) have their own; add an app here when it's missed. The shell's own layers never match.
+    readonly property var autoscrollApps: []
 
     Socket {
         id: sock
@@ -29,7 +30,12 @@ Singleton {
             onRead: line => {
                 const p = line.split(" ");
                 if (p[0] === "query") {
-                    KWin.command("cursor", "q" + p[1]);
+                    if (root.autoscrollApps.length === 0) { // nothing listed: no need to ask KWin
+                        sock.write("pass " + p[1] + "\n");
+                        sock.flush();
+                    } else {
+                        KWin.command("cursor", "q" + p[1]);
+                    }
                 } else if (p[0] === "start") {
                     root.dirX = 0;
                     root.dirY = 0;
@@ -59,8 +65,8 @@ Singleton {
         target: KWin
         function onCursorAt(x, y, app, tag) {
             if (tag.startsWith("q")) {
-                const own = root.ownAutoscroll.includes(app.toLowerCase());
-                sock.write((own ? "pass " : "toggle ") + tag.slice(1) + "\n");
+                const ours = root.autoscrollApps.includes(app.toLowerCase());
+                sock.write((ours ? "toggle " : "pass ") + tag.slice(1) + "\n");
                 sock.flush();
                 return;
             }
