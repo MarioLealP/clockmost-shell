@@ -16,16 +16,28 @@ pub fn write_script() -> Result<PathBuf> {
     Ok(path)
 }
 
-fn scripting(conn: &Connection, method: &str, body: &(impl serde::Serialize + zbus::zvariant::DynamicType)) -> Result<zbus::Message> {
-    conn.call_method(Some("org.kde.KWin"), "/Scripting", Some("org.kde.kwin.Scripting"), method, body)
-        .with_context(|| format!("KWin Scripting.{method}"))
+fn scripting(
+    conn: &Connection,
+    method: &str,
+    body: &(impl serde::Serialize + zbus::zvariant::DynamicType),
+) -> Result<zbus::Message> {
+    conn.call_method(
+        Some("org.kde.KWin"),
+        "/Scripting",
+        Some("org.kde.kwin.Scripting"),
+        method,
+        body,
+    )
+    .with_context(|| format!("KWin Scripting.{method}"))
 }
 
 /// Replace any copy left by an earlier run, then load and start ours.
 pub fn load(conn: &Connection, path: &Path) -> Result<()> {
     unload(conn)?;
     let path = path.to_str().context("script path is not UTF-8")?;
-    let id: i32 = scripting(conn, "loadScript", &(path, PLUGIN_NAME))?.body().deserialize()?;
+    let id: i32 = scripting(conn, "loadScript", &(path, PLUGIN_NAME))?
+        .body()
+        .deserialize()?;
     anyhow::ensure!(id >= 0, "KWin refused the script (id {id})");
     scripting(conn, "start", &())?;
     Ok(())

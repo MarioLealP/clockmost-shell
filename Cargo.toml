@@ -1,0 +1,8 @@
+# One workspace, two binaries: kwin-bridge (KWin's windows/desktops for the shell) and clockmost-autoscroll (the
+# middle-button / paste input service). The Quickshell config in shell/ is plain files.
+[workspace]
+members = ["bridge", "autoscroll"]
+resolver = "3"
+
+[profile.release]
+strip = true

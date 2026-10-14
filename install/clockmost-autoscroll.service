@@ -3,7 +3,7 @@ Description=clockmost-autoscroll: Windows-style middle-button autoscroll for eve
 After=systemd-udevd.service
 
 [Service]
-ExecStart=/usr/local/bin/clockmost-autoscroll
+ExecStart=/usr/bin/clockmost-autoscroll
 DynamicUser=yes
 SupplementaryGroups=input
 RuntimeDirectory=clockmost-autoscroll

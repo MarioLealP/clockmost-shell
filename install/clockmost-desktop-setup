@@ -1,0 +1,18 @@
+#!/bin/bash
+# clockmost-desktop-setup: the per-user half of the clockmost desktop packages - settings that live in your home
+# folder, which a package can't write. Every package drops its steps into /usr/share/clockmost-desktop/setup.d/;
+# this runs them all, in name order. Run it once after installing (in the Plasma session), and again any time:
+# every step is safe to repeat.
+set -u
+dir=/usr/share/clockmost-desktop/setup.d
+failed=0
+for step in "$dir"/*.sh; do
+    [ -e "$step" ] || continue
+    echo "== $(basename "$step" .sh)"
+    bash "$step" || { echo "   FAILED: $(basename "$step")"; failed=1; }
+done
+if [ "$failed" != 0 ]; then
+    echo "some steps failed (above)"
+    exit 1
+fi
+echo "done"

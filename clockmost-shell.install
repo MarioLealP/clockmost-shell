@@ -1,0 +1,10 @@
+post_install() {
+  systemctl enable --now clockmost-autoscroll.service >/dev/null 2>&1 || true
+  echo ":: run 'clockmost-desktop-setup' once as your user, inside the Plasma session"
+}
+post_upgrade() {
+  systemctl try-restart clockmost-autoscroll.service >/dev/null 2>&1 || true
+}
+pre_remove() {
+  systemctl disable --now clockmost-autoscroll.service >/dev/null 2>&1 || true
+}

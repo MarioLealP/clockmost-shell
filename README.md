@@ -23,10 +23,19 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   OutCubic; reveal = plate first (280ms OutQuart, no bounce), band + groups +90ms; hide mirrors.
   Next (was: the right side (now
   playing, weather, tray, user), the reveal motion, then the control center. Bar scales down below 1920px wide (VM).
-  Bridge binary lives at `~/.local/bin/kwin-bridge`.
   Gotcha: QtSvg (SVG Tiny) ignores `rgba()` stroke colours - assets use `#rrggbb` + `stroke-opacity`.
 
-Build the bridge: `cd bridge && cargo build --release` (checks: `just check`).
+## Package (pkgs/clockmost-shell, `[clockmost]` repo)
+
+`pacman -S clockmost-shell`, then once as your user, in the Plasma session: `clockmost-desktop-setup`.
+The package: `/usr/bin/kwin-bridge`, `/usr/bin/clockmost-autoscroll` + its system unit (enabled on install), the
+Quickshell config in `/usr/share/clockmost-shell` started by `/etc/xdg/autostart/clockmost-shell.desktop`,
+`org.clockmost.shell.desktop` (KWin's screencast grant for the dock previews). `clockmost-desktop-setup` runs every
+`/usr/share/clockmost-desktop/setup.d/*.sh` (other clockmost desktop packages add theirs): for this package the Win-tap
+reveal (kwinrc), Meta+V off Klipper, the sycoca refresh, and setting aside a dev autostart entry.
+Dev: one Cargo workspace (`bridge/`, `autoscroll/`); `cargo build --release`, checks `just check`; run the shell
+from the checkout with `quickshell -p shell` (a `kwin-bridge` earlier on PATH than /usr/bin wins). Release:
+`release.sh X.Y.Z` (needs makepkg - run it on an Arch box) -> tag -> CI builds, scans, publishes.
 
 ## Control center (built so far)
 

@@ -105,13 +105,21 @@ fn paste_keyboard() -> Result<VirtualDevice> {
     let mut keys = AttributeSet::<KeyCode>::new();
     keys.insert(KeyCode::KEY_LEFTCTRL);
     keys.insert(KeyCode::KEY_V);
-    Ok(VirtualDevice::builder()?.name(&format!("{NAME} paste")).with_keys(&keys)?.build()?)
+    Ok(VirtualDevice::builder()?
+        .name(&format!("{NAME} paste"))
+        .with_keys(&keys)?
+        .build()?)
 }
 
 fn press_ctrl_v(kb: &mut VirtualDevice) -> Result<()> {
     let key = |k: KeyCode, v| InputEvent::new(EventType::KEY.0, k.0, v);
     // a beat between steps: some clients miss a modifier that arrives in the same frame as the key
-    for step in [key(KeyCode::KEY_LEFTCTRL, 1), key(KeyCode::KEY_V, 1), key(KeyCode::KEY_V, 0), key(KeyCode::KEY_LEFTCTRL, 0)] {
+    for step in [
+        key(KeyCode::KEY_LEFTCTRL, 1),
+        key(KeyCode::KEY_V, 1),
+        key(KeyCode::KEY_V, 0),
+        key(KeyCode::KEY_LEFTCTRL, 0),
+    ] {
         kb.emit(&[step])?;
         std::thread::sleep(Duration::from_millis(12));
     }
@@ -121,8 +129,8 @@ fn press_ctrl_v(kb: &mut VirtualDevice) -> Result<()> {
 #[derive(Default)]
 struct State {
     pressed: bool,
-    native: bool, // this middle press belongs to the app: press, moves and release pass untouched
-    toggled: bool, // click-to-toggle mode: runs until the next click
+    native: bool,          // this middle press belongs to the app: press, moves and release pass untouched
+    toggled: bool,         // click-to-toggle mode: runs until the next click
     swallow: Vec<KeyCode>, // the stopping click's buttons - their releases are swallowed too
     scrolling: bool,
     dx: f64, // pointer offset from the anchor, px
@@ -144,19 +152,34 @@ fn speed(d: f64) -> f64 {
 
 fn twin(dev: &Device) -> Result<VirtualDevice> {
     let mut keys = AttributeSet::<KeyCode>::new();
-    for k in dev.supported_keys().map(|k| k.iter().collect::<Vec<_>>()).unwrap_or_default() {
+    for k in dev
+        .supported_keys()
+        .map(|k| k.iter().collect::<Vec<_>>())
+        .unwrap_or_default()
+    {
         keys.insert(k);
     }
     let mut rels = AttributeSet::<RelativeAxisCode>::new();
-    for r in dev.supported_relative_axes().map(|r| r.iter().collect::<Vec<_>>()).unwrap_or_default() {
+    for r in dev
+        .supported_relative_axes()
+        .map(|r| r.iter().collect::<Vec<_>>())
+        .unwrap_or_default()
+    {
         rels.insert(r);
     }
-    for r in [RelativeAxisCode::REL_WHEEL, RelativeAxisCode::REL_HWHEEL, RelativeAxisCode::REL_WHEEL_HI_RES,
-        RelativeAxisCode::REL_HWHEEL_HI_RES] {
+    for r in [
+        RelativeAxisCode::REL_WHEEL,
+        RelativeAxisCode::REL_HWHEEL,
+        RelativeAxisCode::REL_WHEEL_HI_RES,
+        RelativeAxisCode::REL_HWHEEL_HI_RES,
+    ] {
         rels.insert(r);
     }
     let name = format!("{NAME} {}", dev.name().unwrap_or("mouse"));
-    let mut b = VirtualDevice::builder()?.name(&name).with_keys(&keys)?.with_relative_axes(&rels)?;
+    let mut b = VirtualDevice::builder()?
+        .name(&name)
+        .with_keys(&keys)?
+        .with_relative_axes(&rels)?;
     if let Ok(absinfo) = dev.get_absinfo() {
         for (code, info) in absinfo {
             b = b.with_absolute_axis(&evdev::UinputAbsSetup::new(code, info))?;
@@ -168,7 +191,10 @@ fn twin(dev: &Device) -> Result<VirtualDevice> {
 fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
     let mut dev = Device::open(&path).with_context(|| format!("opening {}", path.display()))?;
     let max = |c: AbsoluteAxisCode| -> f64 {
-        dev.get_absinfo().ok().and_then(|mut it| it.find(|(k, _)| *k == c).map(|(_, i)| i.maximum() as f64)).unwrap_or(0.0)
+        dev.get_absinfo()
+            .ok()
+            .and_then(|mut it| it.find(|(k, _)| *k == c).map(|(_, i)| i.maximum() as f64))
+            .unwrap_or(0.0)
     };
     let (max_x, max_y) = (max(AbsoluteAxisCode::ABS_X), max(AbsoluteAxisCode::ABS_Y));
     let out = Arc::new(Mutex::new(twin(&dev)?));
@@ -205,7 +231,11 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
                 s.carry_h -= h as f64;
                 let mut evs = Vec::new();
                 if v != 0 {
-                    evs.push(InputEvent::new(EventType::RELATIVE.0, RelativeAxisCode::REL_WHEEL_HI_RES.0, v));
+                    evs.push(InputEvent::new(
+                        EventType::RELATIVE.0,
+                        RelativeAxisCode::REL_WHEEL_HI_RES.0,
+                        v,
+                    ));
                     s.notch_v += v;
                     let n = s.notch_v / 120;
                     if n != 0 {
@@ -214,12 +244,20 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
                     }
                 }
                 if h != 0 {
-                    evs.push(InputEvent::new(EventType::RELATIVE.0, RelativeAxisCode::REL_HWHEEL_HI_RES.0, h));
+                    evs.push(InputEvent::new(
+                        EventType::RELATIVE.0,
+                        RelativeAxisCode::REL_HWHEEL_HI_RES.0,
+                        h,
+                    ));
                     s.notch_h += h;
                     let n = s.notch_h / 120;
                     if n != 0 {
                         s.notch_h -= n * 120;
-                        evs.push(InputEvent::new(EventType::RELATIVE.0, RelativeAxisCode::REL_HWHEEL.0, n));
+                        evs.push(InputEvent::new(
+                            EventType::RELATIVE.0,
+                            RelativeAxisCode::REL_HWHEEL.0,
+                            n,
+                        ));
                     }
                 }
                 if !evs.is_empty() {
@@ -240,7 +278,11 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
                 evdev::EventSummary::Key(_, k, 1) if s.toggled && is_button(k) => {
                     notify(&listeners, "stop");
                     let abs = s.abs;
-                    *s = State { abs, swallow: vec![k], ..State::default() };
+                    *s = State {
+                        abs,
+                        swallow: vec![k],
+                        ..State::default()
+                    };
                     continue;
                 }
                 evdev::EventSummary::Key(_, k, 0) if s.swallow.contains(&k) => {
@@ -254,10 +296,19 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
                     s = st.lock().expect("state lock");
                     let abs = s.abs;
                     if ours {
-                        *s = State { pressed: true, anchor_abs: abs, abs, ..State::default() };
+                        *s = State {
+                            pressed: true,
+                            anchor_abs: abs,
+                            abs,
+                            ..State::default()
+                        };
                         continue; // held back: a click or a drag decides what it becomes
                     }
-                    *s = State { native: true, abs, ..State::default() };
+                    *s = State {
+                        native: true,
+                        abs,
+                        ..State::default()
+                    };
                 }
                 evdev::EventSummary::Key(_, KeyCode::BTN_MIDDLE, 0) if s.native => s.native = false,
                 evdev::EventSummary::Key(_, KeyCode::BTN_MIDDLE, value) => {
@@ -265,10 +316,20 @@ fn run_device(path: std::path::PathBuf, listeners: Listeners) -> Result<()> {
                         let abs = s.abs;
                         if s.scrolling {
                             notify(&listeners, "stop"); // held + dragged: release ends it
-                            *s = State { abs, ..State::default() };
+                            *s = State {
+                                abs,
+                                ..State::default()
+                            };
                         } else {
                             // a plain click: Windows' click-to-toggle
-                            *s = State { pressed: true, toggled: true, scrolling: true, abs, anchor_abs: abs, ..State::default() };
+                            *s = State {
+                                pressed: true,
+                                toggled: true,
+                                scrolling: true,
+                                abs,
+                                anchor_abs: abs,
+                                ..State::default()
+                            };
                             notify(&listeners, "start");
                         }
                     }
@@ -312,8 +373,12 @@ fn is_mouse(dev: &Device) -> bool {
     let name = dev.name().unwrap_or("");
     let virt = name.starts_with(NAME) || name.contains("ydotool") || name.contains("DnD UInput");
     let middle = dev.supported_keys().is_some_and(|k| k.contains(KeyCode::BTN_MIDDLE));
-    let moves = dev.supported_relative_axes().is_some_and(|r| r.contains(RelativeAxisCode::REL_X))
-        || dev.supported_absolute_axes().is_some_and(|a| a.contains(AbsoluteAxisCode::ABS_X));
+    let moves = dev
+        .supported_relative_axes()
+        .is_some_and(|r| r.contains(RelativeAxisCode::REL_X))
+        || dev
+            .supported_absolute_axes()
+            .is_some_and(|a| a.contains(AbsoluteAxisCode::ABS_X));
     let keyboard = dev.supported_keys().is_some_and(|k| k.contains(KeyCode::KEY_A));
     !virt && middle && moves && !keyboard
 }

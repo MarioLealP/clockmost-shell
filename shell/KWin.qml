@@ -47,7 +47,7 @@ Singleton {
 
     Process {
         id: bridge
-        command: [Quickshell.env("HOME") + "/.local/bin/kwin-bridge"]
+        command: ["kwin-bridge"] // /usr/bin (the package); a dev build earlier on PATH wins
         running: true
         stdout: SplitParser {
             onRead: line => {
