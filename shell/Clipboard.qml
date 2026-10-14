@@ -13,6 +13,9 @@ Singleton {
     property var pins: []
     property var firstSeen: ({}) // text -> ms, for items seen since the shell started
     property bool watching: false // refresh while the tab is open
+    // opened by Win+V: picking an item also pastes it into the app you were in (Windows). From the bar: copy only.
+    property bool pasteOnPick: false
+    property bool pastePending: false
 
     readonly property string pinsPath: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/clockmost-shell/clip-pins.json"
 
@@ -32,7 +35,19 @@ Singleton {
         return m < 1 ? "NOW" : m < 60 ? m + "M" : Math.floor(m / 60) + "H";
     }
 
-    function copy(text) {
+    // Win+V (KWin script -> bridge): the clipboard tab under the pointer, on the pointer's screen
+    function openAtPointer(x, y) {
+        const s = Quickshell.screens.find(s => x >= s.x && x < s.x + s.width && y >= s.y && y < s.y + s.height) ?? Quickshell.screens[0];
+        if (ControlCenter.open && ControlCenter.tab === "clipboard") { // Win+V again closes it
+            ControlCenter.close();
+            return;
+        }
+        ControlCenter.show("clipboard", s?.name ?? "", x - (s?.x ?? 0));
+        pasteOnPick = true; // after show: switching tabs clears it
+    }
+
+    function copy(text, paste) {
+        pastePending = !!paste;
         setter.command = ["busctl", "--user", "call", "org.kde.klipper", "/klipper", "org.kde.klipper.klipper", "setClipboardContents", "s", text];
         setter.running = true;
     }
@@ -70,7 +85,36 @@ Singleton {
     }
     Process {
         id: setter
-        onExited: root.refresh()
+        onExited: {
+            root.refresh();
+            if (root.pastePending)
+                pasteDelay.start();
+        }
+    }
+    // the panel has closed and handed keyboard focus back by now; Ctrl+V comes from clockmost-autoscroll
+    Timer {
+        id: pasteDelay
+        interval: 60
+        onTriggered: {
+            root.pastePending = false;
+            Autoscroll.paste();
+        }
+    }
+    Connections {
+        target: KWin
+        function onClipboardRequested(x, y) {
+            root.openAtPointer(x, y);
+        }
+    }
+    Connections {
+        target: ControlCenter
+        function onOpenChanged() {
+            if (!ControlCenter.open)
+                root.pasteOnPick = false;
+        }
+        function onTabChanged() {
+            root.pasteOnPick = false;
+        }
     }
 
     FileView {

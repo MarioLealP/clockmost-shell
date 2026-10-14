@@ -24,7 +24,7 @@ CCTab {
         const t = all[i];
         if (t === undefined)
             return;
-        Clipboard.copy(t);
+        Clipboard.copy(t, Clipboard.pasteOnPick);
         ControlCenter.close();
     }
 

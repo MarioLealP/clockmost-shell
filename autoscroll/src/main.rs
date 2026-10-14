@@ -13,11 +13,13 @@
 //! it gets `start`, `dir <-1|0|1> <-1|0|1>`, `stop` (it draws the anchor marker), and on a plain middle click
 //! `query <n>` - it answers `toggle <n>` (autoscroll here) or `pass <n>` (hand the click to the app) within
 //! QUERY_WAIT, else the click passes. The number keeps a late answer from being read as the next one's.
+//! The shell may also send `paste`: the service presses Ctrl+V on its own virtual keyboard, which can type nothing
+//! else (Win+V clipboard history pastes what you pick, as on Windows - Wayland gives a normal client no way to).
 
-use std::io::Write;
+use std::io::{BufRead, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
@@ -33,47 +35,86 @@ const TICK: Duration = Duration::from_millis(8);
 const ABS_SPAN_PX: f64 = 1920.0;
 
 const QUERY_WAIT: Duration = Duration::from_millis(250);
+const PASTE_GAP: Duration = Duration::from_millis(300); // a flood of `paste` presses Ctrl+V at most this often
 static QUERY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
-type Listeners = Arc<Mutex<Vec<UnixStream>>>;
-
-/// ask the shell whether a plain middle click should toggle autoscroll here (false = pass the click on)
-fn ask_toggle(listeners: &Listeners) -> bool {
-    use std::io::BufRead;
-    let n = QUERY.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
-    let deadline = Instant::now() + QUERY_WAIT;
-    let mut list = listeners.lock().expect("listeners lock");
-    for s in list.iter_mut() {
-        if s.write_all(format!("query {n}\n").as_bytes()).is_err() {
-            continue;
-        }
-        let Ok(r) = s.try_clone() else { continue };
-        let mut reader = std::io::BufReader::new(r);
-        loop {
-            let left = deadline.saturating_duration_since(Instant::now());
-            if left.is_zero() {
-                break;
-            }
-            let _ = reader.get_ref().set_read_timeout(Some(left));
-            let mut line = String::new();
-            match reader.read_line(&mut line) {
-                Ok(0) | Err(_) => break,
-                Ok(_) => {
-                    let mut it = line.split_whitespace();
-                    let (verb, id) = (it.next().unwrap_or(""), it.next().and_then(|x| x.parse::<u64>().ok()));
-                    if id == Some(n) {
-                        return verb == "toggle";
-                    } // an older answer: skip it
-                }
-            }
-        }
-    }
-    false
+/// the shell's end of the socket: the connections to tell things, and the latest `toggle|pass <n>` answer
+#[derive(Default)]
+struct Shell {
+    streams: Mutex<Vec<UnixStream>>,
+    answer: Mutex<Option<(u64, bool)>>,
+    answered: Condvar,
 }
 
-fn notify(listeners: &Listeners, line: &str) {
-    let mut list = listeners.lock().expect("listeners lock");
+type Listeners = Arc<Shell>;
+
+/// ask the shell whether a plain middle click should toggle autoscroll here (false = pass the click on)
+fn ask_toggle(shell: &Shell) -> bool {
+    let n = QUERY.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+    let deadline = Instant::now() + QUERY_WAIT;
+    if notify(shell, &format!("query {n}")) == 0 {
+        return false;
+    }
+    let mut answer = shell.answer.lock().expect("answer lock");
+    loop {
+        if let Some((id, toggle)) = *answer
+            && id == n
+        {
+            return toggle;
+        } // none yet, or an older answer
+        let left = deadline.saturating_duration_since(Instant::now());
+        if left.is_zero() {
+            return false;
+        }
+        answer = shell.answered.wait_timeout(answer, left).expect("answer lock").0;
+    }
+}
+
+/// tells every connected shell; returns how many are still connected
+fn notify(shell: &Shell, line: &str) -> usize {
+    let mut list = shell.streams.lock().expect("streams lock");
     list.retain_mut(|s| s.write_all(line.as_bytes()).and_then(|()| s.write_all(b"\n")).is_ok());
+    list.len()
+}
+
+/// one shell connection's lines: answers to queries, and `paste`
+fn read_shell(stream: UnixStream, shell: &Shell, keyboard: &Mutex<VirtualDevice>) {
+    let mut last_paste: Option<Instant> = None;
+    for line in std::io::BufReader::new(stream).lines() {
+        let Ok(line) = line else { break };
+        let mut it = line.split_whitespace();
+        match (it.next(), it.next().and_then(|x| x.parse::<u64>().ok())) {
+            (Some(verb @ ("toggle" | "pass")), Some(n)) => {
+                *shell.answer.lock().expect("answer lock") = Some((n, verb == "toggle"));
+                shell.answered.notify_all();
+            }
+            (Some("paste"), _) if last_paste.is_none_or(|t| t.elapsed() >= PASTE_GAP) => {
+                last_paste = Some(Instant::now());
+                if let Err(e) = press_ctrl_v(&mut keyboard.lock().expect("keyboard lock")) {
+                    eprintln!("{NAME}: paste: {e:#}");
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// the paste keyboard: Ctrl and V, nothing else
+fn paste_keyboard() -> Result<VirtualDevice> {
+    let mut keys = AttributeSet::<KeyCode>::new();
+    keys.insert(KeyCode::KEY_LEFTCTRL);
+    keys.insert(KeyCode::KEY_V);
+    Ok(VirtualDevice::builder()?.name(&format!("{NAME} paste")).with_keys(&keys)?.build()?)
+}
+
+fn press_ctrl_v(kb: &mut VirtualDevice) -> Result<()> {
+    let key = |k: KeyCode, v| InputEvent::new(EventType::KEY.0, k.0, v);
+    // a beat between steps: some clients miss a modifier that arrives in the same frame as the key
+    for step in [key(KeyCode::KEY_LEFTCTRL, 1), key(KeyCode::KEY_V, 1), key(KeyCode::KEY_V, 0), key(KeyCode::KEY_LEFTCTRL, 0)] {
+        kb.emit(&[step])?;
+        std::thread::sleep(Duration::from_millis(12));
+    }
+    Ok(())
 }
 
 #[derive(Default)]
@@ -277,6 +318,7 @@ fn is_mouse(dev: &Device) -> bool {
 
 fn main() -> Result<()> {
     let listeners: Listeners = Arc::default();
+    let keyboard = Arc::new(Mutex::new(paste_keyboard().context("creating the paste keyboard")?));
     {
         let _ = std::fs::remove_file(SOCKET);
         let listener = UnixListener::bind(SOCKET).with_context(|| format!("binding {SOCKET}"))?;
@@ -285,7 +327,11 @@ fn main() -> Result<()> {
         let listeners = listeners.clone();
         std::thread::spawn(move || {
             for s in listener.incoming().flatten() {
-                listeners.lock().expect("listeners lock").push(s);
+                let (shell, keyboard) = (listeners.clone(), keyboard.clone());
+                if let Ok(r) = s.try_clone() {
+                    std::thread::spawn(move || read_shell(r, &shell, &keyboard));
+                }
+                listeners.streams.lock().expect("streams lock").push(s);
             }
         });
     }

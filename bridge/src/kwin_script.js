@@ -57,6 +57,16 @@ snapshot();
 registerShortcut("clockmost-app-drawer", "clockmost: app drawer", "Ctrl+Alt+Space", () =>
     callDBus("org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge", "Reveal"));
 
+// Win+V = clipboard history at the pointer, picking pastes (Windows; Mario 2026-10-14). Meta+V is Klipper's own
+// popup by default - its kglobalshortcutsrc entry is set to none. Ctrl+Alt+V for the VM, where Win never arrives.
+function clipboard() {
+    const p = workspace.cursorPos;
+    callDBus("org.clockmost.KWinBridge", "/Bridge", "org.clockmost.KWinBridge", "Update",
+        JSON.stringify({ event: "clipboard", x: p.x, y: p.y }));
+}
+registerShortcut("clockmost-clipboard", "clockmost: clipboard history", "Meta+V", clipboard);
+registerShortcut("clockmost-clipboard-alt", "clockmost: clipboard history (VM key)", "Ctrl+Alt+V", clipboard);
+
 // commands from the shell (the dock): long-poll the bridge's Next, run what comes back, ask again
 function findWindow(id) {
     return workspace.windowList().find(w => w.internalId.toString() === id);

@@ -43,6 +43,12 @@ Singleton {
             }
         }
     }
+    // Ctrl+V into the focused app, pressed by the service's paste-only keyboard (Win+V clipboard history)
+    function paste() {
+        sock.write("paste\n");
+        sock.flush();
+    }
+
     // the service may start later / restart
     Timer {
         id: retry

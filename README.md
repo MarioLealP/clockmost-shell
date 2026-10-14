@@ -75,7 +75,11 @@ each mouse and re-emits it through a virtual twin untouched - except the middle 
 click-to-toggle (scroll by distance from the anchor until the next click of any button, which is swallowed), held +
 moved = scroll while held. Over apps with their own autoscroll (`Autoscroll.ownAutoscroll`: Firefox, Spotify/the
 phonograph) the click passes through instead: the service asks the shell (`query n` -> `toggle n` / `pass n`, 250ms,
-else pass), the shell asks KWin for the window under the pointer (bridge op `cursor`). Kitty pastes on right click
+else pass), the shell asks KWin for the window under the pointer (bridge op `cursor`). Win+V (Mario 2026-10-14, "as windows as possible"): the CLIPBOARD tab at the pointer (KWin script shortcut ->
+bridge event `clipboard` -> Clipboard.openAtPointer; Ctrl+Alt+V too, for the VM); picking pastes into the app you were
+in - the service's own paste-only keyboard (KEY_LEFTCTRL + KEY_V, nothing else, at most every 300ms) presses Ctrl+V
+when the shell sends `paste` on the socket. From the bar it only copies. Klipper's own Meta+V popup is unbound
+(kglobalaccel setForeignShortcutKeys). Kitty pastes on right click
 (mouse_map) since middle click is autoscroll now. System service under a DynamicUser in `input`
 (install/clockmost-autoscroll.service, binary in /usr/local/bin) - the desktop user stays out of `input`, which can
 read keyboards. It tells the shell `start` / `dir x y` / `stop` on /run/clockmost-autoscroll/events; the shell asks

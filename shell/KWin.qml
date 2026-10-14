@@ -16,6 +16,8 @@ Singleton {
 
     // a Win-key tap (KWin modifier-only shortcut -> bridge Reveal)
     signal revealRequested
+    // Win+V (KWin script shortcut), at the pointer
+    signal clipboardRequested(real x, real y)
     // the pointer's position, answering command("cursor") (global compositor coordinates)
     signal cursorAt(real x, real y, string app, string tag)
 
@@ -53,6 +55,10 @@ Singleton {
                     const s = JSON.parse(line);
                     if (s.event === "reveal") {
                         root.revealRequested();
+                        return;
+                    }
+                    if (s.event === "clipboard") {
+                        root.clipboardRequested(s.x, s.y);
                         return;
                     }
                     if (s.event === "cursor") {
