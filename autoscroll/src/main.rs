@@ -175,7 +175,14 @@ fn twin(dev: &Device) -> Result<VirtualDevice> {
     ] {
         rels.insert(r);
     }
-    let name = format!("{NAME} {}", dev.name().unwrap_or("mouse"));
+    // uinput names are capped at 80 bytes with the NUL (evdev asserts len + 1 < 80): cut long ones (the Corsair
+    // K70's mouse node) at a char boundary; the NAME prefix survives, so is_mouse still skips our twins
+    let mut name = format!("{NAME} {}", dev.name().unwrap_or("mouse"));
+    let mut cut = name.len().min(78);
+    while !name.is_char_boundary(cut) {
+        cut -= 1;
+    }
+    name.truncate(cut);
     let mut b = VirtualDevice::builder()?
         .name(&name)
         .with_keys(&keys)?

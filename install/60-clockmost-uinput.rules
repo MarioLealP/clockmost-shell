@@ -1,0 +1,3 @@
+# /dev/uinput for clockmost-autoscroll (DynamicUser, group input): the static node is root:root until the module
+# loads, so give it to the input group either way
+KERNEL=="uinput", SUBSYSTEM=="misc", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"

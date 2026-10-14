@@ -1,8 +1,16 @@
+_uinput() {
+  # the udev rule + module-load file are new on disk: apply them now instead of at the next boot
+  udevadm control --reload >/dev/null 2>&1 || true
+  modprobe uinput >/dev/null 2>&1 || true
+  udevadm trigger --subsystem-match=misc --sysname-match=uinput >/dev/null 2>&1 || true
+}
 post_install() {
+  _uinput
   systemctl enable --now clockmost-autoscroll.service >/dev/null 2>&1 || true
   echo ":: run 'clockmost-desktop-setup' once as your user, inside the Plasma session"
 }
 post_upgrade() {
+  _uinput
   systemctl try-restart clockmost-autoscroll.service >/dev/null 2>&1 || true
 }
 pre_remove() {

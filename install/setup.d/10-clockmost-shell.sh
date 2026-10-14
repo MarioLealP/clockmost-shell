@@ -27,3 +27,32 @@ if grep -qs 'quickshell -p .*/src/clockmost-shell' "$HOME/.config/autostart/cloc
     mv "$HOME/.config/autostart/clockmost-shell.desktop" "$HOME/.config/autostart/clockmost-shell.desktop.dev-off"
     echo "   dev autostart entry set aside (.dev-off)"
 fi
+
+# the shell is the only bar: remove Plasma's own panels (plasmashell stays for the wallpaper + Klipper)
+if n=$(qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript \
+    'var n = panels().length; panels().forEach(function (p) { p.remove(); }); print(n);' 2>/dev/null); then
+    echo "   Plasma panels removed: ${n:-0}"
+else
+    echo "   Plasma panels: plasmashell not running, skipped (re-run inside the session)"
+fi
+
+# keyboard layout: KWin on Wayland reads only kxkbrc, not the system XKB setting - copy it over once
+if [ -z "$(kreadconfig6 --file kxkbrc --group Layout --key LayoutList)" ]; then
+    layout=$(localectl status | sed -n 's/^ *X11 Layout: //p')
+    variant=$(localectl status | sed -n 's/^ *X11 Variant: //p')
+    model=$(localectl status | sed -n 's/^ *X11 Model: //p')
+    if [ -n "$layout" ]; then
+        kwriteconfig6 --file kxkbrc --group Layout --key Use true
+        kwriteconfig6 --file kxkbrc --group Layout --key LayoutList "$layout"
+        kwriteconfig6 --file kxkbrc --group Layout --key VariantList "$variant"
+        kwriteconfig6 --file kxkbrc --group Layout --key Model "${model:-pc105}"
+        dbus-send --session --type=signal /Layouts org.kde.keyboard.reloadConfig >/dev/null 2>&1 || true
+        echo "   keyboard layout: $layout (from the system setting)"
+    fi
+else
+    echo "   keyboard layout: kept ($(kreadconfig6 --file kxkbrc --group Layout --key LayoutList))"
+fi
+
+# numlock on at Plasma login (0 = on; the login screen's is /usr/lib/sddm/sddm.conf.d/10-clockmost-numlock.conf)
+kwriteconfig6 --file kcminputrc --group Keyboard --key NumLock 0
+echo "   numlock on at login"

@@ -30,9 +30,13 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
 `pacman -S clockmost-shell`, then once as your user, in the Plasma session: `clockmost-desktop-setup`.
 The package: `/usr/bin/kwin-bridge`, `/usr/bin/clockmost-autoscroll` + its system unit (enabled on install), the
 Quickshell config in `/usr/share/clockmost-shell` started by `/etc/xdg/autostart/clockmost-shell.desktop`,
-`org.clockmost.shell.desktop` (KWin's screencast grant for the dock previews). `clockmost-desktop-setup` runs every
-`/usr/share/clockmost-desktop/setup.d/*.sh` (other clockmost desktop packages add theirs): for this package the Win-tap
-reveal (kwinrc), Meta+V off Klipper, the sycoca refresh, and setting aside a dev autostart entry.
+`org.clockmost.shell.desktop` (KWin's screencast grant for the dock previews), `/dev/uinput` for the autoscroll
+service (`modules-load.d/clockmost-uinput.conf` + udev rule `60-clockmost-uinput.rules`: group input, applied on
+install) and numlock on at the SDDM login screen (`/usr/lib/sddm/sddm.conf.d/10-clockmost-numlock.conf`).
+`clockmost-desktop-setup` runs every `/usr/share/clockmost-desktop/setup.d/*.sh` (other clockmost desktop packages add
+theirs): for this package the Win-tap reveal (kwinrc), Meta+V off Klipper, the sycoca refresh, setting aside a dev
+autostart entry, removing Plasma's own panels, `kxkbrc` from the system XKB layout (KWin on Wayland reads only that;
+written once, a layout set in System Settings is kept) and numlock on at Plasma login (kcminputrc).
 Dev: one Cargo workspace (`bridge/`, `autoscroll/`); `cargo build --release`, checks `just check`; run the shell
 from the checkout with `quickshell -p shell` (a `kwin-bridge` earlier on PATH than /usr/bin wins). Release:
 `release.sh X.Y.Z` (needs makepkg - run it on an Arch box) -> tag -> CI builds, scans, publishes.
