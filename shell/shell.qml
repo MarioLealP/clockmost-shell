@@ -57,7 +57,7 @@ ShellRoot {
                 screen: perScreen.modelData
             }
             AutoscrollMarker {
-                screen: perScreen.modelData
+                output: perScreen.modelData
             }
         }
     }

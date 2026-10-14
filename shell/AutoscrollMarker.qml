@@ -7,9 +7,14 @@ import Quickshell.Wayland
 PanelWindow {
     id: root
 
-    readonly property bool here: Autoscroll.active && screen
-        && Autoscroll.x >= screen.x && Autoscroll.x < screen.x + screen.width
-        && Autoscroll.y >= screen.y && Autoscroll.y < screen.y + screen.height
+    // the screen comes in as `output`, not read back from `screen`: showing / hiding the window re-notifies `screen`,
+    // which made `here` a binding loop
+    required property ShellScreen output
+    readonly property bool here: Autoscroll.active
+        && Autoscroll.x >= output.x && Autoscroll.x < output.x + output.width
+        && Autoscroll.y >= output.y && Autoscroll.y < output.y + output.height
+
+    screen: output
 
     visible: here
     anchors {
@@ -28,8 +33,8 @@ PanelWindow {
         id: mark
         width: 32
         height: 32
-        x: Autoscroll.x - root.screen.x - 16
-        y: Autoscroll.y - root.screen.y - 16
+        x: Autoscroll.x - root.output.x - 16
+        y: Autoscroll.y - root.output.y - 16
         property int dx: Autoscroll.dirX
         property int dy: Autoscroll.dirY
         onDxChanged: requestPaint()
