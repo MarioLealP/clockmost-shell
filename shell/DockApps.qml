@@ -85,13 +85,25 @@ Singleton {
     readonly property var pinnedSlots: slots.filter(s => s.pinned)
     readonly property var openSlots: slots.filter(s => !s.pinned)
 
-    // right click (dock tile or drawer tile): pin / unpin by desktop id
+    // pin / unpin by desktop id (the dock menu, the drawer tile's right click)
     function isPinned(id) {
         return pins.includes(id);
     }
     function togglePin(id) {
         stored = isPinned(id) ? pins.filter(k => k !== id) : pins.concat([id]);
         pinsFile.setText(JSON.stringify(stored));
+    }
+    // drag to reorder: put a pinned id at index `to` of the pins
+    function movePin(id, to) {
+        const list = pins.filter(k => k !== id);
+        list.splice(Math.max(0, Math.min(list.length, to)), 0, id);
+        stored = list;
+        pinsFile.setText(JSON.stringify(stored));
+    }
+    // dock menu: close every window of the slot
+    function closeAll(s) {
+        for (const w of s.windows)
+            KWin.command("close", w.id);
     }
 
     FileView {

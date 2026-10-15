@@ -10,7 +10,7 @@ Item {
     property QsMenuEntry entry: null
     property string label: entry ? entry.text.replace(/&(?!&)/g, "") : "" // drop the mnemonic markers
     property bool mono: false
-    readonly property bool separator: entry ? entry.isSeparator : false
+    property bool separator: entry ? entry.isSeparator : false // settable: the dock menu's rows have no entry
     readonly property bool enabledEntry: entry ? entry.enabled : true
     readonly property int buttonType: entry ? entry.buttonType : QsMenuButtonType.None
     readonly property bool checked: entry ? entry.checkState === Qt.Checked : false

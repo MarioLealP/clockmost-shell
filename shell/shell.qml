@@ -65,6 +65,9 @@ ShellRoot {
             TrayMenuWindow {
                 screen: perScreen.modelData
             }
+            DockMenuWindow {
+                screen: perScreen.modelData
+            }
             DockWindow {
                 screen: perScreen.modelData
             }

@@ -38,7 +38,37 @@ PanelWindow {
     property var hoverItem: null
     property string previewKey: ""
     property real previewCx: 0
-    readonly property var previewSlot: previewKey ? DockApps.slots.find(s => s.key === previewKey && s.windows.length) ?? null : null
+    readonly property var previewSlot: previewKey && dragIndex < 0 && !menuHere
+        ? DockApps.slots.find(s => s.key === previewKey && s.windows.length) ?? null : null
+
+    // drag to reorder the pinned slots (Mario 2026-10-15): the dragged slot follows the pointer, the ones between
+    // its old and new place slide one pitch over to make room; the order is saved on release (DockApps.movePin)
+    readonly property int pitch: 56 + 10 // slot + row spacing
+    property int dragIndex: -1
+    // the pinned slots on screen: frozen while a drag runs - slots rebuild on any window change (a title, a new
+    // window), and a rebuild would destroy the dragged slot and its mouse grab
+    property var pinnedShown: DockApps.pinnedSlots
+    Connections {
+        target: DockApps
+        function onPinnedSlotsChanged() {
+            if (root.dragIndex < 0)
+                root.pinnedShown = DockApps.pinnedSlots;
+        }
+    }
+    property real dragDx: 0
+    readonly property int dragTo: dragIndex < 0 ? -1
+        : Math.max(0, Math.min(pinnedShown.length - 1, Math.round(dragIndex + dragDx / pitch)))
+    function shiftFor(i) {
+        if (dragIndex < 0)
+            return 0;
+        if (i === dragIndex)
+            return dragDx;
+        if (i > dragIndex && i <= dragTo)
+            return -pitch;
+        if (i < dragIndex && i >= dragTo)
+            return pitch;
+        return 0;
+    }
     function slotHover(item) {
         if (item.hovered) {
             hoverItem = item;
@@ -90,7 +120,8 @@ PanelWindow {
         onTriggered: if (!root.hoverItem && !preview.hovered) root.previewKey = ""
     }
     property bool lingering: false
-    readonly property bool shown: !covered || hovered || lingering || Drawer.open
+    readonly property bool shown: !covered || hovered || lingering || Drawer.open || menuHere || dragIndex >= 0
+    readonly property bool menuHere: DockMenu.open && (DockMenu.screenName === "" || DockMenu.screenName === screen?.name)
 
     property real p: shown ? 1 : 0
     Behavior on p { NumberAnimation { duration: 280; easing.type: Easing.OutQuart } }
@@ -261,13 +292,30 @@ PanelWindow {
                 }
                 DockDivider {}
                 Repeater {
-                    model: DockApps.pinnedSlots
+                    model: root.pinnedShown
                     DockSlot {
                         id: dslot
                         required property var modelData
+                        required property int index
                         slot: modelData
                         anchors.verticalCenter: parent.verticalCenter
                         onHoveredChanged: root.slotHover(dslot)
+                        shift: root.shiftFor(index)
+                        dragging: root.dragIndex === index
+                        z: dragging ? 5 : 0
+                        onDragStarted: {
+                            root.dragDx = 0;
+                            root.dragIndex = index;
+                        }
+                        onDragMoved: dx => root.dragDx = dx
+                        onDragEnded: {
+                            const to = root.dragTo;
+                            if (to !== index)
+                                DockApps.movePin(modelData.key, to);
+                            root.dragIndex = -1;
+                            root.dragDx = 0;
+                            root.pinnedShown = DockApps.pinnedSlots;
+                        }
                     }
                 }
                 // pinned | open-but-not-pinned (Mario: couldn't tell them apart) - the mock's own divider

@@ -11,6 +11,9 @@
 //               yellow 8x6 pointer above
 //   .notif.pin  the orange diamond at the tile's top-right (window wants attention / unread notifications)
 //   .tip        hover label above the slot (DockTip)
+// Not in the mock: right click = the dock menu (DockMenuWindow); a pinned slot drags sideways to reorder (DockWindow
+// owns the drag: `shift` is this slot's sideways offset - the pointer for the dragged one, a slot pitch for the ones
+// making room).
 import QtQuick
 import QtQuick.Effects // RectangularShadow
 import Quickshell
@@ -35,6 +38,19 @@ Item {
 
     width: 56
     height: 56 + 5 + 3
+
+    property real shift: 0
+    property bool dragging: false
+    signal dragStarted
+    signal dragMoved(real dx) // pointer travel since the press, in dock units
+    signal dragEnded
+    transform: Translate {
+        x: root.shift
+    }
+    Behavior on shift {
+        enabled: !root.dragging
+        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+    }
 
     property real lift: focused ? 1 : 0
     Behavior on lift { NumberAnimation { duration: 260; easing.type: Easing.OutQuart } }
@@ -213,7 +229,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: root.height - 82 - height // CSS bottom: 82px from the slot's bottom
         // apps with windows get the window preview panel instead (DockPreview)
-        opacity: root.hovered && !root.slot.windows.length ? 1 : 0
+        opacity: root.hovered && !root.slot.windows.length && !root.dragging && !DockMenu.open ? 1 : 0
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: 140 } }
         title: root.slot.name
@@ -231,14 +247,39 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: root.dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+        // drag: window x of the press, in dock units (the slot itself moves while dragged, so not local x)
+        property real pressX: 0
+        property bool dragged: false
+        readonly property real unit: Math.min(1, (QsWindow.window?.width ?? 1920) / 1920)
+        function windowX(mouse) {
+            return area.mapToItem(null, mouse.x, 0).x / unit;
+        }
+        onPressed: mouse => {
+            pressX = windowX(mouse);
+            dragged = false;
+        }
+        onPositionChanged: mouse => {
+            if (!(pressedButtons & Qt.LeftButton) || !root.slot.pinned)
+                return;
+            const dx = windowX(mouse) - pressX;
+            if (!dragged && Math.abs(dx) > 8) {
+                dragged = true;
+                root.dragStarted();
+            }
+            if (dragged)
+                root.dragMoved(dx);
+        }
+        onReleased: if (dragged) root.dragEnded()
         onClicked: mouse => {
+            if (dragged)
+                return;
             if (mouse.button === Qt.LeftButton)
                 DockApps.activate(root.slot);
             else if (mouse.button === Qt.MiddleButton)
                 DockApps.launch(root.slot);
             else
-                DockApps.togglePin(root.slot.key);
+                DockMenu.show(root.slot, QsWindow.window?.screen?.name ?? "", area.mapToItem(null, area.width / 2, 0).x);
         }
     }
 }
