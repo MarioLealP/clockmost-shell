@@ -9,7 +9,6 @@
 // Selected (keyboard) = yellow outline - not in the mock, needed for arrow-key navigation.
 import QtQuick
 import Quickshell
-import QtQuick.Effects
 
 TileFrame {
     id: root
@@ -45,13 +44,7 @@ TileFrame {
         sourceSize.width: 128
         sourceSize.height: 128
         smooth: true
-        // greyscale at rest so app colours don't fight the HUD palette; colour eases back on hover / selection
-        property real tint: area.containsMouse || root.selected ? 1 : 0
-        Behavior on tint { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            saturation: -1 + icon.tint
-        }
+        // full colour (Mario 2026-10-15: "add colors to the app drawer icons" - was greyscale until hover)
     }
     Text {
         visible: root.logo === ""
