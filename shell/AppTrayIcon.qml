@@ -86,7 +86,7 @@ Item {
             } else if (mouse.button === Qt.MiddleButton) {
                 root.modelData.secondaryActivate();
             } else {
-                root.modelData.activate();
+                root.modelData.activate(QsWindow.window); // hands it a wayland activation token (patched quickshell)
             }
         }
         onWheel: wheel => root.modelData.scroll(wheel.angleDelta.y / 120, false)

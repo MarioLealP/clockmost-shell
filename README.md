@@ -44,6 +44,9 @@ from the checkout with `quickshell -p shell` (a `kwin-bridge` earlier on PATH th
 
 ## App tray (Mario 2026-10-14)
 
+Left click = `activate(QsWindow.window)`: needs **`quickshell-clockmost`** (pkgs repo), which hands the app a
+Wayland activation token first - with stock Quickshell an app can raise its window only the first time (2026-10-15).
+
 The bar's right side: app tray, status tray, user chip; now playing moved left of the clock (media > arrow > clock -
 Mario: "not enough space there for both media and tray and buttons"). `AppTray.qml` / `AppTrayIcon.qml`: the
 StatusNotifier icons (`Quickshell.Services.SystemTray`; Plasma's kded6 is the watcher) on a plate like the status
