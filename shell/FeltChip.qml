@@ -1,12 +1,18 @@
-// .felt: Felt's dedicated button - magenta glyph block + name + status line. Static until Felt runs here.
+// .felt: Felt's dedicated button - magenta glyph block + name + status line. Felt herself is felt-tray (shell-
+// neutral); this chip only talks to its session-bus API org.clockmost.Felt: Status (polled) and ShowChat (click).
 import QtQuick
 import QtQuick.Shapes
+import Quickshell.Io
 
 Rectangle {
     id: root
 
-    property string status: "VISIBLE · LOCAL"
-    property color statusColor: Theme.green
+    // "online" / "offline" / "checking" from felt-tray; "" = felt-tray not running
+    property string feltState: ""
+    readonly property string status: feltState === "online" ? "ONLINE" : feltState === "offline" ? "OFFLINE" : feltState === "checking" ? "WAKING" : "ASLEEP"
+    readonly property color statusColor: feltState === "online" ? Theme.green : feltState === "offline" ? Theme.crimson : Theme.dim
+
+    readonly property var api: ["busctl", "--user", "--", "org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt"]
 
     implicitWidth: row.implicitWidth + 12
     implicitHeight: 38
@@ -60,5 +66,37 @@ Rectangle {
                 font.letterSpacing: Theme.em(8, 0.18)
             }
         }
+    }
+
+    Process {
+        id: reader
+        command: ["busctl", "--user", "get-property", "org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt", "Status"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const m = text.trim().match(/^s "(.*)"$/);
+                root.feltState = m ? m[1] : "";
+            }
+        }
+        onExited: code => {
+            if (code !== 0)
+                root.feltState = "";
+        }
+    }
+    Process {
+        id: opener
+        command: ["busctl", "--user", "call", "org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt", "ShowChat"]
+    }
+    Timer {
+        interval: 15000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: reader.running = true
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: if (root.feltState !== "") opener.running = true
     }
 }
