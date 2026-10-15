@@ -179,8 +179,18 @@ PanelWindow {
                 maskSpreadAtMin: 1.0
             }
 
+            // swallow clicks inside the drawer; the wheel steps rows. Not a WheelHandler: on metal it never fired
+            // (every wheel event fell through to the catcher), MouseArea.onWheel takes any pointer device
             MouseArea {
-                anchors.fill: parent // swallow clicks inside the drawer
+                anchors.fill: parent
+                property real acc: 0
+                onWheel: wheel => {
+                    acc += wheel.angleDelta.y;
+                    while (Math.abs(acc) >= 120) {
+                        root.scrollTo(root.rowOffset + (acc > 0 ? -1 : 1));
+                        acc -= acc > 0 ? 120 : -120;
+                    }
+                }
             }
 
             // .glass: linear-gradient(180deg, #fff 0%, #fff 16%, rgba(255,255,255,.7) 24%, rgba(230,232,238,.32) 40%,
@@ -289,16 +299,6 @@ PanelWindow {
                 }
             }
 
-            WheelHandler {
-                property real acc: 0
-                onWheel: event => {
-                    acc += event.angleDelta.y;
-                    while (Math.abs(acc) >= 120) {
-                        root.scrollTo(root.rowOffset + (acc > 0 ? -1 : 1));
-                        acc -= acc > 0 ? 120 : -120;
-                    }
-                }
-            }
             // scroll indicator in the 18px right of the grid: a 2px track, the visible rows as a yellow thumb
             Item {
                 visible: root.maxOffset > 0
