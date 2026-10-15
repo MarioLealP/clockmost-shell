@@ -1,12 +1,19 @@
 // Control center CALENDAR tab = the calendar mock (ds-topbar-v2 ?state=cal): month header with ‹ ›, ISO week
-// column, Monday-first grid, today boxed in yellow, an upcoming list (no calendar source linked yet), ISO footer.
+// column, Monday-first grid, today boxed in yellow, cyan marks on days with events, an upcoming list, ISO footer.
+// Events come from Felt (felt-tray's D-Bus property org.clockmost.Felt.Agenda, which felt-core fills from Google
+// Calendar - Mario 2026-10-15: one Google login, Felt does the reminders, the bar only shows). Click a day = that
+// day's events; click it again = upcoming. An event with a meeting link opens it.
 import QtQuick
 import Quickshell
+import Quickshell.Io
 
 CCTab {
     id: root
 
     property int monthOffset: 0 // 0 = this month
+    property var events: [] // [{title, calendar, start, end, all_day, location, link}]
+    property bool feltUp: false
+    property string selected: "" // "YYYY-MM-DD", "" = upcoming from now
     readonly property date now: clock.date
     readonly property date first: new Date(now.getFullYear(), now.getMonth() + monthOffset, 1)
     // grid starts on the Monday on/before the 1st (ISO weeks, Portugal)
@@ -34,6 +41,29 @@ CCTab {
     function sameDay(a, b) {
         return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
     }
+    function key(d) {
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    }
+    // the local day an event starts on (all-day: its date as given)
+    function eventDay(e) {
+        return e.all_day ? e.start.slice(0, 10) : key(new Date(e.start));
+    }
+    function hasEvents(d) {
+        const k = key(d);
+        return events.some(e => eventDay(e) === k);
+    }
+    readonly property var shown: {
+        if (selected !== "")
+            return events.filter(e => eventDay(e) === selected);
+        const nowMs = now.getTime();
+        return events.filter(e => (e.all_day ? new Date(e.end + "T00:00:00") : new Date(e.end || e.start)).getTime() > nowMs).slice(0, 6);
+    }
+    function whenText(e) {
+        const day = e.all_day ? new Date(e.start + "T00:00:00") : new Date(e.start);
+        const d = sameDay(day, now) ? "TODAY" : Qt.formatDate(day, "ddd dd").toUpperCase();
+        return e.all_day ? d + " · ALL DAY" : d + " · " + Qt.formatTime(day, "HH:mm");
+    }
+
     function utcOffset(d) {
         const m = -d.getTimezoneOffset();
         return (m < 0 ? "-" : "+") + Math.floor(Math.abs(m) / 60) + (Math.abs(m) % 60 ? ":" + String(Math.abs(m) % 60).padStart(2, "0") : "");
@@ -46,6 +76,32 @@ CCTab {
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
+    }
+
+    Process {
+        id: agenda
+        command: ["busctl", "--user", "--json=short", "get-property", "org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt", "Agenda"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.events = JSON.parse(JSON.parse(text).data);
+                    root.feltUp = true;
+                } catch (e) {
+                    root.feltUp = false;
+                }
+            }
+        }
+        onExited: code => {
+            if (code !== 0)
+                root.feltUp = false;
+        }
+    }
+    Timer {
+        interval: 60000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: agenda.running = true
     }
 
     // month header: OCTOBER 2026 (year dim, regular) + ‹ ›
@@ -193,6 +249,27 @@ CCTab {
                             height: 6
                             color: Theme.yellow
                         }
+                        // selected day: a faint plate
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 3
+                            visible: root.selected === root.key(cell.day)
+                            color: Qt.rgba(1, 1, 1, 0.08)
+                        }
+                        // has events: a small cyan square under the number
+                        Rectangle {
+                            visible: root.hasEvents(cell.day)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            y: parent.height - 9
+                            width: 4
+                            height: 4
+                            color: cell.inMonth ? Theme.cyan : "#43454c"
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.selected = root.selected === root.key(cell.day) ? "" : root.key(cell.day)
+                        }
                         Text {
                             anchors.centerIn: parent
                             text: String(cell.day.getDate()).padStart(2, "0")
@@ -215,10 +292,57 @@ CCTab {
         bottomPadding: 14
         spacing: 8
         SectionLabel {
-            text: "UPCOMING"
+            text: root.selected === "" ? "UPCOMING" : Qt.formatDate(new Date(root.selected + "T00:00:00"), "dddd dd MMMM").toUpperCase()
         }
         Micro {
-            text: "NO CALENDAR LINKED YET"
+            visible: root.shown.length === 0
+            text: !root.feltUp ? "FELT ISN'T RUNNING - NO CALENDAR" : root.selected === "" ? "NOTHING COMING UP" : "NOTHING THAT DAY"
+        }
+        Repeater {
+            model: root.shown
+            Item {
+                id: ev
+                required property var modelData
+                width: parent.width
+                height: 34
+                Rectangle {
+                    anchors.fill: parent
+                    color: evArea.containsMouse && ev.modelData.link ? Qt.rgba(1, 1, 1, 0.06) : "transparent"
+                }
+                Rectangle {
+                    width: 2
+                    height: parent.height - 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: ev.modelData.all_day ? Theme.dim : Theme.cyan
+                }
+                Column {
+                    x: 10
+                    width: parent.width - 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+                    Text {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        text: ev.modelData.title + (ev.modelData.link ? "  ↗" : "")
+                        color: Theme.ink
+                        font.family: Theme.body
+                        font.pixelSize: 12
+                    }
+                    Micro {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        text: root.whenText(ev.modelData) + "  ·  " + ev.modelData.calendar
+                        color: Theme.dim
+                    }
+                }
+                MouseArea {
+                    id: evArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: ev.modelData.link ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: if (ev.modelData.link) Qt.openUrlExternally(ev.modelData.link)
+                }
+            }
         }
     }
 }
