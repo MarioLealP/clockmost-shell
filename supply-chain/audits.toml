@@ -1,4 +1,32 @@
 
 # cargo-vet audits file
 
-[audits]
+[[audits.socket2]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+version = "0.6.5"
+notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. Socket option wrappers over libc/windows-sys; unsafe = FFI. Publisher trusted by mozilla + bytecodealliance."
+
+[[audits.zbus]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+version = "6.0.0"
+notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. Process spawns only for D-Bus spec transports (unixexec:, launchd, ibus) or in tests; env reads = DBUS_*_BUS_ADDRESS, XDG_RUNTIME_DIR, PATH; base64/hex = SASL handshake."
+
+[[audits.zbus_macros]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+version = "6.0.0"
+notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. Proc macros: pure token generation, no fs/net/env/process at expansion."
+
+[[audits.zbus_utils]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+version = "6.0.0"
+notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. Helpers for zbus_macros; no unsafe."
+
+[[audits.zruntime]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+version = "0.2.0"
+notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. zbus's own async runtime (same author): its process/fs/net modules are its purpose; unsafe = FFI/polling."

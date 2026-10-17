@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
-use zbus::blocking::Connection;
+use zbus::Connection;
 
 pub const PLUGIN_NAME: &str = "clockmost-bridge";
 const SCRIPT: &str = include_str!("kwin_script.js");
@@ -16,7 +16,7 @@ pub fn write_script() -> Result<PathBuf> {
     Ok(path)
 }
 
-fn scripting(
+async fn scripting(
     conn: &Connection,
     method: &str,
     body: &(impl serde::Serialize + zbus::zvariant::DynamicType),
@@ -28,22 +28,24 @@ fn scripting(
         method,
         body,
     )
+    .await
     .with_context(|| format!("KWin Scripting.{method}"))
 }
 
 /// Replace any copy left by an earlier run, then load and start ours.
-pub fn load(conn: &Connection, path: &Path) -> Result<()> {
-    unload(conn)?;
+pub async fn load(conn: &Connection, path: &Path) -> Result<()> {
+    unload(conn).await?;
     let path = path.to_str().context("script path is not UTF-8")?;
-    let id: i32 = scripting(conn, "loadScript", &(path, PLUGIN_NAME))?
+    let id: i32 = scripting(conn, "loadScript", &(path, PLUGIN_NAME))
+        .await?
         .body()
         .deserialize()?;
     anyhow::ensure!(id >= 0, "KWin refused the script (id {id})");
-    scripting(conn, "start", &())?;
+    scripting(conn, "start", &()).await?;
     Ok(())
 }
 
-pub fn unload(conn: &Connection) -> Result<()> {
-    scripting(conn, "unloadScript", &(PLUGIN_NAME,))?;
+pub async fn unload(conn: &Connection) -> Result<()> {
+    scripting(conn, "unloadScript", &(PLUGIN_NAME,)).await?;
     Ok(())
 }

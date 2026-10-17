@@ -10,7 +10,7 @@ async-channel = "2.5.0"
 async-io = "2.6.0"
 futures-lite = "2.6.1"
 serde = "1.0.229"
-zbus = { version = "5.19.0", default-features = false, features = ["blocking-api", "async-io"] }
+zbus = { version = "6.0.0", default-features = false, features = ["default-rt", "service"] }
 
 [lints.rust]
 unsafe_code = "forbid"

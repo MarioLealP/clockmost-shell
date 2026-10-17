@@ -318,14 +318,6 @@ criteria = "safe-to-deploy"
 version = "0.5.1"
 criteria = "safe-to-deploy"
 
-[[exemptions.zbus]]
-version = "5.19.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.zbus_macros]]
-version = "5.19.0"
-criteria = "safe-to-deploy"
-
 [[exemptions.zbus_names]]
 version = "4.3.4"
 criteria = "safe-to-deploy"

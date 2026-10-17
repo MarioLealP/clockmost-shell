@@ -13,7 +13,7 @@ use std::io::Write;
 use std::time::Duration;
 
 use anyhow::Result;
-use zbus::{blocking::connection, interface};
+use zbus::{connection, interface};
 
 struct Bridge {
     tx: async_channel::Sender<String>,
@@ -62,20 +62,24 @@ impl Bridge {
     }
 }
 
+// zbus 6 is async-only: zbus::block_on drives the connection on this thread for as long as we run.
 fn main() -> Result<()> {
-    let conn = connection::Builder::session()?
-        .name("org.clockmost.KWinBridge")?
+    zbus::block_on(run())
+}
+
+async fn run() -> Result<()> {
+    let conn = connection::Builder::session()
+        .name("org.clockmost.KWinBridge")
         .serve_at("/Bridge", {
             let (tx, rx) = async_channel::unbounded();
             Bridge { tx, rx }
-        })?
-        .build()?;
+        })
+        .build()
+        .await?;
 
     let script = kwin::write_script()?;
-    kwin::load(&conn, &script)?;
+    kwin::load(&conn, &script).await?;
 
     // Runs until the bar stops us; the script is unloaded again on the next start.
-    loop {
-        std::thread::park();
-    }
+    std::future::pending().await
 }
