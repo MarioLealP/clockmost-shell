@@ -4,7 +4,7 @@
 
 pkgname=clockmost-shell
 pkgver=0.1.9
-pkgrel=1
+pkgrel=2
 pkgdesc="The clockmost Endfield desktop shell for KDE Plasma: bar, control center, dock, app drawer, notifications, Win+V clipboard (Quickshell)"
 arch=('x86_64')
 url="https://git.clockmost.com/pkgs/${pkgname}"
