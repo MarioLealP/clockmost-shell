@@ -27,7 +27,10 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 140 } }
     }
     Column {
-        x: 14
+        // both edges anchored: with only a right anchor the width is implicit, and the children's
+        // width: parent.width makes that 0 (names never drew)
+        anchors.left: parent.left
+        anchors.leftMargin: 14
         anchors.right: tagBox.left
         anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
