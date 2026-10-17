@@ -44,10 +44,27 @@ else
         echo "   dev autostart entry set aside (.dev-off)"
     fi
 
-    # the shell is the only bar: remove Plasma's own panels (plasmashell stays for the wallpaper + Klipper)
-    if n=$(qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript \
-        'var n = panels().length; panels().forEach(function (p) { p.remove(); }); print(n);' 2>/dev/null); then
-        echo "   Plasma panels removed: ${n:-0}"
+    # the shell is the only bar: remove Plasma's own panels (plasmashell stays for the wallpaper + Klipper), except a
+    # stub holding only the clipboard widget - Klipper lives in that widget, without it a copy dies with its app.
+    # No stub = add one (left edge, 32 px, auto-hide).
+    if out=$(qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript '
+        var n = 0, stub = false;
+        panels().forEach(function (p) {
+            var w = p.widgets();
+            if (!stub && w.length == 1 && w[0].type == "org.kde.plasma.clipboard") stub = true;
+            else { p.remove(); n++; }
+        });
+        if (!stub) {
+            var s = new Panel;
+            s.location = "left";
+            s.alignment = "center";
+            s.height = 32;
+            s.length = 32;
+            s.hiding = "autohide";
+            s.addWidget("org.kde.plasma.clipboard");
+        }
+        print(n + " " + (stub ? "kept" : "added"));' 2>/dev/null); then
+        echo "   Plasma panels removed: ${out% *}; Klipper stub ${out#* }"
     else
         echo "   Plasma panels: plasmashell not running, skipped (re-run inside the session)"
     fi
