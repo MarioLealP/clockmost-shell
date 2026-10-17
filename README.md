@@ -34,6 +34,8 @@ Quickshell config in `/usr/share/clockmost-shell` started by `/etc/xdg/autostart
 `org.clockmost.shell.desktop` (KWin's screencast grant for the dock previews), `/dev/uinput` for the autoscroll
 service (`modules-load.d/clockmost-uinput.conf` + udev rule `60-clockmost-uinput.rules`: group input, applied on
 install) and numlock on at the SDDM login screen (`/usr/lib/sddm/sddm.conf.d/zz-clockmost-numlock.conf`).
+Opt out of the bar-only setup parts (Win, Win+V, panel removal) with a line `bar` in
+`~/.config/clockmost/setup-off` - for when another shell is the bar.
 `clockmost-desktop-setup` runs every `/usr/share/clockmost-desktop/setup.d/*.sh` (other clockmost desktop packages add
 theirs): for this package Win = the app drawer (kglobalaccel; Plasma's launcher moved to Alt+F1), Meta+V off Klipper, the sycoca refresh, setting aside a dev
 autostart entry, removing Plasma's own panels, `kxkbrc` from the system XKB layout (KWin on Wayland reads only that;
