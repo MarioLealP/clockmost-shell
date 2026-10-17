@@ -1,6 +1,6 @@
 pkgbase = clockmost-shell
 	pkgdesc = The clockmost Endfield desktop shell for KDE Plasma: bar, control center, dock, app drawer, notifications, Win+V clipboard (Quickshell)
-	pkgver = 0.1.11
+	pkgver = 0.1.12
 	pkgrel = 1
 	url = https://git.clockmost.com/pkgs/clockmost-shell
 	install = clockmost-shell.install
