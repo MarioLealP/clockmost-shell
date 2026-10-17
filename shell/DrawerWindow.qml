@@ -80,8 +80,20 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     onVisibleChanged: if (visible) Qt.callLater(() => search.forceActiveFocus())
 
+    // input everywhere but the bar and dock strips (they stay usable and close the drawer themselves)
     mask: Region {
         item: Drawer.open ? catcher : null
+        Region {
+            intersection: Intersection.Subtract
+            width: root.width
+            height: Drawer.topInset(root.width)
+        }
+        Region {
+            intersection: Intersection.Subtract
+            y: root.height - Drawer.bottomInset(root.width)
+            width: root.width
+            height: Drawer.bottomInset(root.width)
+        }
     }
     // .glass backdrop-filter: blur(22px) - KWin's blur, behind the whole drawer rect in window coordinates (an
     // item-based region doesn't follow the scaled parent). Off while closed: a zero-size region trips KWin's GL.

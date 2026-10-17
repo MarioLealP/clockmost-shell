@@ -185,4 +185,7 @@ PanelWindow {
             y: -root.plateReach * 1.1 * (1 - root.plateP)
         }
     }
+
+    // a press here closes the app drawer and still reaches the bar / dock
+    DrawerCloser {}
 }

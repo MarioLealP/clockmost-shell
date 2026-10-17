@@ -25,6 +25,9 @@ Singleton {
     readonly property int plateWidth: 320
     readonly property int plateHeight: 96
     readonly property int triBand: 5
+    // the dock plate (ds-dock) and its gap to the bottom edge
+    readonly property int dockPlateHeight: 84
+    readonly property int dockGapBottom: 14
 
     // letter-spacing in CSS is em-relative; Qt wants pixels
     function em(sizePx, ems) {

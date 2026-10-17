@@ -74,6 +74,13 @@ ShellRoot {
             AutoscrollMarker {
                 output: perScreen.modelData
             }
+            // outside clicks on the screens the drawer isn't on
+            LazyLoader {
+                active: perScreen.modelData !== Quickshell.screens[0]
+                DrawerCatcher {
+                    screen: perScreen.modelData
+                }
+            }
         }
     }
 }

@@ -14,8 +14,8 @@ PanelWindow {
 
     readonly property real s: Math.min(1, width / 1920)
     readonly property int above: 270 // room above the plate: focus lift, hover labels, the window preview panel
-    readonly property int plateH: 84
-    readonly property int gapBottom: 14
+    readonly property int plateH: Theme.dockPlateHeight
+    readonly property int gapBottom: Theme.dockGapBottom
 
     readonly property real plateW: row.implicitWidth + 32
     // the plate's rect on screen, in window coordinates when shown
@@ -366,4 +366,7 @@ PanelWindow {
             }
         }
     }
+
+    // a press here closes the app drawer and still reaches the bar / dock
+    DrawerCloser {}
 }
