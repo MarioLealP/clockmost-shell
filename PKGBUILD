@@ -3,8 +3,8 @@
 # Builds from $startdir (the pkgs/ CI checks out the tagged commit and runs makepkg in place).
 
 pkgname=clockmost-shell
-pkgver=0.1.9
-pkgrel=2
+pkgver=0.1.10
+pkgrel=1
 pkgdesc="The clockmost Endfield desktop shell for KDE Plasma: bar, control center, dock, app drawer, notifications, Win+V clipboard (Quickshell)"
 arch=('x86_64')
 url="https://git.clockmost.com/pkgs/${pkgname}"
