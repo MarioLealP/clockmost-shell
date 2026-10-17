@@ -62,6 +62,6 @@ else
     echo "   keyboard layout: kept ($(kreadconfig6 --file kxkbrc --group Layout --key LayoutList))"
 fi
 
-# numlock on at Plasma login (0 = on; the login screen's is /usr/lib/sddm/sddm.conf.d/10-clockmost-numlock.conf)
+# numlock on at Plasma login (0 = on; the login screen's is /usr/lib/sddm/sddm.conf.d/zz-clockmost-numlock.conf)
 kwriteconfig6 --file kcminputrc --group Keyboard --key NumLock 0
 echo "   numlock on at login"

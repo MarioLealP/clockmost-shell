@@ -43,7 +43,7 @@ package() {
   install -Dm644 install/clockmost-autoscroll.service "$pkgdir/usr/lib/systemd/system/clockmost-autoscroll.service"
   install -Dm644 install/clockmost-uinput.conf "$pkgdir/usr/lib/modules-load.d/clockmost-uinput.conf"
   install -Dm644 install/60-clockmost-uinput.rules "$pkgdir/usr/lib/udev/rules.d/60-clockmost-uinput.rules"
-  install -Dm644 install/sddm-numlock.conf "$pkgdir/usr/lib/sddm/sddm.conf.d/10-clockmost-numlock.conf"
+  install -Dm644 install/sddm-numlock.conf "$pkgdir/usr/lib/sddm/sddm.conf.d/zz-clockmost-numlock.conf"
   install -Dm644 install/clockmost-shell.desktop "$pkgdir/etc/xdg/autostart/clockmost-shell.desktop"
   install -Dm644 install/org.clockmost.shell.desktop "$pkgdir/usr/share/applications/org.clockmost.shell.desktop"
 
