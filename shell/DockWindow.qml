@@ -262,6 +262,8 @@ PanelWindow {
                 id: row
                 x: plate.x + 16
                 anchors.verticalCenter: plate.verticalCenter
+                // slots are 56 tile + 8 marks: shift so the tiles (not tile+marks) sit on the plate's centre line
+                anchors.verticalCenterOffset: 4
                 spacing: 10
 
                 Column {
@@ -287,9 +289,9 @@ PanelWindow {
                         text: String(DockApps.pins.length).padStart(2, "0") + " PINNED"
                     }
                 }
-                DockDivider {}
                 DockDrawerButton {
                     anchors.verticalCenter: parent.verticalCenter
+                    anchors.verticalCenterOffset: -4 // on the tiles' centre line
                 }
                 DockDivider {}
                 Repeater {
@@ -338,7 +340,6 @@ PanelWindow {
                 DockTasks {
                     anchors.verticalCenter: parent.verticalCenter
                 }
-                DockDivider {}
                 Column {
                     visible: false // v2: no side labels on the dock
                     anchors.verticalCenter: parent.verticalCenter

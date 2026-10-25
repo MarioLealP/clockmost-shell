@@ -5,6 +5,7 @@ Item {
     width: 5
     height: 44
     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+    anchors.verticalCenterOffset: -4 // on the tiles' centre line (slots carry 8px of marks below)
     Rectangle {
         x: 2
         width: 1
