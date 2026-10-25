@@ -1,10 +1,9 @@
-// MISC: Spotify (HA's media player) + the shopping list (todo items fetched on open; click = done).
+// MISC: now playing (local media players) + the shopping list (todo items fetched on open; click = done).
 import QtQuick
 
 Column {
     id: root
 
-    readonly property string sp: "media_player.spotify_clockmost"
     property var items: []
 
     function load() {
@@ -32,18 +31,35 @@ Column {
 
     SecHead { title: "MISC"; meta: HaSections.misc(); onBack: HaSections.current = "" }
 
-    Column {
+    // now playing from the desktop's own media players (MPRIS: Spotify, YouTube in Firefox, ...) - Mario 2026-10-25:
+    // HA's Spotify entity carries no track info; "swap to local media, so it also picks up ytb"
+    Row {
         width: 560
-        spacing: 6
-        Text { text: "SPOTIFY  ·  " + HaClient.st(root.sp).toUpperCase(); color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 2 }
-        Text { width: 560; elide: Text.ElideRight; text: (HaClient.attr(root.sp, "media_title") ?? "—").toUpperCase(); color: GroundTheme.ink; font.family: GroundTheme.display; font.pixelSize: 40; font.weight: Font.Black; font.variableAxes: { "wdth": 70 } }
-        Text { text: (HaClient.attr(root.sp, "media_artist") ?? "").toUpperCase(); color: GroundTheme.ink; font.family: GroundTheme.mono; font.pixelSize: 13; font.letterSpacing: 2 }
-        Item { width: 1; height: 8 }
-        Row {
+        spacing: 20
+        Image {
+            width: 150
+            height: 150
+            visible: Media.player !== null
+            source: Media.player?.trackArtUrl ?? ""
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            Rectangle { anchors.fill: parent; anchors.margins: -6; color: "transparent"; border.width: 2; border.color: GroundTheme.ink }
+        }
+        Column {
+            width: 560 - 170
             spacing: 6
-            Btn { label: "◀◀"; onHit: HaClient.call("media_player", "media_previous_track", root.sp) }
-            Btn { label: HaClient.st(root.sp) === "playing" ? "PAUSE" : "PLAY"; onHit: HaClient.call("media_player", "media_play_pause", root.sp) }
-            Btn { label: "▶▶"; onHit: HaClient.call("media_player", "media_next_track", root.sp) }
+            Text { text: Media.player ? (Media.player.identity + "  ·  " + (Media.playing ? "PLAYING" : "PAUSED")).toUpperCase() : "NOTHING PLAYING"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 2 }
+            Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight; text: (Media.player?.trackTitle ?? "").toUpperCase(); color: GroundTheme.ink; font.family: GroundTheme.display; font.pixelSize: 36; font.weight: Font.Black; font.variableAxes: { "wdth": 70 }; lineHeight: 0.9 }
+            Text { text: (Media.player?.trackArtist ?? "").toUpperCase(); color: GroundTheme.ink; font.family: GroundTheme.mono; font.pixelSize: 13; font.letterSpacing: 2 }
+            Text { text: (Media.player?.trackAlbum ?? "").toUpperCase(); color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 2; width: parent.width; elide: Text.ElideRight }
+            Item { width: 1; height: 6 }
+            Row {
+                visible: Media.player !== null
+                spacing: 6
+                Btn { label: "◀◀"; onHit: Media.player.previous() }
+                Btn { label: Media.playing ? "PAUSE" : "PLAY"; onHit: Media.player.togglePlaying() }
+                Btn { label: "▶▶"; onHit: Media.player.next() }
+            }
         }
     }
 

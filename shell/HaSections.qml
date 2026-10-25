@@ -31,10 +31,9 @@ Singleton {
         return String(root.room.filter(id => HaClient.isOn(id)).length).padStart(2, "0");
     }
     function misc() {
-        // now playing lives in MISC (Mario 2026-10-25), from HA's Spotify: the row shows the track while it plays
-        const sp = "media_player.spotify_clockmost";
-        if (HaClient.st(sp) === "playing" && HaClient.attr(sp, "media_title"))
-            return "▶ " + String(HaClient.attr(sp, "media_title")).toUpperCase();
+        // now playing lives in MISC (Mario 2026-10-25), from the local media players: the row shows the track while it plays
+        if (Media.playing && Media.player?.trackTitle)
+            return "▶ " + Media.player.trackTitle.toUpperCase();
         const n = Number(HaClient.st("todo.shopping_list")) || 0;
         return n ? n + " TO BUY" : "";
     }
@@ -62,7 +61,7 @@ Singleton {
         "switch.felt_quiet", "switch.felt_hidden", "switch.felt_dj_mode", "todo.shopping_list",
         "sensor.ender_state", "sensor.ender_progress", "sensor.3d_printer_status_atual", "sensor.elegoo_progress",
         "sensor.felt_needs_you", "sensor.shelf_power", "sensor.core_300s_series_pm2_5", "sensor.extraplug_power",
-        "media_player.spotify_clockmost", "weather.forecast_home", "sensor.pocox7_next_alarm",
+        "weather.forecast_home", "sensor.pocox7_next_alarm",
         "sensor.ender_file", "sensor.ender_layer", "sensor.ender_elapsed", "sensor.ender_time_left", "sensor.ender_done_at",
         "sensor.ender_nozzle", "sensor.ender_bed", "sensor.3d_printer_status_de_impressao", "sensor.elegoo_file",
         "sensor.3d_printer_current_layer", "sensor.3d_printer_total_layers", "sensor.3d_printer_remaining_print_time",

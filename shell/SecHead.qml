@@ -34,10 +34,10 @@ Item {
         visible: root.meta !== ""
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        width: mt.implicitWidth + 16
+        width: Math.min(mt.implicitWidth, 240) + 16
         height: 22
         color: GroundTheme.acc
-        Text { id: mt; anchors.centerIn: parent; text: root.meta; color: GroundTheme.accInk; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 2 }
+        Text { id: mt; anchors.centerIn: parent; width: Math.min(implicitWidth, 240); elide: Text.ElideRight; text: root.meta; color: GroundTheme.accInk; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 2 }
     }
     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 2; color: GroundTheme.ink }
 }
