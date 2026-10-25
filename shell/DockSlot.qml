@@ -78,11 +78,11 @@ Item {
             height: 56
             clip: true
             // v2 tile states (Mario 2026-10-25): focused = orange, open or minimized = black,
-            // closed (pinned, not running) = white
+            // closed (pinned, not running) = the plate's off-white (only the icon shows)
             Rectangle {
                 anchors.fill: parent
                 color: root.focused ? GroundTheme.acc
-                    : root.slot.windows.length === 0 ? "#ffffff"
+                    : root.slot.windows.length === 0 ? GroundTheme.ink // closed: the plate's own off-white
                     : GroundTheme.bg
             }
 
