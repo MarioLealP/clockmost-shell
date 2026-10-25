@@ -60,7 +60,7 @@ PanelWindow {
             y: 84 // v2: just under the bar's plates (they end at 70)
             opacity: root.openP
             width: rail.width + 1 + content.width
-            height: Math.max(rail.implicitHeight + 20, content.height)
+            height: Math.max(rail.implicitHeight, content.height)
             clip: true
 
             // swallow clicks so they don't reach the close catcher
@@ -77,8 +77,9 @@ PanelWindow {
                 border.color: GroundTheme.line
             }
 
-            CCRail {
+            CCNav {
                 id: rail
+                minHeight: content.height
             }
             Rectangle {
                 x: rail.width
@@ -87,12 +88,28 @@ PanelWindow {
                 color: Qt.rgba(1, 1, 1, 0.08)
             }
 
+            // the break: an orange hazard strip along the bottom edge of the content
+            Item {
+                x: rail.width + 17
+                y: parent.height - 18
+                width: content.width - 34
+                height: 8
+                clip: true
+                z: 2
+                Row {
+                    spacing: 8
+                    Repeater {
+                        model: Math.ceil(parent.parent.width / 16) + 2
+                        Rectangle { width: 8; height: 20; y: -6; color: GroundTheme.acc; rotation: 45 }
+                    }
+                }
+            }
             Loader {
                 id: content
                 x: rail.width + 1
                 width: item ? item.width : 432
                 height: item ? item.implicitHeight : 200
-                onLoaded: if (item.minHeight !== undefined) item.minHeight = Qt.binding(() => rail.implicitHeight + 20)
+                // v2: the nav stretches to the content (CCNav.minHeight), the content keeps its own height
                 sourceComponent: ({ home: homeTab, audio: audioTab, network: networkTab, bluetooth: bluetoothTab, media: mediaTab, calendar: calendarTab, clipboard: clipboardTab, notifications: notificationsTab })[ControlCenter.tab] ?? placeholder
             }
 
