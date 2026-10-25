@@ -57,6 +57,8 @@ Rectangle {
                     anchors.rightMargin: 4
                     anchors.verticalCenter: parent.verticalCenter
                     text: modelData.summary
+                    width: Math.min(implicitWidth, 190)
+                    elide: Text.ElideRight
                     color: on ? GroundTheme.accInk : GroundTheme.ink2
                     font.family: GroundTheme.mono
                     font.pixelSize: 11

@@ -31,6 +31,10 @@ Singleton {
         return String(root.room.filter(id => HaClient.isOn(id)).length).padStart(2, "0");
     }
     function misc() {
+        // now playing lives in MISC (Mario 2026-10-25), from HA's Spotify: the row shows the track while it plays
+        const sp = "media_player.spotify_clockmost";
+        if (HaClient.st(sp) === "playing" && HaClient.attr(sp, "media_title"))
+            return "▶ " + String(HaClient.attr(sp, "media_title")).toUpperCase();
         const n = Number(HaClient.st("todo.shopping_list")) || 0;
         return n ? n + " TO BUY" : "";
     }

@@ -61,7 +61,6 @@ PanelWindow {
         XMarks {}
 
         GroundBarcode { x: 96; anchors.bottom: parent.bottom; anchors.bottomMargin: 140 }
-        NowPlayingBlock { x: 760; anchors.bottom: parent.bottom; anchors.bottomMargin: 30 }
         DateStack { anchors.right: parent.right; anchors.rightMargin: 110; anchors.bottom: parent.bottom; anchors.bottomMargin: 150 }
     }
 
