@@ -27,7 +27,7 @@ Item {
         anchors.rightMargin: root.note ? 8 : 0
         anchors.verticalCenter: parent.verticalCenter
         height: 1
-        color: Qt.rgba(1, 1, 1, 0.08)
+        color: GroundTheme.line
     }
     Micro {
         id: noteText

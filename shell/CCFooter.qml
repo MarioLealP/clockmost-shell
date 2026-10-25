@@ -1,4 +1,4 @@
-// Panel footer: hairline, barcode + CLOCKMOST · <code>, optional content on the right, dotted bottom edge.
+// Panel footer (v2): hairline, CLOCKMOST · <code> in small mono, optional buttons on the right.
 import QtQuick
 
 Item {
@@ -9,24 +9,19 @@ Item {
     default property alias actions: actionsRow.data
 
     width: parent ? parent.width : 0
-    implicitHeight: 62
+    implicitHeight: 56
 
-    Rectangle { width: parent.width; height: 1; color: Qt.rgba(1, 1, 1, 0.08) }
-    Row {
+    Rectangle { width: parent.width; height: 1; color: GroundTheme.line }
+    Text {
         x: 18
         y: 12
         height: 32
-        spacing: 10
-        Barcode {
-            anchors.verticalCenter: parent.verticalCenter
-            width: 90
-            height: 10
-            color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.45)
-        }
-        Micro {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.prefix + root.code
-        }
+        verticalAlignment: Text.AlignVCenter
+        text: root.prefix + root.code
+        color: Theme.dim
+        font.family: Theme.mono
+        font.pixelSize: 9
+        font.letterSpacing: 2
     }
     Row {
         id: actionsRow
@@ -35,13 +30,5 @@ Item {
         y: 12
         height: 32
         spacing: 6
-    }
-    DotGrid {
-        x: 18
-        y: parent.height - 11
-        width: parent.width - 36
-        height: 6
-        pitch: 8
-        color: Qt.rgba(1, 1, 1, 0.16)
     }
 }

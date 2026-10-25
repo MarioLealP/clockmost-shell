@@ -51,51 +51,12 @@ CCTab {
         }
     }
 
-    // header: CLIPBOARD + micro, type counts on the right
-    Item {
-        width: parent.width
-        height: 64
-        Column {
-            x: 18
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 4
-            Text {
-                text: "CLIPBOARD"
-                color: Theme.ink
-                font.family: Theme.mono
-                font.weight: Font.Bold
-                font.pixelSize: 18
-                font.letterSpacing: Theme.em(18, 0.3)
-            }
-            Micro {
-                text: "KLIPPER · " + Clipboard.history.length + " KEPT · " + Clipboard.pins.length + " PINNED"
-            }
-        }
-        Grid {
-            anchors.right: parent.right
-            anchors.rightMargin: 18
-            anchors.verticalCenter: parent.verticalCenter
-            columns: 2
-            columnSpacing: 8
-            rowSpacing: 1
-            Repeater {
-                model: ["TXT", "URL", "CMD", "HEX", "IMG"]
-                Repeater {
-                    required property string modelData
-                    model: [modelData, String(root.counts[modelData]).padStart(2, "0")]
-                    Text {
-                        required property string modelData
-                        required property int index
-                        text: modelData
-                        color: index === 0 ? "#43454c" : Theme.ink2
-                        font.family: Theme.mono
-                        font.weight: index === 0 ? Font.Normal : Font.Bold
-                        font.pixelSize: 8
-                        font.letterSpacing: Theme.em(8, 0.18)
-                    }
-                }
-            }
-        }
+    // header (v2): the shared big title; the item count as the chip
+    CCHeader {
+        title: "CLIPBOARD"
+        sub: "KLIPPER · " + Clipboard.history.length + " KEPT · " + Clipboard.pins.length + " PINNED"
+        count: String(Clipboard.history.length)
+        countLabel: "ITEMS"
     }
 
     // search: ››› + input

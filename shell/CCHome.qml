@@ -363,19 +363,13 @@ Column {
     // foot: barcode + micro, square actions (power in crimson), dotted edge
     Item {
         width: parent.width
-        height: 62
-        Rectangle { width: parent.width; height: 1; color: Qt.rgba(1, 1, 1, 0.08) }
+        height: 56
+        Rectangle { width: parent.width; height: 1; color: GroundTheme.line }
         Row {
             x: 18
             y: 12
             height: 32
             spacing: 10
-            Barcode {
-                anchors.verticalCenter: parent.verticalCenter
-                width: 90
-                height: 10
-                color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.45)
-            }
             Micro {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "CLOCKMOST · QS-01"

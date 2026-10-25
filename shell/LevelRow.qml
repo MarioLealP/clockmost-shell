@@ -1,4 +1,4 @@
-// .lv2: icon block | NAME · DEVICE over a segmented bar (last lit segment yellow) | big number.
+// Level row (v2): outlined icon | NAME over a thin bar with an orange fill | the number.
 // Click/drag on the bar sets the level; the wheel nudges it 5%.
 import QtQuick
 
@@ -21,12 +21,14 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 26
         height: 26
-        color: root.muted ? Qt.rgba(1, 1, 1, 0.08) : root.accent
+        color: "transparent"
+        border.width: 1
+        border.color: GroundTheme.line
         Glyph {
             anchors.centerIn: parent
             size: 16
             path: root.icon
-            color: root.muted ? Theme.dim : Theme.plateInk
+            color: root.muted ? Theme.dim : Theme.ink
         }
         MouseArea {
             anchors.fill: parent
@@ -55,22 +57,16 @@ Item {
         Item {
             width: parent.width
             height: 8
-            Row {
-                id: seg
-                anchors.fill: parent
-                spacing: 3
-                readonly property real cell: (width - spacing * (root.segments - 1)) / root.segments
-                readonly property int lit: Math.round(root.value * root.segments)
-                Repeater {
-                    model: root.segments
-                    Rectangle {
-                        required property int index
-                        width: seg.cell
-                        height: 8
-                        color: index >= seg.lit ? Qt.rgba(1, 1, 1, 0.08)
-                            : root.muted ? Theme.faint
-                            : index === seg.lit - 1 ? Theme.yellow : Theme.ink
-                    }
+            // v2: a thin track with an orange fill (the segmented blocks were Endfield)
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width
+                height: 4
+                color: GroundTheme.line
+                Rectangle {
+                    width: parent.width * Math.max(0, Math.min(1, root.value))
+                    height: parent.height
+                    color: root.muted ? Theme.faint : GroundTheme.acc
                 }
             }
             // input sits beside the Row, not in it (a Row lays out every child)
@@ -95,9 +91,9 @@ Item {
         horizontalAlignment: Text.AlignRight
         text: Math.round(root.value * 100)
         color: root.muted ? Theme.dim : Theme.ink
-        font.family: Theme.mono
-        font.weight: Font.Bold
-        font.pixelSize: 16
+        font.family: GroundTheme.display
+        font.weight: Font.Black
+        font.pixelSize: 18
         font.letterSpacing: Theme.em(16, 0.06)
     }
 }

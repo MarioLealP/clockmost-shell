@@ -15,7 +15,14 @@ Singleton {
     property var states: ({}) // entity_id -> { s: state, a: attributes }
     property bool connected: false
 
-    property string token: ""
+    // the token survives hot reloads in memory (PersistentProperties), so a reload doesn't re-read the Secret Service
+    // (KeePassXC shows a notification per read)
+    property alias token: kept.token
+    PersistentProperties {
+        id: kept
+        reloadableId: "haclient-token"
+        property string token: ""
+    }
     property int nextId: 1
 
     function st(id) { return root.states[id]?.s ?? ""; }
@@ -79,9 +86,10 @@ Singleton {
 
     onEntitiesChanged: if (root.connected) root.send({ type: "subscribe_entities", entity_ids: root.entities })
 
+    Component.onCompleted: if (root.token.length > 0) sock.active = true
     Process {
         command: ["secret-tool", "lookup", "service", "clockmost-ha", "account", "clockmost-desktop"]
-        running: true
+        running: root.token.length === 0
         stdout: StdioCollector {
             onStreamFinished: {
                 root.token = text.trim();

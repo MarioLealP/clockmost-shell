@@ -1,5 +1,4 @@
-// A selectable device line: yellow tick + bright name when it's the current one (the Dolphin-mock place style),
-// a DEFAULT tag, micro detail on the second line. Click = make it current.
+// A selectable device line (v2): name + detail, the current one tagged DEFAULT in orange. Click = make it current.
 import QtQuick
 
 Item {
@@ -14,18 +13,12 @@ Item {
     width: parent ? parent.width : 0
     implicitHeight: 40
 
+    // v2: hover wash + a hairline under each row; the current one is marked by its orange tag only
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(1, 1, 1, root.current ? 0.06 : area.containsMouse ? 0.035 : 0)
-        Behavior on color { ColorAnimation { duration: 140 } }
+        color: area.containsMouse && !root.current ? Qt.rgba(1, 1, 1, 0.04) : "transparent"
     }
-    Rectangle {
-        width: 3
-        height: parent.height
-        color: Theme.yellow
-        opacity: root.current ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 140 } }
-    }
+    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
     Column {
         // both edges anchored: with only a right anchor the width is implicit, and the children's
         // width: parent.width makes that 0 (names never drew)

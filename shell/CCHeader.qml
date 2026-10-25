@@ -1,4 +1,5 @@
-// Panel header (the notifications mock's: TITLE tracked large, micro subline, a big count + label on the right).
+// Panel header (v2): the title big in Archivo like the ground's HA sections, a mono subline, the count as an orange
+// chip on the right, a bone rule under it.
 import QtQuick
 
 Item {
@@ -10,40 +11,54 @@ Item {
     property string countLabel: ""
 
     width: parent ? parent.width : 0
-    implicitHeight: 64
+    implicitHeight: 76
 
     Column {
         x: 18
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 4
+        anchors.bottom: rule.top
+        anchors.bottomMargin: 8
+        spacing: 2
         Text {
             text: root.title
             color: Theme.ink
-            font.family: Theme.mono
-            font.weight: Font.Bold
-            font.pixelSize: 18
-            font.letterSpacing: Theme.em(18, 0.3)
+            font.family: GroundTheme.display
+            font.weight: Font.Black
+            font.variableAxes: { "wdth": 70 }
+            font.pixelSize: 40
         }
-        Micro {
+        Text {
             text: root.sub
+            color: Theme.dim
+            font.family: Theme.mono
+            font.pixelSize: 10
+            font.letterSpacing: 2
         }
     }
-    Row {
+    Rectangle {
+        visible: root.count !== ""
         anchors.right: parent.right
         anchors.rightMargin: 18
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 6
+        anchors.bottom: rule.top
+        anchors.bottomMargin: 12
+        width: ct.implicitWidth + 16
+        height: 22
+        color: GroundTheme.acc
         Text {
-            anchors.baseline: parent.bottom
-            text: root.count
-            color: Theme.orange
+            id: ct
+            anchors.centerIn: parent
+            text: (root.count + " " + root.countLabel).trim()
+            color: GroundTheme.accInk
             font.family: Theme.mono
-            font.weight: Font.Bold
-            font.pixelSize: 18
+            font.pixelSize: 11
+            font.letterSpacing: 2
         }
-        Micro {
-            anchors.baseline: parent.bottom
-            text: root.countLabel
-        }
+    }
+    Rectangle {
+        id: rule
+        x: 18
+        anchors.bottom: parent.bottom
+        width: parent.width - 36
+        height: 2
+        color: Theme.ink
     }
 }
