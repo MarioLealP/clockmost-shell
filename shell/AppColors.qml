@@ -1,4 +1,4 @@
-// Window-mark colour per app - the mock's palette (ds-topbar-v2 workspace chips).
+// Window-mark colour per app. v2: all bone (one loud colour); the old Endfield palette is kept below, unused.
 pragma Singleton
 
 import QtQuick
@@ -21,14 +21,8 @@ Singleton {
         })
     readonly property var palette: ["#7ddb57", "#ff7a1a", "#cfc6f4", "#5aa7ff", "#ff1aac", "#3FD0E8"]
 
+    // v2 (2026-10-25): one loud colour - every app's mark is bone; the table above is kept for a future per-app tint
     function of(app) {
-        const key = (app || "").toLowerCase();
-        if (known[key])
-            return known[key];
-        // unknown apps get a stable colour from the same palette
-        let h = 0;
-        for (let i = 0; i < key.length; i++)
-            h = (h * 31 + key.charCodeAt(i)) >>> 0;
-        return palette[h % palette.length];
+        return "#c9c7c0";
     }
 }

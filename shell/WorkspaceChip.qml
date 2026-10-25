@@ -37,7 +37,7 @@ Item {
                 required property var modelData
                 width: 8
                 height: 3
-                color: AppColors.of(modelData.app)
+                color: root.active ? GroundTheme.accInk : GroundTheme.bg // v2: dark marks on the bone plate
                 opacity: modelData.minimized ? 0.4 : 1
             }
         }
