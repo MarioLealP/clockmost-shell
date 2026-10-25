@@ -52,7 +52,7 @@ PanelWindow {
     implicitHeight: Math.ceil(reach * s)
     exclusiveZone: 0
     color: "transparent"
-    WlrLayershell.namespace: "clockmost-bar"
+    WlrLayershell.namespace: "clockmost-bar-v2" // v2: renamed - also forced a fresh surface, dropping the old band blur
     WlrLayershell.layer: WlrLayer.Top
 
     onHoveredChanged: if (!hovered) hideDelay.restart()
@@ -71,7 +71,11 @@ PanelWindow {
     }
 
     // frosted band (CSS backdrop-filter: blur(22px)) via KWin's ext-background-effect
-    BackgroundEffect.blurRegion: null // v2: no frosted band
+    // v2: no frosted band. An explicit empty region, not null: null left KWin's startup blur (the old 52px band) in place
+    BackgroundEffect.blurRegion: noBlur
+    Region {
+        id: noBlur
+    }
     Region {
         id: shownBlur
         item: band
