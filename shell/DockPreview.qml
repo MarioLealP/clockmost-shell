@@ -43,21 +43,9 @@ Item {
         width: 10
         height: 10
         rotation: 45
-        Rectangle {
+        Rectangle { // v2: the pointer matches the bone card
             anchors.fill: parent
-            color: Qt.rgba(16 / 255, 17 / 255, 20 / 255, 0.95)
-        }
-        Rectangle {
-            anchors.right: parent.right
-            width: 1
-            height: parent.height
-            color: Qt.rgba(1, 1, 1, 0.12)
-        }
-        Rectangle {
-            anchors.bottom: parent.bottom
-            width: parent.width
-            height: 1
-            color: Qt.rgba(1, 1, 1, 0.12)
+            color: GroundTheme.ink
         }
     }
 
@@ -74,7 +62,7 @@ Item {
             Text {
                 id: gl
                 text: root.slot ? root.slot.name.toUpperCase() : ""
-                color: Theme.ink2
+                color: GroundTheme.bg // v2: dark ink on the bone card
                 font.family: Theme.mono
                 font.weight: Font.Bold
                 font.pixelSize: 12
@@ -84,7 +72,7 @@ Item {
                 anchors.verticalCenter: gl.verticalCenter
                 width: Math.max(0, cards.width - gl.width - now.width - 16)
                 height: 1
-                color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.2)
+                color: Qt.rgba(0.1, 0.1, 0.09, 0.25)
             }
             Text {
                 id: now
@@ -93,7 +81,7 @@ Item {
                     const n = root.slot ? root.slot.windows.length : 0;
                     return n + (n === 1 ? " WINDOW" : " WINDOWS") + (n > 5 ? " · 5 SHOWN" : "");
                 }
-                color: Theme.dim
+                color: Qt.rgba(0.1, 0.1, 0.09, 0.6)
                 font.family: Theme.mono
                 font.pixelSize: 10
                 font.letterSpacing: Theme.em(10, 0.14)
