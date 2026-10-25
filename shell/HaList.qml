@@ -1,14 +1,10 @@
-// Home Assistant sections (the "Home" dashboard's own sections) - static for now; clicking will pan the ground.
+// Home Assistant sections (the "Home" dashboard's own sections) with a live one-line summary each.
 import QtQuick
 
 Rectangle {
     id: root
 
-    property var sections: [
-        { name: "FELT", state: "QUIET" }, { name: "ROOM", state: "06 ON" }, { name: "MISC", state: "" },
-        { name: "TODAY", state: "3 EVENTS" }, { name: "NEWS", state: "12 NEW" }, { name: "ENDER", state: "IDLE" },
-        { name: "ELEGOO", state: "IDLE" }, { name: "SYSTEMS", state: "ALL OK" }
-    ]
+    property var sections: HaSections.sections
     property string current: ""
 
     width: 354
@@ -24,7 +20,7 @@ Rectangle {
             width: parent.width
             height: 30
             Text { text: "HOME"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 3 }
-            Text { anchors.right: parent.right; text: "HA DASHBOARD"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 9; font.letterSpacing: 2 }
+            Text { anchors.right: parent.right; text: HaClient.connected ? "HA DASHBOARD" : "HA OFFLINE"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 9; font.letterSpacing: 2 }
             Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 2; color: GroundTheme.ink }
         }
 
@@ -60,7 +56,7 @@ Rectangle {
                     anchors.right: parent.right
                     anchors.rightMargin: 4
                     anchors.verticalCenter: parent.verticalCenter
-                    text: modelData.state
+                    text: modelData.summary
                     color: on ? GroundTheme.accInk : GroundTheme.ink2
                     font.family: GroundTheme.mono
                     font.pixelSize: 11
