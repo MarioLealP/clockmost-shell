@@ -16,7 +16,7 @@ Singleton {
         "sensor.news_games", "sensor.news_jn_kids"]
 
     readonly property var sections: [
-        { name: "FELT", summary: root.felt() }, { name: "ROOM", summary: root.roomOn() + " ON" },
+        { name: "ROOM", summary: root.roomOn() + " ON" },
         { name: "MISC", summary: root.misc() }, { name: "TODAY", summary: root.today() },
         { name: "NEWS", summary: root.newsCount() + " STORIES" }, { name: "ENDER", summary: root.printer("sensor.ender_state", "sensor.ender_progress") },
         { name: "ELEGOO", summary: root.printer("sensor.3d_printer_status_atual", "sensor.elegoo_progress") },

@@ -82,7 +82,6 @@ PanelWindow {
     Region {
         id: shownMask
         item: band
-        Region { item: plate }
         Region { item: edge }
     }
     Region {
@@ -117,6 +116,7 @@ PanelWindow {
         }
 
         BarRing {
+            visible: false // v2: no ring / plate / wings / now playing - the clock + media live on the ground
             anchors.horizontalCenter: parent.horizontalCenter
             opacity: root.plateP
         }
@@ -142,6 +142,7 @@ PanelWindow {
 
             BarWing {
                 id: leftWing
+                visible: false
                 leftSide: true
                 x: hud.width / 2 - Theme.plateWidth / 2 - 16 - width
                 // shrinks to the space between the left group + now playing and the plate
@@ -157,6 +158,7 @@ PanelWindow {
             // the app tray)
             NowPlaying {
                 id: media
+                visible: false
                 x: leftWing.x - 12 - width
                 opacity: root.bandP
                 anchors.verticalCenter: band.verticalCenter
@@ -164,6 +166,7 @@ PanelWindow {
 
             BarWing {
                 id: rightWing
+                visible: false
                 leftSide: false
                 x: hud.width / 2 + Theme.plateWidth / 2 + 16
                 room: (hud.width - 20 - right.width - 12) - x
@@ -181,6 +184,7 @@ PanelWindow {
 
         ClockPlate {
             id: plate
+            visible: false
             anchors.horizontalCenter: parent.horizontalCenter
             y: -root.plateReach * 1.1 * (1 - root.plateP)
         }

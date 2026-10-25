@@ -46,8 +46,9 @@ Rectangle {
         x: 6
         anchors.verticalCenter: parent.verticalCenter
 
-        // weather: yellow glyph + temperature / CITY · CONDITION
+        // weather: yellow glyph + temperature / CITY · CONDITION (v2: hidden - the ground's date stack shows it)
         Row {
+            visible: false
             anchors.verticalCenter: parent.verticalCenter
             leftPadding: 8
             spacing: 2

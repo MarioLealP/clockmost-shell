@@ -9,9 +9,9 @@ Rectangle {
 
     width: 34
     height: 16
-    color: on ? Qt.rgba(1, 250 / 255, 0, 0.34) : Qt.rgba(51 / 255, 54 / 255, 60 / 255, 0.6)
+    color: on ? Qt.rgba(1, 95 / 255, 31 / 255, 0.34) : Qt.rgba(51 / 255, 54 / 255, 60 / 255, 0.6)
     border.width: 1
-    border.color: on ? Qt.rgba(1, 250 / 255, 0, 0.45) : Qt.rgba(1, 1, 1, 0.10)
+    border.color: on ? Qt.rgba(1, 95 / 255, 31 / 255, 0.45) : Qt.rgba(1, 1, 1, 0.10)
     Behavior on color { ColorAnimation { duration: 140 } }
 
     Rectangle {

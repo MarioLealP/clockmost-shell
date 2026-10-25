@@ -12,11 +12,11 @@ Item {
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
-            GradientStop { position: 0; color: Qt.rgba(1, 250 / 255, 0, area.containsMouse ? 0.38 : 0.30) }
-            GradientStop { position: 1; color: Qt.rgba(1, 250 / 255, 0, area.containsMouse ? 0.65 : 0.55) }
+            GradientStop { position: 0; color: Qt.rgba(1, 95 / 255, 31 / 255, area.containsMouse ? 0.38 : 0.30) }
+            GradientStop { position: 1; color: Qt.rgba(1, 95 / 255, 31 / 255, area.containsMouse ? 0.65 : 0.55) }
         }
         border.width: 1
-        border.color: Qt.rgba(1, 250 / 255, 0, 0.45)
+        border.color: Qt.rgba(1, 95 / 255, 31 / 255, 0.45)
     }
 
     // the dot grid with the 135deg mask folded in: on a square the gradient runs corner to corner, so a dot at
@@ -32,7 +32,7 @@ Item {
                     const a = Math.max(0, Math.min(1, (t - 0.45) / 0.55));
                     if (a <= 0)
                         continue;
-                    ctx.fillStyle = Qt.rgba(1, 250 / 255, 0, 0.35 * a);
+                    ctx.fillStyle = Qt.rgba(1, 95 / 255, 31 / 255, 0.35 * a);
                     ctx.beginPath();
                     ctx.arc(x, y, 1.15, 0, 2 * Math.PI);
                     ctx.fill();
@@ -48,7 +48,7 @@ Item {
         onPaint: {
             const ctx = getContext("2d");
             ctx.reset();
-            ctx.strokeStyle = "#fffbb0";
+            ctx.strokeStyle = "#ffc9b3";
             ctx.scale(22 / 24, 22 / 24);
             ctx.lineWidth = 2.4;
             for (const [x, y] of [[4, 4], [14, 4], [4, 14], [14, 14]])
@@ -61,7 +61,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 4
         text: "WIN"
-        color: "#d8d36a"
+        color: "#e89a78"
         font.family: Theme.mono
         font.weight: Font.Bold
         font.pixelSize: 7

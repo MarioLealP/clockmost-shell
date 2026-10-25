@@ -1,14 +1,10 @@
-// .left: CLOCKMOST mark, Felt chip, workspace chips.
+// .left: CLOCKMOST mark, workspace chips (v2: the Felt chip left - her column on the ground has it).
 import QtQuick
 
 Row {
     spacing: 14
 
     BarMark {
-        anchors.verticalCenter: parent.verticalCenter
-    }
-
-    FeltChip {
         anchors.verticalCenter: parent.verticalCenter
     }
 

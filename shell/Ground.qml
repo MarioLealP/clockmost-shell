@@ -24,23 +24,22 @@ PanelWindow {
 
     RegMarks { anchors.fill: parent }
 
-    // everything that pans when an HA section opens: the section is parked off-screen left and slides in beside the
-    // list. No motion yet (Mario: "motionless, slap everything working") - the pan is a jump.
+    // the poster. Opening an HA section only moves the orange line out of the way - everything else stays still
+    // (Mario 2026-10-25: "just shift the orange bar, keep everything else still"). No motion yet: it jumps.
     Item {
         id: pan
         visible: root.main
-        x: root.main && HaSections.current !== "" ? 1170 : 0
         width: parent.width
         height: parent.height
 
-        GroundLine { x: 920; y: -140 }
+        GroundLine { x: HaSections.current !== "" ? 1620 : 920; y: -140 }
 
         Loader {
-            x: 470 - 1170
+            x: 470
             y: 150
             active: HaSections.current !== ""
             sourceComponent: ({
-                FELT: secFelt, ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
+                ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
                 ENDER: secEnder, ELEGOO: secElegoo, SYSTEMS: secSystems
             })[HaSections.current] ?? null
         }
@@ -64,7 +63,6 @@ PanelWindow {
         DateStack { anchors.right: parent.right; anchors.rightMargin: 110; anchors.bottom: parent.bottom; anchors.bottomMargin: 150 }
     }
 
-    Component { id: secFelt; SecFelt {} }
     Component { id: secRoom; SecRoom {} }
     Component { id: secMisc; SecMisc {} }
     Component { id: secToday; SecToday {} }

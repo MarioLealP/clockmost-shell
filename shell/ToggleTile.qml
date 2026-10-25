@@ -19,9 +19,9 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: root.on ? Qt.rgba(1, 250 / 255, 0, 0.34) : Qt.rgba(51 / 255, 54 / 255, 60 / 255, area.containsMouse && root.available ? 0.6 : 0.45)
+        color: root.on ? Qt.rgba(1, 95 / 255, 31 / 255, 0.34) : Qt.rgba(51 / 255, 54 / 255, 60 / 255, area.containsMouse && root.available ? 0.6 : 0.45)
         border.width: 1
-        border.color: root.on ? Qt.rgba(1, 250 / 255, 0, 0.4) : Qt.rgba(1, 1, 1, 0.07)
+        border.color: root.on ? Qt.rgba(1, 95 / 255, 31 / 255, 0.4) : Qt.rgba(1, 1, 1, 0.07)
         Behavior on color { ColorAnimation { duration: 160; easing.type: Easing.OutCubic } }
     }
 
@@ -37,7 +37,7 @@ Item {
             for (let y = 3; y < height; y += 6)
                 for (let x = 3; x < width; x += 6) {
                     const t = Math.max(0, (x / width - 0.45) / 0.55);
-                    ctx.fillStyle = Qt.rgba(1, 250 / 255, 0, 0.3 * t);
+                    ctx.fillStyle = Qt.rgba(1, 95 / 255, 31 / 255, 0.3 * t);
                     ctx.beginPath();
                     ctx.arc(x, y, 1, 0, 2 * Math.PI);
                     ctx.fill();

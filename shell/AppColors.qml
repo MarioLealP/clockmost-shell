@@ -17,7 +17,7 @@ Singleton {
             "spectacle": "#ff1aac",
             "downloads": "#7ddb57",
             "zabbix": "#d91e36",
-            "clockmost": "#FFFA00"
+            "clockmost": "#ff5f1f"
         })
     readonly property var palette: ["#7ddb57", "#ff7a1a", "#cfc6f4", "#5aa7ff", "#ff1aac", "#3FD0E8"]
 

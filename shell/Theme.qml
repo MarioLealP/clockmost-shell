@@ -9,7 +9,7 @@ Singleton {
     readonly property color ink2: "#c9ccd3"
     readonly property color dim: "#7d8089"
     readonly property color faint: "#55575e"
-    readonly property color yellow: "#FFFA00"
+    readonly property color yellow: "#ff5f1f" // v2: the one accent is signal orange (name kept: used everywhere)
     readonly property color cyan: "#3FD0E8"
     readonly property color magenta: "#ff1aac"
     readonly property color green: "#7ddb57"

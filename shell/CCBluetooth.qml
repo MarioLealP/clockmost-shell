@@ -155,9 +155,9 @@ CCTab {
                 anchors.right: parent.right
                 width: scanText.implicitWidth + 16
                 height: 22
-                color: root.adapter?.discovering ? Qt.rgba(1, 250 / 255, 0, 0.34) : scanArea.containsMouse ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
+                color: root.adapter?.discovering ? Qt.rgba(1, 95 / 255, 31 / 255, 0.34) : scanArea.containsMouse ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
                 border.width: 1
-                border.color: root.adapter?.discovering ? Qt.rgba(1, 250 / 255, 0, 0.45) : Qt.rgba(1, 1, 1, 0.16)
+                border.color: root.adapter?.discovering ? Qt.rgba(1, 95 / 255, 31 / 255, 0.45) : Qt.rgba(1, 1, 1, 0.16)
                 Text {
                     id: scanText
                     anchors.centerIn: parent

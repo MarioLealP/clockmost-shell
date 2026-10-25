@@ -12,15 +12,18 @@ Rectangle {
     height: col.height + 12
     color: GroundTheme.bg
 
+    // her HA switches, live and clickable (the FELT list section moved here - Mario 2026-10-25)
     component Chip: Rectangle {
         property string label
-        property bool on: false
+        property string entity
+        readonly property bool on: HaClient.isOn(entity)
         width: t.implicitWidth + 16
         height: 24
         color: "transparent"
         border.width: 1
         border.color: on ? GroundTheme.ink : GroundTheme.line
         Text { id: t; anchors.centerIn: parent; text: parent.label; color: parent.on ? GroundTheme.ink : GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 2 }
+        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: HaClient.toggle(parent.entity) }
     }
 
     Column {
@@ -57,7 +60,7 @@ Rectangle {
         Item {
             width: parent.width
             height: 24
-            Row { spacing: 6; Chip { label: "QUIET"; on: true } Chip { label: "HIDDEN"; on: true } Chip { label: "DJ" } }
+            Row { spacing: 6; Chip { label: "QUIET"; entity: "switch.felt_quiet" } Chip { label: "HIDDEN"; entity: "switch.felt_hidden" } Chip { label: "DJ"; entity: "switch.felt_dj_mode" } }
             Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: "BONSAI 27B  ·  IDLE"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 2 }
         }
 

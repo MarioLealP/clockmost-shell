@@ -40,6 +40,21 @@ ShellRoot {
         }
     }
 
+    // v2: the ground (desktop layer) on every screen - the poster on the ultrawide
+    IpcHandler {
+        target: "ground"
+        function open(section: string): void { HaSections.current = section.toUpperCase(); }
+        function close(): void { HaSections.current = ""; }
+    }
+    Variants {
+        model: Quickshell.screens
+        Ground {
+            required property var modelData
+            screen: modelData
+            main: modelData.name === "DP-2"
+        }
+    }
+
     // the app drawer and notification popups live on the first screen
     DrawerWindow {
         screen: Quickshell.screens[0]

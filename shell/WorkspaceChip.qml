@@ -14,9 +14,9 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: root.active ? Qt.rgba(1, 250 / 255, 0, 0.34) : Qt.rgba(51 / 255, 54 / 255, 60 / 255, 0.55)
+        color: root.active ? Qt.rgba(1, 95 / 255, 31 / 255, 0.34) : Qt.rgba(51 / 255, 54 / 255, 60 / 255, 0.55)
         border.width: 1
-        border.color: root.active ? Qt.rgba(1, 250 / 255, 0, 0.45) : Qt.rgba(1, 1, 1, area.containsMouse ? 0.22 : 0.08)
+        border.color: root.active ? Qt.rgba(1, 95 / 255, 31 / 255, 0.45) : Qt.rgba(1, 1, 1, area.containsMouse ? 0.22 : 0.08)
         Behavior on color { ColorAnimation { duration: 160; easing.type: Easing.OutCubic } }
         Behavior on border.color { ColorAnimation { duration: 160 } }
     }
@@ -32,7 +32,7 @@ Item {
             for (let y = 3; y < height; y += 6) {
                 for (let x = 3; x < width; x += 6) {
                     const t = Math.max(0, (x / width - 0.4) / 0.6);
-                    ctx.fillStyle = Qt.rgba(1, 250 / 255, 0, 0.35 * t);
+                    ctx.fillStyle = Qt.rgba(1, 95 / 255, 31 / 255, 0.35 * t);
                     ctx.beginPath();
                     ctx.arc(x, y, 1, 0, 2 * Math.PI);
                     ctx.fill();
@@ -45,7 +45,7 @@ Item {
         x: 7
         y: 5
         text: String(root.desktop.number).padStart(2, "0")
-        color: root.active ? "#fffbb0" : Theme.dim
+        color: root.active ? "#ffc9b3" : Theme.dim
         font.family: Theme.mono
         font.weight: Font.Bold
         font.pixelSize: 13
