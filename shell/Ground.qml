@@ -24,14 +24,26 @@ PanelWindow {
 
     RegMarks { anchors.fill: parent }
 
-    // everything that pans when an HA section opens (the pan itself is a later step)
+    // everything that pans when an HA section opens: the section is parked off-screen left and slides in beside the
+    // list. No motion yet (Mario: "motionless, slap everything working") - the pan is a jump.
     Item {
         id: pan
         visible: root.main
+        x: root.main && HaSections.current !== "" ? 1170 : 0
         width: parent.width
         height: parent.height
 
         GroundLine { x: 920; y: -140 }
+
+        Loader {
+            x: 470 - 1170
+            y: 150
+            active: HaSections.current !== ""
+            sourceComponent: ({
+                FELT: secFelt, ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
+                ENDER: secEnder, ELEGOO: secElegoo, SYSTEMS: secSystems
+            })[HaSections.current] ?? null
+        }
 
         Text {
             x: 96
@@ -52,6 +64,29 @@ PanelWindow {
         NowPlayingBlock { x: 760; anchors.bottom: parent.bottom; anchors.bottomMargin: 30 }
         DateStack { anchors.right: parent.right; anchors.rightMargin: 110; anchors.bottom: parent.bottom; anchors.bottomMargin: 150 }
     }
+
+    Component { id: secFelt; SecFelt {} }
+    Component { id: secRoom; SecRoom {} }
+    Component { id: secMisc; SecMisc {} }
+    Component { id: secToday; SecToday {} }
+    Component { id: secNews; SecNews {} }
+    Component {
+        id: secEnder
+        SecPrinter {
+            title: "ENDER"; stateId: "sensor.ender_state"; progressId: "sensor.ender_progress"
+            rows: [["FILE", "sensor.ender_file"], ["LAYER", "sensor.ender_layer"], ["ELAPSED", "sensor.ender_elapsed"],
+                ["LEFT", "sensor.ender_time_left"], ["DONE AT", "sensor.ender_done_at"], ["NOZZLE", "sensor.ender_nozzle", " °C"], ["BED", "sensor.ender_bed", " °C"]]
+        }
+    }
+    Component {
+        id: secElegoo
+        SecPrinter {
+            title: "ELEGOO"; stateId: "sensor.3d_printer_status_atual"; progressId: "sensor.elegoo_progress"
+            rows: [["FILE", "sensor.elegoo_file"], ["PRINT", "sensor.3d_printer_status_de_impressao"], ["LAYER", "sensor.3d_printer_current_layer"],
+                ["OF", "sensor.3d_printer_total_layers"], ["LEFT", "sensor.3d_printer_remaining_print_time"], ["ENDS", "sensor.3d_printer_end_time"], ["UV LED", "sensor.3d_printer_uv_led_temp", " °C"]]
+        }
+    }
+    Component { id: secSystems; SecSystems {} }
 
     // fixed: the controls don't pan
     HaList { visible: root.main; x: 84; y: 150 }

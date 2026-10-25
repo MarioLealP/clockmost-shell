@@ -6,6 +6,8 @@ import Quickshell
 Singleton {
     id: root
 
+    property string current: "" // the open section ("" = none); the ground pans while one is open
+
     readonly property var room: ["light.chandelure", "light.yeelight_colorb_0x1b2f7704", "light.yeelight_colorb_0x1b1932dc",
         "light.yeelight_colorb_0x1b19e91f", "light.yeelight_colorb_0x1be53fa1", "light.shelf", "switch.extraplug", "fan.core_300s_series"]
     readonly property var calendars: ["calendar.lealmario47_gmail_com", "calendar.lealmariop_gmail_com",
@@ -55,5 +57,12 @@ Singleton {
     Component.onCompleted: HaClient.entities = root.room.concat(root.calendars, root.news, [
         "switch.felt_quiet", "switch.felt_hidden", "switch.felt_dj_mode", "todo.shopping_list",
         "sensor.ender_state", "sensor.ender_progress", "sensor.3d_printer_status_atual", "sensor.elegoo_progress",
-        "sensor.felt_needs_you", "sensor.shelf_power", "sensor.core_300s_series_pm2_5"])
+        "sensor.felt_needs_you", "sensor.shelf_power", "sensor.core_300s_series_pm2_5", "sensor.extraplug_power",
+        "media_player.spotify_clockmost", "weather.forecast_home", "sensor.pocox7_next_alarm",
+        "sensor.ender_file", "sensor.ender_layer", "sensor.ender_elapsed", "sensor.ender_time_left", "sensor.ender_done_at",
+        "sensor.ender_nozzle", "sensor.ender_bed", "sensor.3d_printer_status_de_impressao", "sensor.elegoo_file",
+        "sensor.3d_printer_current_layer", "sensor.3d_printer_total_layers", "sensor.3d_printer_remaining_print_time",
+        "sensor.3d_printer_end_time", "sensor.3d_printer_uv_led_temp", "sensor.felt_server", "sensor.felt_backups",
+        "sensor.felt_security", "sensor.felt_desktop", "sensor.felt_laptop", "sensor.felt_router", "sensor.backup_state",
+        "sensor.backup_last_successful_automatic_backup"])
 }

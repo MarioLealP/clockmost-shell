@@ -5,7 +5,7 @@ Rectangle {
     id: root
 
     property var sections: HaSections.sections
-    property string current: ""
+    readonly property string current: HaSections.current
 
     width: 354
     height: list.height + 12
@@ -63,6 +63,12 @@ Rectangle {
                     font.letterSpacing: 2
                 }
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    // clicking the open row again closes it (Mario: back = click again or BACK)
+                    onClicked: HaSections.current = on ? "" : modelData.name
+                }
             }
         }
     }

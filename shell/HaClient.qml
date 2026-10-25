@@ -22,6 +22,16 @@ Singleton {
     function attr(id, key) { return root.states[id]?.a?.[key]; }
     function isOn(id) { return root.st(id) === "on"; }
 
+    property var pending: ({}) // id -> callback, for request/response commands (todo items)
+
+    function call(domain, service, entityId, data) {
+        root.send({ type: "call_service", domain: domain, service: service, target: { entity_id: entityId }, service_data: data ?? {} });
+    }
+    function request(msg, cb) {
+        root.pending[root.nextId] = cb;
+        root.send(msg);
+    }
+
     function toggle(entityId) {
         root.send({ type: "call_service", domain: entityId.split(".")[0], service: "toggle", target: { entity_id: entityId } });
     }
@@ -40,6 +50,10 @@ Singleton {
                 root.send({ type: "subscribe_entities", entity_ids: root.entities });
         } else if (m.type === "auth_invalid") {
             console.warn("ha: auth_invalid - check the clockmost-desktop token in KeePassXC");
+        } else if (m.type === "result" && root.pending[m.id]) {
+            const cb = root.pending[m.id];
+            delete root.pending[m.id];
+            cb(m.success ? m.result : null);
         } else if (m.type === "event" && m.event) {
             root.apply(m.event);
         }
