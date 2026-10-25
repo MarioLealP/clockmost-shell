@@ -1,6 +1,4 @@
-// ds-dock-v2 .drawer: 56px olive slab - linear-gradient(180deg, rgba(255,250,0,.30), rgba(255,250,0,.55)),
-// 1px rgba(255,250,0,.45) border, #fffbb0 2x2 grid glyph (22px, stroke 2.4); ::after = 6px dot grid
-// rgba(255,250,0,.35) masked by linear-gradient(135deg, transparent 45%, #000); "WIN" 700 7px mono .14em #d8d36a.
+// The dock's drawer button (v2): an outlined dark tile with a magnifier; click = the app drawer.
 import QtQuick
 
 Item {
