@@ -53,10 +53,11 @@ Column {
 
     Big { text: Weather.ready ? Weather.temperature + "°" : "--°" }
     Small { text: Weather.ready ? (Weather.city + "  ·  " + Weather.condition).toUpperCase() : "LOCATING" }
-    Big { text: Qt.formatDate(clock.date, "yyyy").slice(0, 2) }
-    Big { text: Qt.formatDate(clock.date, "yyyy").slice(2); slash: true }
+    // dd / mm / yyyy - European order (Mario 2026-10-25), the year split over two rows
+    Big { text: Qt.formatDate(clock.date, "dd"); slash: true }
     Big { text: Qt.formatDate(clock.date, "MM"); slash: true }
-    Big { text: Qt.formatDate(clock.date, "dd") }
+    Big { text: Qt.formatDate(clock.date, "yyyy").slice(0, 2) }
+    Big { text: Qt.formatDate(clock.date, "yyyy").slice(2) }
     Text {
         anchors.right: parent.right
         topPadding: 18
