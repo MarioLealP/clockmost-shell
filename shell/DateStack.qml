@@ -5,7 +5,7 @@ import Quickshell
 Column {
     id: root
 
-    spacing: -14
+    spacing: 0
 
     SystemClock {
         id: clock
@@ -18,9 +18,11 @@ Column {
         property color tint: GroundTheme.ink
         anchors.right: parent.right
         width: t.implicitWidth
-        height: t.implicitHeight
+        height: 94 // the poster's tight 0.84 line height: the glyphs overflow the row on purpose
         Text {
             id: t
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: -18
             text: parent.text
             color: parent.tint
             font.family: GroundTheme.display
@@ -30,8 +32,8 @@ Column {
         }
         Rectangle {
             visible: parent.slash
-            x: parent.width + 18
-            y: parent.height - 108
+            x: parent.width + 30
+            y: parent.height - 94
             width: 4
             height: 92
             color: parent.tint

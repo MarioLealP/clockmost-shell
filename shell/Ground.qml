@@ -39,10 +39,10 @@ PanelWindow {
             text: "✖✖✖✖✖✖✖✖✖✖\n✖✖✖✖✖✖✖✖✖✖"
             color: GroundTheme.faint
             font.family: GroundTheme.display
-            font.pixelSize: 48
+            font.pixelSize: 40
             font.weight: Font.Black
-            font.letterSpacing: 4
-            lineHeight: 1
+            font.letterSpacing: 2
+            lineHeight: 0.8
         }
 
         HeroSlices { x: 1640; y: 170 }
