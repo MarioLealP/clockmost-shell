@@ -43,9 +43,21 @@ Item {
         width: 10
         height: 10
         rotation: 45
-        Rectangle { // v2: the pointer matches the bone card
+        Rectangle {
             anchors.fill: parent
-            color: GroundTheme.ink
+            color: Qt.rgba(16 / 255, 17 / 255, 20 / 255, 0.95)
+        }
+        Rectangle {
+            anchors.right: parent.right
+            width: 1
+            height: parent.height
+            color: Qt.rgba(1, 1, 1, 0.12)
+        }
+        Rectangle {
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 1
+            color: Qt.rgba(1, 1, 1, 0.12)
         }
     }
 
