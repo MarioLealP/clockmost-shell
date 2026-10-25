@@ -5,20 +5,22 @@ import QtQuick
 import Quickshell
 
 Singleton {
-    readonly property color ink: "#f1f1f4"
-    readonly property color ink2: "#c9ccd3"
-    readonly property color dim: "#7d8089"
-    readonly property color faint: "#55575e"
+    // v2 (2026-10-25): the ground's bone ink scale - everything built on Theme follows the new desktop
+    readonly property color ink: "#e8e6df"
+    readonly property color ink2: "#c9c7c0"
+    readonly property color dim: "#8a8881"
+    readonly property color faint: "#55554f"
     readonly property color yellow: "#ff5f1f" // v2: the one accent is signal orange (name kept: used everywhere)
-    readonly property color cyan: "#3FD0E8"
-    readonly property color magenta: "#ff1aac"
-    readonly property color green: "#7ddb57"
-    readonly property color orange: "#ff9e2c"
+    // v2: one loud colour - the old cyan / magenta / green tags become bone; crimson stays for real errors
+    readonly property color cyan: "#e8e6df"
+    readonly property color magenta: "#e8e6df"
+    readonly property color green: "#e8e6df"
+    readonly property color orange: "#ff5f1f"
     readonly property color crimson: "#d91e36"
     readonly property color plateInk: "#111111"
 
     readonly property string mono: "JetBrains Mono"
-    readonly property string body: "Inter"
+    readonly property string body: GroundTheme.display // v2: Archivo
 
     // ds-topbar-v2 geometry
     readonly property int band: 88 // v2: room for the 52px plates 18px down from the top edge

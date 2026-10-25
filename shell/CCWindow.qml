@@ -9,8 +9,7 @@ PanelWindow {
     id: root
 
     readonly property real s: Math.min(1, width / 1920)
-    property real openP: ControlCenter.open ? 1 : 0
-    Behavior on openP { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+    property real openP: ControlCenter.open ? 1 : 0 // v2: no motion yet - opens/closes instantly
 
     readonly property bool mine: ControlCenter.screenName === "" || ControlCenter.screenName === screen?.name
     visible: mine && (ControlCenter.open || openP > 0.001)
@@ -51,18 +50,6 @@ PanelWindow {
         scale: root.s
         transformOrigin: Item.TopLeft
 
-        // tether from the plate's tri-band down to the panel (only when it hangs under the plate);
-        // outside the panel because the panel clips its children
-        Rectangle {
-            visible: panel.underPlate
-            opacity: root.openP
-            x: scaled.width / 2
-            y: panel.y - 12
-            width: 1
-            height: 11
-            color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.35)
-        }
-
         Item {
             id: panel
             // centred under the widget / pointer that opened it, kept 16px inside the screen
@@ -70,17 +57,10 @@ PanelWindow {
                 const maxX = scaled.width - width - 16;
                 return ControlCenter.anchorX < 0 ? maxX : Math.max(16, Math.min(maxX, ControlCenter.anchorX / root.s - width / 2));
             }
-            Behavior on x {
-                enabled: root.openP > 0.99 // slide when re-targeted while open; appear in place otherwise
-                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-            }
-            // under the hanging clock plate: drop below it (the calendar mock: top 112, tethered to the tri-band)
-            readonly property bool underPlate: x < scaled.width / 2 + Theme.plateWidth / 2 && x + width > scaled.width / 2 - Theme.plateWidth / 2
-            y: (underPlate ? 112 : 62) - 12 * (1 - root.openP)
+            y: 84 // v2: just under the bar's plates (they end at 70)
             opacity: root.openP
             width: rail.width + 1 + content.width
             height: Math.max(rail.implicitHeight + 20, content.height)
-            Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
             clip: true
 
             // swallow clicks so they don't reach the close catcher
@@ -89,14 +69,12 @@ PanelWindow {
                 acceptedButtons: Qt.AllButtons
             }
 
+            // v2: a flat graphite panel with a hairline, like the ground's sections
             Rectangle {
                 anchors.fill: parent
+                color: GroundTheme.bg
                 border.width: 1
-                border.color: Qt.rgba(1, 1, 1, 0.12)
-                gradient: Gradient {
-                    GradientStop { position: 0; color: Qt.rgba(30 / 255, 31 / 255, 36 / 255, 0.96) }
-                    GradientStop { position: 1; color: Qt.rgba(13 / 255, 14 / 255, 17 / 255, 0.97) }
-                }
+                border.color: GroundTheme.line
             }
 
             CCRail {
@@ -118,20 +96,6 @@ PanelWindow {
                 sourceComponent: ({ home: homeTab, audio: audioTab, network: networkTab, bluetooth: bluetoothTab, media: mediaTab, calendar: calendarTab, clipboard: clipboardTab, notifications: notificationsTab })[ControlCenter.tab] ?? placeholder
             }
 
-            // corner brackets: top-left, bottom-right (14px, 2px)
-            Repeater {
-                model: [{ x: -1, y: -1, r: 0 }, { x: panel.width - 13, y: panel.height - 13, r: 180 }]
-                Item {
-                    required property var modelData
-                    x: modelData.x
-                    y: modelData.y
-                    width: 14
-                    height: 14
-                    rotation: modelData.r
-                    Rectangle { width: 14; height: 2; color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.5) }
-                    Rectangle { width: 2; height: 14; color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.5) }
-                }
-            }
         }
     }
 
