@@ -5,10 +5,10 @@
 pkgname=clockmost-shell
 pkgver=0.1.13
 pkgrel=1
-pkgdesc="The clockmost Endfield desktop shell for KDE Plasma: bar, control center, dock, app drawer, notifications, Win+V clipboard (Quickshell)"
+pkgdesc="The clockmost desktop shell for KDE Plasma: v2 desktop layer (ground), bar, control center, dock, app drawer, notifications, Win+V clipboard (Quickshell)"
 arch=('x86_64')
 url="https://git.clockmost.com/pkgs/${pkgname}"
-license=('MIT')
+license=('MIT' 'OFL-1.1')  # OFL: the bundled Archivo font
 depends=(
   'gcc-libs' 'glibc'
   'quickshell' 'qt6-websockets'  # the shell; the media tab's spectrum socket
@@ -51,5 +51,6 @@ package() {
   install -Dm644 install/setup.d/10-clockmost-shell.sh "$pkgdir/usr/share/clockmost-desktop/setup.d/10-clockmost-shell.sh"
 
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 shell/assets/fonts/Archivo-OFL.txt "$pkgdir/usr/share/licenses/$pkgname/Archivo-OFL.txt"
   install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
 }

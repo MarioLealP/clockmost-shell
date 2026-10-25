@@ -5,6 +5,8 @@ import Quickshell
 import Quickshell.Io
 
 ShellRoot {
+    id: root
+
     IpcHandler {
         target: "controlcenter"
         function open(tab: string): void { ControlCenter.show(tab, ""); }
@@ -40,14 +42,29 @@ ShellRoot {
         }
     }
 
-    // v2: the ground (desktop layer) on every screen - the poster on the ultrawide
+    // v2: the ground (desktop layer) on every screen - the poster on the ultrawide.
+    // Off switch: ~/.config/clockmost/ground-off exists = no ground (Plasma's desktop shows), the rest stays.
+    // Checked every 10 s, so creating / deleting the file takes effect without a restart.
+    property bool groundOff: false
+    Process {
+        id: groundSwitch
+        command: ["test", "-e", Quickshell.env("HOME") + "/.config/clockmost/ground-off"]
+        running: true
+        onExited: code => root.groundOff = code === 0
+    }
+    Timer {
+        interval: 10000
+        running: true
+        repeat: true
+        onTriggered: groundSwitch.running = true
+    }
     IpcHandler {
         target: "ground"
         function open(section: string): void { HaSections.current = section.toUpperCase(); }
         function close(): void { HaSections.current = ""; }
     }
     Variants {
-        model: Quickshell.screens
+        model: root.groundOff ? [] : Quickshell.screens
         Ground {
             required property var modelData
             screen: modelData
