@@ -136,7 +136,7 @@ PanelWindow {
 
             BarLeft {
                 id: left
-                x: 20 - 12 * (1 - root.bandP)
+                x: 40 - 12 * (1 - root.bandP) // v2: inset to the ground's corner marks
                 opacity: root.bandP
                 anchors.verticalCenter: band.verticalCenter
             }
@@ -177,7 +177,7 @@ PanelWindow {
 
             BarRight {
                 id: right
-                x: hud.width - 20 - width + 12 * (1 - root.bandP)
+                x: hud.width - 40 - width + 12 * (1 - root.bandP)
                 opacity: root.bandP
                 anchors.verticalCenter: band.verticalCenter
             }

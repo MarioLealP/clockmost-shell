@@ -8,9 +8,9 @@ Item {
 
     // [x, y, size, stroke, blurred] in ground coordinates
     property var marks: [
-        [1560, 300, 60, 22, false], [1610, 420, 40, 16, false], [1650, 520, 26, 11, false],
-        [2560, 600, 50, 18, false], [2610, 700, 22, 9, false], [1980, 1180, 34, 12, false],
-        [2470, 1150, 150, 60, true], [1480, 120, 110, 44, true]
+        [1560, 255, 60, 22, false], [1610, 375, 40, 16, false], [1650, 475, 26, 11, false],
+        [2560, 555, 50, 18, false], [2610, 655, 22, 9, false], [1980, 1135, 34, 12, false],
+        [2470, 1105, 150, 60, true], [1480, 75, 110, 44, true]
     ]
 
     Repeater {

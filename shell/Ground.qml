@@ -38,7 +38,7 @@ PanelWindow {
 
         Loader {
             x: 470
-            y: 150
+            y: 104
             active: HaSections.current !== ""
             sourceComponent: ({
                 ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
@@ -48,7 +48,7 @@ PanelWindow {
 
         Text {
             x: 96
-            y: 590
+            y: 545
             text: "✖✖✖✖✖✖✖✖✖✖\n✖✖✖✖✖✖✖✖✖✖"
             color: GroundTheme.faint
             font.family: GroundTheme.display
@@ -58,7 +58,7 @@ PanelWindow {
             lineHeight: 0.8
         }
 
-        HeroSlices { x: 1640; y: 170 }
+        HeroSlices { x: 1640; y: 125 }
         XMarks {}
 
         GroundBarcode { x: 96; anchors.bottom: parent.bottom; anchors.bottomMargin: 140 }
@@ -88,6 +88,6 @@ PanelWindow {
     Component { id: secSystems; SecSystems {} }
 
     // fixed: the controls don't pan
-    HaList { visible: root.main; x: 84; y: 150 }
-    FeltColumn { visible: root.main; anchors.right: parent.right; anchors.rightMargin: 96; y: 150 }
+    HaList { visible: root.main; x: 84; y: 104 }
+    FeltColumn { visible: root.main; anchors.right: parent.right; anchors.rightMargin: 96; y: 104 }
 }

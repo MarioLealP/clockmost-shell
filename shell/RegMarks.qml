@@ -5,7 +5,7 @@ Item {
     id: root
 
     property int inset: 40
-    property int topY: 92
+    property int topY: 84
     property int size: 28
 
     component Corner: Item {
