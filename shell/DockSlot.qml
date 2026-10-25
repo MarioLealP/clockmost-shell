@@ -52,8 +52,7 @@ Item {
         NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
     }
 
-    property real lift: focused ? 1 : 0
-    Behavior on lift { NumberAnimation { duration: 260; easing.type: Easing.OutQuart } }
+    property real lift: 0 // v2: no focus lift (motionless build) - the focused tile is orange instead
 
     Item {
         id: body
@@ -82,25 +81,10 @@ Item {
             opacity: root.allMinimized ? 0.45 : 1
             Behavior on opacity { NumberAnimation { duration: 180 } }
 
+            // v2: a dark tile on the bone plate; the focused app's tile is the orange one
             Rectangle {
                 anchors.fill: parent
-                gradient: Gradient {
-                    GradientStop { position: 0.25; color: Qt.rgba(58 / 255, 62 / 255, 70 / 255, 0.5) }
-                    GradientStop { position: 1.0; color: root.mix(root.c, Qt.rgba(30 / 255, 32 / 255, 37 / 255, 0.6), 0.42) }
-                }
-            }
-            Image {
-                anchors.fill: parent
-                source: Qt.resolvedUrl("assets/topo-card.svg")
-                sourceSize.width: width
-                sourceSize.height: height
-                opacity: 0.35
-            }
-            InsetShadow {
-                radius: 0
-                offsetY: 2
-                blur: 10
-                color: Qt.rgba(0, 0, 0, root.focused ? 0.5 : 0.55)
+                color: root.focused ? GroundTheme.acc : GroundTheme.bg
             }
 
             Image {
@@ -126,50 +110,14 @@ Item {
                 font.pixelSize: 20
             }
 
-            // ::before corner cut: linear-gradient(135deg, c 50%, transparent 50%) in 12x12
-            Canvas {
-                width: 12
-                height: 12
-                property color c: root.c
-                onCChanged: requestPaint()
-                onPaint: {
-                    const ctx = getContext("2d");
-                    ctx.reset();
-                    ctx.fillStyle = c;
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(12, 0);
-                    ctx.lineTo(0, 12);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-            }
-
             Text {
                 x: 4
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 6
+                y: 3
                 text: DockApps.code(root.slot)
-                color: root.mix(root.c, Qt.rgba(1, 1, 1, 1), 0.7)
-                opacity: 0.7
-                font.family: Theme.mono
+                color: root.focused ? GroundTheme.accInk : GroundTheme.ink2
+                font.family: GroundTheme.mono
                 font.pixelSize: 7
-                font.letterSpacing: Theme.em(7, 0.12)
-            }
-
-            Rectangle {
-                anchors.bottom: parent.bottom
-                width: parent.width
-                height: 3
-                color: root.focused ? Theme.yellow : root.c
-            }
-
-            // border: 1px rgba(255,255,255,.10), focus 2px yellow
-            Rectangle {
-                anchors.fill: parent
-                color: "transparent"
-                border.width: root.focused ? 2 : 1
-                border.color: root.focused ? Theme.yellow : Qt.rgba(1, 1, 1, 0.10)
+                font.letterSpacing: 1
             }
         }
 
@@ -217,7 +165,7 @@ Item {
                         width: 8
                         height: modelData.minimized ? 1 : 3
                         opacity: modelData.minimized ? 0.5 : 1
-                        color: root.focused && !modelData.minimized ? Theme.yellow : root.c
+                        color: root.focused && !modelData.minimized ? GroundTheme.acc : GroundTheme.bg
                     }
                 }
             }

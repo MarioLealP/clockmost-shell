@@ -2,20 +2,23 @@
 import QtQuick
 
 Row {
-    spacing: 14
+    spacing: 6
 
     BarMark {
         anchors.verticalCenter: parent.verticalCenter
     }
 
-    Row {
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 6
-        Repeater {
-            model: KWin.desktops
-            WorkspaceChip {
-                required property var modelData
-                desktop: modelData
+    Plate {
+        pad: 7
+        Row {
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 4
+            Repeater {
+                model: KWin.desktops
+                WorkspaceChip {
+                    required property var modelData
+                    desktop: modelData
+                }
             }
         }
     }

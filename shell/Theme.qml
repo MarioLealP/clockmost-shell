@@ -21,7 +21,7 @@ Singleton {
     readonly property string body: "Inter"
 
     // ds-topbar-v2 geometry
-    readonly property int band: 52
+    readonly property int band: 88 // v2: room for the 52px plates 18px down from the top edge
     readonly property int plateWidth: 320
     readonly property int plateHeight: 96
     readonly property int triBand: 5

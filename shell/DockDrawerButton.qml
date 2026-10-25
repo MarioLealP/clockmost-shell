@@ -9,63 +9,42 @@ Item {
     width: 56
     height: 56
 
+    // v2: an outlined dark tile on the bone plate with a magnifier - the drawer is search-first
     Rectangle {
         anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0; color: Qt.rgba(1, 95 / 255, 31 / 255, area.containsMouse ? 0.38 : 0.30) }
-            GradientStop { position: 1; color: Qt.rgba(1, 95 / 255, 31 / 255, area.containsMouse ? 0.65 : 0.55) }
-        }
-        border.width: 1
-        border.color: Qt.rgba(1, 95 / 255, 31 / 255, 0.45)
-    }
-
-    // the dot grid with the 135deg mask folded in: on a square the gradient runs corner to corner, so a dot at
-    // (x, y) sits at t = (x + y) / (w + h); alpha 0 until t = .45, then linear to 1
-    Canvas {
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            for (let y = 3; y < height; y += 6) {
-                for (let x = 3; x < width; x += 6) {
-                    const t = (x + y) / (width + height);
-                    const a = Math.max(0, Math.min(1, (t - 0.45) / 0.55));
-                    if (a <= 0)
-                        continue;
-                    ctx.fillStyle = Qt.rgba(1, 95 / 255, 31 / 255, 0.35 * a);
-                    ctx.beginPath();
-                    ctx.arc(x, y, 1.15, 0, 2 * Math.PI);
-                    ctx.fill();
-                }
-            }
-        }
+        color: area.containsMouse ? Qt.rgba(0, 0, 0, 0.08) : "transparent"
+        border.width: 1.5
+        border.color: GroundTheme.bg
     }
 
     Canvas {
         anchors.centerIn: parent
-        width: 22
-        height: 22
+        width: 24
+        height: 24
         onPaint: {
             const ctx = getContext("2d");
             ctx.reset();
-            ctx.strokeStyle = "#ffc9b3";
-            ctx.scale(22 / 24, 22 / 24);
-            ctx.lineWidth = 2.4;
-            for (const [x, y] of [[4, 4], [14, 4], [4, 14], [14, 14]])
-                ctx.strokeRect(x, y, 6, 6);
+            ctx.strokeStyle = GroundTheme.bg;
+            ctx.lineWidth = 2;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.arc(10.5, 10.5, 6.5, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(15.5, 15.5);
+            ctx.lineTo(21, 21);
+            ctx.stroke();
         }
     }
 
     Text {
-        x: 5
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 4
-        text: "WIN"
-        color: "#e89a78"
-        font.family: Theme.mono
-        font.weight: Font.Bold
+        x: 4
+        y: 3
+        text: "SEARCH"
+        color: Qt.rgba(0.1, 0.1, 0.09, 0.6)
+        font.family: GroundTheme.mono
         font.pixelSize: 7
-        font.letterSpacing: Theme.em(7, 0.14)
+        font.letterSpacing: 1
     }
 
     MouseArea {

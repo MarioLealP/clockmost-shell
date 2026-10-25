@@ -1,42 +1,25 @@
-// CLOCKMOST mark: name + barcode + host line, divider on the right.
+// CLOCKMOST mark (v2): an orange diamond + the name, on its own plate.
 import QtQuick
 
-Item {
-    id: root
-
-    implicitWidth: col.implicitWidth + 14
-    implicitHeight: col.implicitHeight
-
-    Column {
-        id: col
-        spacing: 3
+Plate {
+    Row {
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 10
+        Rectangle {
+            anchors.verticalCenter: parent.verticalCenter
+            width: 13
+            height: 13
+            rotation: 45
+            color: GroundTheme.acc
+        }
         Text {
+            anchors.verticalCenter: parent.verticalCenter
             text: "CLOCKMOST"
-            color: Theme.ink
-            font.family: Theme.mono
+            color: GroundTheme.bg
+            font.family: GroundTheme.mono
             font.weight: Font.Bold
             font.pixelSize: 12
-            font.letterSpacing: Theme.em(12, 0.32)
+            font.letterSpacing: 2
         }
-        Row {
-            spacing: 6
-            Barcode {
-                anchors.verticalCenter: parent.verticalCenter
-                width: 46
-                height: 6
-                color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.55)
-            }
-            Micro {
-                anchors.verticalCenter: parent.verticalCenter
-                text: "DT-01 · CACHYOS"
-            }
-        }
-    }
-
-    Rectangle {
-        anchors.right: parent.right
-        width: 1
-        height: parent.height
-        color: Qt.rgba(1, 1, 1, 0.10)
     }
 }

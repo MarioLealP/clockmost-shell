@@ -265,6 +265,7 @@ PanelWindow {
                 spacing: 10
 
                 Column {
+                    visible: false // v2: no side labels on the dock
                     anchors.verticalCenter: parent.verticalCenter
                     leftPadding: 6
                     rightPadding: 6
@@ -339,6 +340,7 @@ PanelWindow {
                 }
                 DockDivider {}
                 Column {
+                    visible: false // v2: no side labels on the dock
                     anchors.verticalCenter: parent.verticalCenter
                     leftPadding: 6
                     rightPadding: 6

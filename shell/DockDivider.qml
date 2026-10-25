@@ -9,6 +9,6 @@ Item {
         x: 2
         width: 1
         height: parent.height
-        color: Qt.rgba(1, 1, 1, 0.10)
+        color: Qt.rgba(0.1, 0.1, 0.09, 0.3) // v2: dark on the bone plate
     }
 }

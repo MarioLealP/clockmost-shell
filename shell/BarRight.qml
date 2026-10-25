@@ -2,7 +2,7 @@
 import QtQuick
 
 Row {
-    spacing: 12
+    spacing: 6
 
     AppTray {
         anchors.verticalCenter: parent.verticalCenter

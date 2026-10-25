@@ -16,8 +16,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(1, 1, 1, area.containsMouse ? 0.06 : 0)
-        Behavior on color { ColorAnimation { duration: 120 } }
+        color: area.containsMouse ? Qt.rgba(0, 0, 0, 0.08) : "transparent"
     }
 
     Item {
@@ -26,7 +25,7 @@ Item {
         height: 18
         Glyph {
             path: root.path
-            color: root.open ? Theme.yellow : area.containsMouse ? Theme.ink : Theme.ink2
+            color: root.open ? GroundTheme.acc : GroundTheme.bg
         }
         AttentionPin {
             visible: root.attention
@@ -38,8 +37,8 @@ Item {
         width: parent.width - 22
         y: parent.height - 4 - 2
         height: 2
-        color: root.open ? Theme.yellow : root.accent // mock: .ti.open::after { background: yellow }
-        opacity: root.open ? 1 : 0.85
+        visible: root.open // v2: no colour underlines - only the open tab gets an orange one
+        color: GroundTheme.acc
     }
 
     MouseArea {

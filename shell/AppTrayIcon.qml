@@ -1,6 +1,7 @@
 // One app-tray item: the app's own icon (18px) on a 36x36 tile, with the status tray's 2px underline (orange =
 // the app wants attention). Tooltip = the app's name (500ms hover); right click = TrayMenu (TrayMenuWindow).
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
@@ -23,15 +24,19 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(1, 1, 1, area.containsMouse ? 0.06 : 0)
-        Behavior on color { ColorAnimation { duration: 120 } }
+        color: area.containsMouse ? Qt.rgba(0, 0, 0, 0.08) : "transparent"
     }
 
     IconImage {
         anchors.centerIn: parent
         implicitSize: 18
         source: root.modelData.icon
-        opacity: area.containsMouse ? 1 : 0.85
+        // v2: every tray icon in the plate's dark ink (white symbolic icons would vanish on bone)
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            colorization: 1.0
+            colorizationColor: GroundTheme.bg
+        }
     }
 
     Rectangle {
@@ -39,8 +44,8 @@ Item {
         width: parent.width - 22
         y: parent.height - 4 - 2
         height: 2
-        color: root.attention ? Theme.orange : Theme.ink2
-        opacity: root.attention ? 1 : 0.35
+        visible: root.attention
+        color: GroundTheme.acc
     }
 
     Timer {

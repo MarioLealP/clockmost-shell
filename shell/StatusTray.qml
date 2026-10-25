@@ -16,34 +16,17 @@ Rectangle {
         return ControlCenter.open && ControlCenter.tab === tab;
     }
 
-    implicitWidth: row.implicitWidth + 12
-    implicitHeight: 38
-    color: Qt.rgba(12 / 255, 13 / 255, 15 / 255, 0.7)
-    border.width: 1
-    border.color: Qt.rgba(1, 1, 1, 0.10)
+    implicitWidth: row.implicitWidth + 16
+    implicitHeight: 52
+    color: GroundTheme.ink // v2: a bone plate
 
     PwObjectTracker {
         objects: [root.sink]
     }
 
-    // corner brackets: top-left and bottom-right, 10px, 2px
-    Repeater {
-        model: [{ x: -1, y: -1, r: 0 }, { x: root.width - 9, y: root.height - 9, r: 180 }]
-        Item {
-            required property var modelData
-            x: modelData.x
-            y: modelData.y
-            width: 10
-            height: 10
-            rotation: modelData.r
-            Rectangle { width: 10; height: 2; color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.4) }
-            Rectangle { width: 2; height: 10; color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.4) }
-        }
-    }
-
     Row {
         id: row
-        x: 6
+        x: 8
         anchors.verticalCenter: parent.verticalCenter
 
         // weather: yellow glyph + temperature / CITY · CONDITION (v2: hidden - the ground's date stack shows it)

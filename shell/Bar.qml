@@ -71,7 +71,7 @@ PanelWindow {
     }
 
     // frosted band (CSS backdrop-filter: blur(22px)) via KWin's ext-background-effect
-    BackgroundEffect.blurRegion: root.bandP > 0.01 ? shownBlur : null
+    BackgroundEffect.blurRegion: null // v2: no frosted band
     Region {
         id: shownBlur
         item: band
@@ -131,6 +131,7 @@ PanelWindow {
             BarBand {
                 id: band
                 width: parent.width
+                opacity: 0 // v2: no band - the plates sit straight on the ground (its geometry still drives the input mask)
             }
 
             BarLeft {
