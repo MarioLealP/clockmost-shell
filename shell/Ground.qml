@@ -12,6 +12,8 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Background
     WlrLayershell.namespace: "clockmost-ground"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
+    // the Felt talk box needs the keyboard when clicked
+    WlrLayershell.keyboardFocus: root.main ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     anchors { left: true; right: true; top: true; bottom: true }
     color: GroundTheme.bg
 

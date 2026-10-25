@@ -1,12 +1,61 @@
-// Felt's column: state, switches, her last line, the talk box (static for now; felt-core wiring is a later step).
+// Felt's column: her tray's status, her switches (HA), her last line and a talk box - all through the Felt tray's
+// session-bus API (org.clockmost.Felt: Status, LastLine, Say). The tray holds the felt-core credential; the shell
+// never does (Mario 2026-10-25: "send through the tray").
 import QtQuick
+import Quickshell.Io
 
 Rectangle {
     id: root
 
-    property string state: "LISTENING"
-    property string lastLine: "Shelf light's been on since noon. Want it off before the stream?"
-    property string lastMeta: "18:41  ·  AMBIENT"
+    property string state: "CHECKING"
+    property string lastLine: "…"
+    property string lastMeta: ""
+    readonly property var api: ["busctl", "--user", "--json=short"]
+    readonly property var obj: ["org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt"]
+
+    function say(text) {
+        if (text.trim() === "")
+            return;
+        sayProc.command = ["busctl", "--user", "call"].concat(root.obj, ["Say", "s", text.trim()]);
+        sayProc.running = true;
+    }
+
+    // polled: the tray emits no change signals yet; 3 s is plenty for a line on the desktop
+    Timer {
+        interval: 3000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            statusProc.running = true;
+            lineProc.running = true;
+        }
+    }
+    Process {
+        id: statusProc
+        command: root.api.concat(["get-property"], root.obj, ["Status"])
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try { root.state = JSON.parse(text).data.toUpperCase(); } catch (e) { root.state = "OFFLINE"; }
+            }
+        }
+        onExited: code => { if (code !== 0) root.state = "OFFLINE"; }
+    }
+    Process {
+        id: lineProc
+        command: root.api.concat(["get-property"], root.obj, ["LastLine"])
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const l = JSON.parse(JSON.parse(text).data);
+                    if (!l.text) return;
+                    root.lastLine = l.text;
+                    root.lastMeta = Qt.formatTime(new Date(l.at * 1000), "hh:mm") + "  ·  " + String(l.source).toUpperCase();
+                } catch (e) {}
+            }
+        }
+    }
+    Process { id: sayProc }
 
     width: 532
     height: col.height + 12
@@ -61,7 +110,7 @@ Rectangle {
             width: parent.width
             height: 24
             Row { spacing: 6; Chip { label: "QUIET"; entity: "switch.felt_quiet" } Chip { label: "HIDDEN"; entity: "switch.felt_hidden" } Chip { label: "DJ"; entity: "switch.felt_dj_mode" } }
-            Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: "BONSAI 27B  ·  IDLE"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 2 }
+
         }
 
         Item { width: 1; height: 26 }
@@ -94,9 +143,28 @@ Rectangle {
             height: 48
             color: "transparent"
             border.width: 1.5
-            border.color: GroundTheme.ink
+            border.color: input.activeFocus ? GroundTheme.acc : GroundTheme.ink
+            // the talk box: type, Enter = sent to her through the tray (she answers out loud)
+            TextInput {
+                id: input
+                x: 14
+                width: parent.width - 110
+                anchors.verticalCenter: parent.verticalCenter
+                color: GroundTheme.ink
+                font.family: GroundTheme.mono
+                font.pixelSize: 13
+                selectByMouse: true
+                clip: true
+                cursorDelegate: Rectangle { width: 9; height: 18; color: GroundTheme.acc; visible: input.activeFocus }
+                onAccepted: {
+                    root.say(text);
+                    text = "";
+                }
+                Keys.onEscapePressed: { text = ""; focus = false; }
+            }
             Row {
                 x: 14
+                visible: input.text === "" && !input.activeFocus
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
                 Text { text: "SAY SOMETHING"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 12; font.letterSpacing: 3; anchors.verticalCenter: parent.verticalCenter }
