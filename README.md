@@ -26,6 +26,30 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
   playing, weather, tray, user), the reveal motion, then the control center. Bar scales down below 1920px wide (VM).
   Gotcha: QtSvg (SVG Tiny) ignores `rgba()` stroke colours - assets use `#rrggbb` + `stroke-opacity`.
 
+## v2 desktop - the "ground" (0.2.0, 2026-10-25)
+
+A desktop layer of our own under the windows: a `WlrLayer.Background` surface per screen (`Ground.qml`), above
+plasmashell's desktop and below every window (KWin stacking checked). Graphite, bone ink, one orange accent
+(`GroundTheme.qml`, Archivo bundled in `shell/assets/fonts` under the OFL). The ultrawide (DP-2) gets the poster;
+side screens get the base, dots and corner marks.
+
+- **Home Assistant** (`HaClient.qml`): WebSocket `subscribe_entities` as the HA user `clockmost-desktop`
+  (non-admin, local-only); the token is read at start with `secret-tool lookup service clockmost-ha account
+  clockmost-desktop` (KeePassXC) and only lives in the process. `HaSections.qml` = the "Home" dashboard's sections
+  (Room, Misc, Today, News, Ender, Elegoo, Systems), each redrawn as a `Sec*.qml`; the list (`HaList.qml`) shows a
+  live summary per section, a click opens it beside the list (only the orange line moves; click again or BACK).
+- **Felt** (`FeltColumn.qml`): through the Felt tray's session bus (`org.clockmost.Felt`: `Status`, `LastLine`,
+  `Say`, felt-tray >= 0.9.2) - the shell never holds a felt-core credential. Her switches are HA toggles.
+- **Clock / weather**: the barcode (bottom left) encodes date + time; `DateStack.qml` = weather, dd / mm / yyyy,
+  time. **Now playing** lives in the Misc section (MPRIS: Spotify, YouTube, ...).
+- **Art**: `~/.config/clockmost/ground-art.jpg`, any picture, shown through four staggered windows
+  (`HeroSlices.qml`). Not in the repo.
+- **Off switch**: `touch ~/.config/clockmost/ground-off` - the ground goes within 10 s (Plasma's desktop shows),
+  the bar/dock/rest stay; delete the file to bring it back.
+- IPC: `quickshell ipc --pid <pid> call ground open ROOM` / `close`. `shell/ground-dev.qml` runs the ground alone.
+- Bar/dock in v2: the yellow accent is orange; no clock plate, ring, wings, now playing or Felt chip; no weather in
+  the status tray. No motion yet on any v2 part (motion pass after the functional build).
+
 ## Package (pkgs/clockmost-shell, `[clockmost]` repo)
 
 `pacman -S clockmost-shell`, then once as your user, in the Plasma session: `clockmost-desktop-setup`.
