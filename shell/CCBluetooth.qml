@@ -20,11 +20,20 @@ CCTab {
     // stop scanning when the tab goes away
     Component.onDestruction: if (adapter && adapter.discovering) adapter.discovering = false
 
-    CCHeader {
-        title: "BLUETOOTH"
-        sub: root.adapter ? (root.adapter.name || root.adapter.adapterId).toUpperCase() + " · BLUEZ" : "NO ADAPTER · BLUEZ NOT RUNNING"
-        count: String(root.paired.filter(d => d.connected).length)
-        countLabel: "LINKED"
+    // lead (v2)
+    Item {
+        width: parent.width
+        height: lead.height + 18
+        CCHero {
+            id: lead
+            x: 22
+            y: 18
+            width: parent.width - 44
+            size: 110
+            value: String(root.paired.filter(d => d.connected).length)
+            unit: "LINKED"
+            sub: root.adapter ? (root.adapter.name || root.adapter.adapterId).toUpperCase() + "  ·  " + root.paired.length + " PAIRED  ·  BLUEZ" : "NO ADAPTER · BLUEZ NOT RUNNING"
+        }
     }
 
     Column {

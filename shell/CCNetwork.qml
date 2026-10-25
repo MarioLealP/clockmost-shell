@@ -43,11 +43,20 @@ CCTab {
         }
     }
 
-    CCHeader {
-        title: "NETWORK"
-        sub: (root.wired ? "ETHERNET · " + root.wired.name.toUpperCase() : "NO WIRED DEVICE") + " · NETWORKMANAGER"
-        count: String(root.devices.filter(d => d.connected).length)
-        countLabel: "UP"
+    // lead (v2)
+    Item {
+        width: parent.width
+        height: lead.height + 18
+        CCHero {
+            id: lead
+            x: 22
+            y: 18
+            width: parent.width - 44
+            size: 110
+            value: root.wired?.connected ? "WIRED" : "OFFLINE"
+            unit: ""
+            sub: (root.wired ? "ETHERNET · " + root.wired.name.toUpperCase() : "NO WIRED DEVICE") + "  ·  " + root.devices.filter(d => d.connected).length + " UP  ·  NETWORKMANAGER"
+        }
     }
 
     Column {

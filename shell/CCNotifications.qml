@@ -19,11 +19,20 @@ CCTab {
         return fresh.includes(rec.n);
     }
 
-    CCHeader {
-        title: "NOTIFICATIONS"
-        sub: Notifs.groups.length + " SOURCES · SINCE LOGIN"
-        count: String(root.fresh.length)
-        countLabel: "NEW"
+    // lead (v2)
+    Item {
+        width: parent.width
+        height: lead.height + 18
+        CCHero {
+            id: lead
+            x: 22
+            y: 18
+            width: parent.width - 44
+            size: 110
+            value: String(root.fresh.length)
+            unit: "NEW"
+            sub: Notifs.groups.length + " SOURCES  ·  SINCE LOGIN"
+        }
     }
 
     ToggleTile {

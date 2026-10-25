@@ -105,33 +105,37 @@ CCTab {
     }
 
     // month header: OCTOBER 2026 (year dim, regular) + ‹ ›
+    // v2: the month as the poster lead, year dim beside it, a bone rule under
     Item {
         width: parent.width
-        height: 58
+        height: 96
         Row {
             x: 22
-            anchors.verticalCenter: parent.verticalCenter
+            y: 14
             spacing: 12
             Text {
                 text: Qt.formatDate(root.first, "MMMM").toUpperCase()
                 color: Theme.ink
-                font.family: Theme.mono
-                font.weight: Font.Bold
-                font.pixelSize: 16
-                font.letterSpacing: Theme.em(16, 0.28)
+                font.family: GroundTheme.display
+                font.weight: Font.Black
+                font.variableAxes: { "wdth": 68 }
+                font.pixelSize: 64
             }
             Text {
+                anchors.baseline: parent.children[0].baseline
                 text: root.first.getFullYear()
                 color: Theme.dim
-                font.family: Theme.mono
-                font.pixelSize: 16
-                font.letterSpacing: Theme.em(16, 0.28)
+                font.family: GroundTheme.display
+                font.weight: Font.Black
+                font.variableAxes: { "wdth": 68 }
+                font.pixelSize: 64
             }
         }
+        Rectangle { x: 22; anchors.bottom: parent.bottom; width: parent.width - 44; height: 2; color: Theme.ink }
         Row {
             anchors.right: parent.right
             anchors.rightMargin: 22
-            anchors.verticalCenter: parent.verticalCenter
+            y: 34
             spacing: 6
             Repeater {
                 model: [{ t: "‹", d: -1 }, { t: "·", d: 0 }, { t: "›", d: 1 }]
@@ -142,11 +146,11 @@ CCTab {
                     height: 26
                     color: navArea.containsMouse ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
                     border.width: 1
-                    border.color: Qt.rgba(1, 1, 1, 0.16)
+                    border.color: GroundTheme.line
                     Text {
                         anchors.centerIn: parent
                         text: nav.modelData.t
-                        color: nav.modelData.d === 0 && root.monthOffset !== 0 ? Theme.yellow : Theme.ink2
+                        color: nav.modelData.d === 0 && root.monthOffset !== 0 ? GroundTheme.acc : Theme.ink2
                         font.family: Theme.mono
                         font.pixelSize: 12
                     }
