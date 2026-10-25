@@ -77,14 +77,15 @@ Item {
             width: 56
             height: 56
             clip: true
-            // every window minimized: the tile steps back
-            opacity: root.allMinimized ? 0.45 : 1
-            Behavior on opacity { NumberAnimation { duration: 180 } }
-
-            // v2: a dark tile on the bone plate; the focused app's tile is the orange one
+            // v2 tile states (Mario 2026-10-25): focused = orange, open = black + orange outline,
+            // all minimized = black, closed (pinned, not running) = grey
             Rectangle {
                 anchors.fill: parent
-                color: root.focused ? GroundTheme.acc : GroundTheme.bg
+                color: root.focused ? GroundTheme.acc
+                    : root.slot.windows.length === 0 ? "#6b6a66"
+                    : GroundTheme.bg
+                border.width: !root.focused && root.slot.windows.length > 0 && !root.allMinimized ? 2 : 0
+                border.color: GroundTheme.acc
             }
 
             Image {
