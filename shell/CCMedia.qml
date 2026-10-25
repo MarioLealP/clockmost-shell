@@ -116,7 +116,7 @@ CCTab {
         // art: 150px, corners cut 16px top-right + bottom-left, drop shadow down-right
         Item {
             id: art
-            x: 18
+            x: 22
             y: 18
             width: 150
             height: 150
@@ -277,8 +277,8 @@ CCTab {
 
     // ---- visualizer strip + black timer tag on the seam ----
     Item {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         height: 34
 
         Row {
@@ -346,8 +346,8 @@ CCTab {
     // ---- seek bar: 3px, album colour, ink knob; click / drag to seek ----
     Item { width: 1; height: 18 }
     Item {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         height: 3
         Rectangle { anchors.fill: parent; color: root.tint(0.2) }
         Rectangle {

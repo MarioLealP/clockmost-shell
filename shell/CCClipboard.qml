@@ -51,18 +51,25 @@ CCTab {
         }
     }
 
-    // header (v2): the shared big title; the item count as the chip
-    CCHeader {
-        title: "CLIPBOARD"
-        sub: "KLIPPER · " + Clipboard.history.length + " KEPT · " + Clipboard.pins.length + " PINNED"
-        count: String(Clipboard.history.length)
-        countLabel: "ITEMS"
+    // lead (v2): how many items are kept
+    Item {
+        width: parent.width
+        height: hero.height + 18
+        CCHero {
+            id: hero
+            x: 22
+            y: 18
+            width: parent.width - 44
+            size: 110
+            value: String(Clipboard.history.length)
+            sub: "KEPT  ·  " + Clipboard.pins.length + " PINNED  ·  KLIPPER"
+        }
     }
 
     // search: ››› + input
     Rectangle {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         height: 32
         color: "transparent"
         border.width: 1
@@ -119,8 +126,8 @@ CCTab {
     Item { width: 1; height: 12 }
 
     SectionLabel {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         visible: root.pinned.length > 0
         text: "PINNED"
         note: String(root.pinned.length).padStart(2, "0")
@@ -141,8 +148,8 @@ CCTab {
 
     Item { width: 1; height: root.pinned.length > 0 ? 10 : 0 }
     SectionLabel {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         text: "RECENT"
         note: String(Clipboard.history.length).padStart(2, "0")
     }
@@ -160,7 +167,7 @@ CCTab {
         }
     }
     Micro {
-        x: 18
+        x: 22
         topPadding: 8
         visible: root.all.length === 0
         text: root.query ? "NO MATCH" : "CLIPBOARD IS EMPTY"
@@ -168,7 +175,7 @@ CCTab {
 
     // key hints (the mock's footer row)
     Row {
-        x: 18
+        x: 22
         topPadding: 12
         bottomPadding: 10
         spacing: 14

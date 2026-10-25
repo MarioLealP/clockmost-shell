@@ -13,7 +13,7 @@ Item {
 
     Rectangle { width: parent.width; height: 1; color: GroundTheme.line }
     Text {
-        x: 18
+        x: 22
         y: 12
         height: 32
         verticalAlignment: Text.AlignVCenter
@@ -26,7 +26,7 @@ Item {
     Row {
         id: actionsRow
         anchors.right: parent.right
-        anchors.rightMargin: 18
+        anchors.rightMargin: 22
         y: 12
         height: 32
         spacing: 6

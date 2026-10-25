@@ -109,7 +109,7 @@ CCTab {
         width: parent.width
         height: 58
         Row {
-            x: 18
+            x: 22
             anchors.verticalCenter: parent.verticalCenter
             spacing: 12
             Text {
@@ -130,7 +130,7 @@ CCTab {
         }
         Row {
             anchors.right: parent.right
-            anchors.rightMargin: 18
+            anchors.rightMargin: 22
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
             Repeater {
@@ -165,8 +165,8 @@ CCTab {
     // grid: 34px week column + 7 days
     Item {
         id: grid
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         height: 30 + root.weeks * 38
         readonly property real col: (width - 34) / 7
 
@@ -286,8 +286,8 @@ CCTab {
 
     // upcoming
     Column {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         topPadding: 10
         bottomPadding: 14
         spacing: 8

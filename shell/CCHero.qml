@@ -9,6 +9,7 @@ Column {
     property string sub: ""
     property real bar: -1
     property int size: 150
+    signal barSet(real v) // drag / click / wheel on the bar
 
     width: parent ? parent.width : 0
     spacing: 0
@@ -52,6 +53,16 @@ Column {
         height: 4
         color: GroundTheme.line
         Rectangle { width: parent.width * Math.max(0, Math.min(1, root.bar)); height: parent.height; color: GroundTheme.acc }
+        MouseArea {
+            anchors.fill: parent
+            anchors.topMargin: -8
+            anchors.bottomMargin: -8
+            cursorShape: Qt.PointingHandCursor
+            function set(x) { root.barSet(Math.max(0, Math.min(1, x / width))); }
+            onPressed: mouse => set(mouse.x)
+            onPositionChanged: mouse => { if (pressed) set(mouse.x); }
+            onWheel: wheel => root.barSet(Math.max(0, Math.min(1, root.bar + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))))
+        }
     }
     Item { visible: root.bar >= 0; width: 1; height: 12 }
     Rectangle { width: parent.width; height: 2; color: Theme.ink }

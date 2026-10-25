@@ -27,8 +27,8 @@ CCTab {
     }
 
     ToggleTile {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         icon: Icons.dnd
         title: "DO NOT DISTURB"
         accent: Theme.orange
@@ -53,7 +53,7 @@ CCTab {
                 height: 36
                 Rectangle {
                     id: badge
-                    x: 18
+                    x: 22
                     anchors.verticalCenter: parent.verticalCenter
                     width: 22
                     height: 22
@@ -101,7 +101,7 @@ CCTab {
                 Text {
                     id: clearText
                     anchors.right: parent.right
-                    anchors.rightMargin: 18
+                    anchors.rightMargin: 22
                     anchors.verticalCenter: parent.verticalCenter
                     text: "CLEAR"
                     color: clearArea.containsMouse ? Theme.ink : Theme.dim
@@ -146,7 +146,7 @@ CCTab {
                     Text {
                         id: age
                         anchors.right: parent.right
-                        anchors.rightMargin: 18
+                        anchors.rightMargin: 22
                         anchors.verticalCenter: parent.verticalCenter
                         text: Notifs.ago(it.modelData.time)
                         color: "#43454c"
@@ -175,7 +175,7 @@ CCTab {
     }
 
     Micro {
-        x: 18
+        x: 22
         topPadding: 10
         bottomPadding: 10
         visible: Notifs.records.length === 0
@@ -189,7 +189,7 @@ CCTab {
         visible: Notifs.records.length > 0
         Rectangle {
             anchors.right: parent.right
-            anchors.rightMargin: 18
+            anchors.rightMargin: 22
             anchors.verticalCenter: parent.verticalCenter
             width: clearAllText.implicitWidth + 30
             height: 32

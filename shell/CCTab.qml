@@ -11,7 +11,7 @@ Item {
     default property alias content: body.data
     property alias actions: footer.actions // buttons on the footer's right
 
-    width: 432
+    width: 540 // v2: the content column next to CCNav
     implicitHeight: Math.max(minHeight, body.implicitHeight + footer.implicitHeight)
 
     Column {

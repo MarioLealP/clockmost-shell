@@ -32,9 +32,9 @@ Item {
             width: parent.width
             elide: Text.ElideRight
             text: root.name
-            color: root.current ? Theme.ink : Theme.ink2
+            color: root.current ? Theme.ink : Theme.dim
             font.family: Theme.body
-            font.pixelSize: 13
+            font.pixelSize: 14
         }
         Micro {
             width: parent.width
@@ -50,7 +50,7 @@ Item {
         visible: root.current
         width: tagText.implicitWidth + 12
         height: 16
-        color: Theme.yellow
+        color: GroundTheme.acc
         Text {
             id: tagText
             anchors.centerIn: parent

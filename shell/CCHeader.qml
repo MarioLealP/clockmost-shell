@@ -14,7 +14,7 @@ Item {
     implicitHeight: 76
 
     Column {
-        x: 18
+        x: 22
         anchors.bottom: rule.top
         anchors.bottomMargin: 8
         spacing: 2
@@ -37,7 +37,7 @@ Item {
     Rectangle {
         visible: root.count !== ""
         anchors.right: parent.right
-        anchors.rightMargin: 18
+        anchors.rightMargin: 22
         anchors.bottom: rule.top
         anchors.bottomMargin: 12
         width: ct.implicitWidth + 16
@@ -55,9 +55,9 @@ Item {
     }
     Rectangle {
         id: rule
-        x: 18
+        x: 22
         anchors.bottom: parent.bottom
-        width: parent.width - 36
+        width: parent.width - 44
         height: 2
         color: Theme.ink
     }

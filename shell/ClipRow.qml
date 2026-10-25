@@ -19,26 +19,11 @@ Item {
     width: parent ? parent.width : 0
     implicitHeight: Math.max(44, body.implicitHeight + 20)
 
-    // selected: yellow slab with an arrow cut on the right (redrawn whenever the row resizes)
-    Canvas {
+    // selected: an orange slab (v2)
+    Rectangle {
         anchors.fill: parent
         visible: root.selected
-        onWidthChanged: requestPaint()
-        onHeightChanged: requestPaint()
-        onVisibleChanged: requestPaint()
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            ctx.fillStyle = Theme.yellow;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(width - 10, 0);
-            ctx.lineTo(width, height / 2);
-            ctx.lineTo(width - 10, height);
-            ctx.lineTo(0, height);
-            ctx.closePath();
-            ctx.fill();
-        }
+        color: GroundTheme.acc
     }
     Rectangle {
         anchors.fill: parent
@@ -49,7 +34,7 @@ Item {
         anchors.bottom: parent.bottom
         width: parent.width
         height: 1
-        color: Qt.rgba(1, 1, 1, 0.05)
+        color: GroundTheme.line
         visible: !root.selected
     }
 
@@ -57,10 +42,11 @@ Item {
         x: 18
         anchors.verticalCenter: parent.verticalCenter
         text: root.label
-        color: root.selected ? Theme.plateInk : "#43454c"
-        font.family: Theme.mono
-        font.pixelSize: 9
-        font.letterSpacing: Theme.em(9, 0.1)
+        color: root.selected ? Theme.plateInk : Theme.dim
+        font.family: GroundTheme.display
+        font.weight: Font.Black
+        font.variableAxes: { "wdth": 70 }
+        font.pixelSize: 22
     }
 
     Rectangle {
@@ -69,11 +55,11 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 28
         height: 14
-        color: root.selected ? Theme.plateInk : root.tagColor
+        color: "transparent" // v2: the kind as plain mono text, no coloured tag
         Text {
             anchors.centerIn: parent
             text: root.kind
-            color: root.selected ? Theme.yellow : Theme.plateInk
+            color: root.selected ? Theme.plateInk : Theme.dim
             font.family: Theme.mono
             font.weight: Font.Bold
             font.pixelSize: 8

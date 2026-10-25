@@ -28,8 +28,8 @@ CCTab {
     }
 
     Column {
-        x: 18
-        width: parent.width - 36
+        x: 22
+        width: parent.width - 44
         spacing: 10
         bottomPadding: 14
 
