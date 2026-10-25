@@ -30,7 +30,7 @@ Item {
             color: Qt.rgba(0, 0, 0, 0.55)
         }
         Repeater {
-            model: [14, 21, 28]
+            model: [18, 25, 32] // centred in the tile
             Rectangle {
                 required property int modelData
                 x: 12

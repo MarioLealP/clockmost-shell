@@ -90,7 +90,7 @@ Item {
                 id: logo
                 visible: root.icon !== ""
                 x: (parent.width - width) / 2
-                y: parent.height * 0.44 - height / 2
+                y: (parent.height - height) / 2
                 width: 28
                 height: 28
                 source: root.icon
@@ -101,7 +101,7 @@ Item {
             Text {
                 visible: root.icon === ""
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: parent.height * 0.44 - height / 2
+                y: (parent.height - height) / 2
                 text: root.slot.name.charAt(0).toUpperCase()
                 color: root.c
                 font.family: Theme.body
