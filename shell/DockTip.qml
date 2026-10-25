@@ -44,7 +44,7 @@ Item {
     Rectangle {
         width: 3
         height: parent.height
-        color: "#cfc6f4"
+        color: GroundTheme.acc // v2
     }
     Column {
         id: col

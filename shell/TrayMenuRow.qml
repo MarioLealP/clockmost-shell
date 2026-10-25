@@ -23,13 +23,13 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width
         height: 1
-        color: Qt.rgba(1, 1, 1, 0.10)
+        color: Qt.rgba(0, 0, 0, 0.12) // v2: on the bone plate
     }
 
     Rectangle {
         visible: !root.separator
         anchors.fill: parent
-        color: Qt.rgba(1, 1, 1, area.containsMouse && root.enabledEntry ? 0.06 : 0)
+        color: Qt.rgba(0, 0, 0, area.containsMouse && root.enabledEntry ? 0.08 : 0)
         Behavior on color { ColorAnimation { duration: 120 } }
     }
 
@@ -52,7 +52,7 @@ Item {
                 rotation: root.buttonType === QsMenuButtonType.RadioButton ? 45 : 0
                 color: root.checked ? Theme.yellow : "transparent"
                 border.width: 1
-                border.color: root.checked ? Theme.yellow : Theme.dim
+                border.color: root.checked ? Theme.yellow : Qt.rgba(0.1, 0.1, 0.09, 0.5)
             }
         }
         IconImage {
@@ -64,7 +64,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.label
-            color: !root.enabledEntry ? Theme.faint : area.containsMouse ? Theme.ink : Theme.ink2
+            color: !root.enabledEntry ? Qt.rgba(0.1, 0.1, 0.09, 0.35) : GroundTheme.bg
             font.family: root.mono ? Theme.mono : Theme.body
             font.pixelSize: root.mono ? 10 : 12
             font.letterSpacing: root.mono ? Theme.em(10, 0.18) : 0
@@ -77,7 +77,7 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: 8
         text: "›"
-        color: Theme.dim
+        color: Qt.rgba(0.1, 0.1, 0.09, 0.6)
         font.family: Theme.body
         font.pixelSize: 14
     }

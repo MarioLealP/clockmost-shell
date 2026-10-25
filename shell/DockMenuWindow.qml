@@ -121,7 +121,7 @@ PanelWindow {
                     Text {
                         id: head
                         text: (DockMenu.slot?.name ?? "").toUpperCase()
-                        color: Theme.ink2
+                        color: GroundTheme.bg // v2: dark on the bone plate
                         font.family: Theme.mono
                         font.weight: Font.Bold
                         font.pixelSize: 12
@@ -133,7 +133,7 @@ PanelWindow {
                         anchors.verticalCenter: head.verticalCenter
                         width: Math.max(0, list.width - head.width - 8)
                         height: 1
-                        color: Qt.rgba(241 / 255, 241 / 255, 244 / 255, 0.2)
+                        color: Qt.rgba(0.1, 0.1, 0.09, 0.25)
                     }
                 }
 
