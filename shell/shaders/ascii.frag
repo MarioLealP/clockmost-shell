@@ -1,6 +1,6 @@
 // A silhouette picture as ASCII art (Mario 2026-10-26: the FFXIV meteor, right of the orange line): one character per
-// 12x18 cell, 5x7 pixel glyphs drawn 2x. Dark parts of the picture are the shape: its edge cells are orange '@', its
-// inside a soft diagonal shading of bone glyphs ': - = + * #', the rest empty. t 0 -> 1 = a scramble (on every hero
+// 12x18 cell, 5x7 pixel glyphs drawn 2x. Dark parts of the picture are the shape, filled with a soft diagonal
+// shading of bone glyphs ': - = + * #' (no orange edge - Mario), the rest empty. t 0 -> 1 = a scramble (on every hero
 // art swap): each cell runs random glyphs - some empty cells too, a burst around the shape - and settles back.
 // Compile: /usr/lib/qt6/bin/qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o ascii.frag.qsb ascii.frag
 #version 440
@@ -15,7 +15,6 @@ layout(std140, binding = 0) uniform buf {
     float time;
     vec2 size;
     vec4 ink;
-    vec4 hot;
 };
 layout(binding = 1) uniform sampler2D src;
 
@@ -51,11 +50,8 @@ void main() {
     vec2 uv = (id + 0.5) * CELL / size;
 
     bool in0 = shape(id);
-    bool edge = in0 && !(shape(id + vec2(1, 0)) && shape(id - vec2(1, 0)) && shape(id + vec2(0, 1)) && shape(id - vec2(0, 1)));
     int g = 0;
-    if (edge)
-        g = 9;
-    else if (in0)
+    if (in0)
         g = 2 + int(clamp(0.5 + 0.45 * sin(uv.x * 5.0 + uv.y * 3.5), 0.0, 0.999) * 6.0); // : - = + * #
 
     // the scramble: cells in or around the shape (and a quarter of the empty ones) run random glyphs, then settle
@@ -69,6 +65,5 @@ void main() {
     if (gp.x >= 0 && gp.x < 5 && gp.y >= 0 && gp.y < 7)
         on = float((GLYPHS[g * 7 + gp.y] >> (4 - gp.x)) & 1);
 
-    vec4 c = g == 9 ? hot : ink * 0.85;
-    fragColor = c * on * qt_Opacity;
+    fragColor = ink * 0.85 * on * qt_Opacity;
 }

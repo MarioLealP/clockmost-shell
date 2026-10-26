@@ -12,7 +12,6 @@ ShaderEffect {
     property variant src: img
     property size size: Qt.size(width, height)
     property color ink: GroundTheme.ink
-    property color hot: GroundTheme.acc
 
     width: 576
     height: 576
