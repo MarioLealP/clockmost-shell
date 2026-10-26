@@ -1,6 +1,8 @@
 // The control center surface: a full-screen overlay (click outside or Esc = close) holding one panel under
 // the bar on the right (where the quick-settings mock sits): tab rail | the active tab's content.
-// The panel drops in (fade + 12px slide) and its height eases between tabs.
+// Motion (Mario 2026-10-26): opening, an orange band sweeps down and leaves the panel's background behind it, then
+// the Builder plays frames then details; a tab switch rebuilds just the new tab; closing, the band sweeps back up
+// and wipes the panel away.
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -9,10 +11,43 @@ PanelWindow {
     id: root
 
     readonly property real s: Math.min(1, width / 1920)
-    property real openP: ControlCenter.open ? 1 : 0 // v2: no motion yet - opens/closes instantly
+    property real sweep: 0 // 0 = nothing .. 1 = the whole panel's background is down
+
+    Connections {
+        target: ControlCenter
+        function onOpenChanged() {
+            if (ControlCenter.open) {
+                closing.stop();
+                builder.finish();
+                body.opacity = 0;
+                opening.restart();
+            } else {
+                opening.stop();
+                builder.finish();
+                closing.restart();
+            }
+        }
+    }
+    SequentialAnimation {
+        id: opening
+        NumberAnimation { target: root; property: "sweep"; from: 0; to: 1; duration: 300; easing.type: Easing.InOutCubic }
+        ScriptAction {
+            script: {
+                builder.speed = 1;
+                builder.prepare([panel]);
+                body.opacity = 1;
+                builder.run();
+            }
+        }
+    }
+    ParallelAnimation {
+        id: closing
+        NumberAnimation { target: body; property: "opacity"; to: 0; duration: 120 }
+        NumberAnimation { target: root; property: "sweep"; to: 0; duration: 220; easing.type: Easing.InCubic }
+    }
 
     readonly property bool mine: ControlCenter.screenName === "" || ControlCenter.screenName === screen?.name
-    visible: mine && (ControlCenter.open || openP > 0.001)
+    visible: mine && (ControlCenter.open || sweep > 0.001)
     anchors {
         top: true
         bottom: true
@@ -57,8 +92,7 @@ PanelWindow {
                 const maxX = scaled.width - width - 16;
                 return ControlCenter.anchorX < 0 ? maxX : Math.max(16, Math.min(maxX, ControlCenter.anchorX / root.s - width / 2));
             }
-            y: 84 // v2: just under the bar's plates (they end at 70)
-            opacity: root.openP
+            y: 84 // v2: just under the bar's plates
             width: rail.width + 1 + content.width
             height: Math.max(rail.implicitHeight, content.height)
             clip: true
@@ -69,13 +103,21 @@ PanelWindow {
                 acceptedButtons: Qt.AllButtons
             }
 
-            // v2: a flat graphite panel with a hairline, like the ground's sections
+            // v2: a flat graphite panel with a hairline, like the ground's sections - as far down as the sweep got
             Rectangle {
-                anchors.fill: parent
+                width: parent.width
+                height: parent.height * root.sweep
                 color: GroundTheme.bg
                 border.width: 1
                 border.color: GroundTheme.line
             }
+
+            // everything on the panel (closing: it fades out fast while the band sweeps the background up - a clip
+            // here, nested in the panel's, left holes in the background under the tab list)
+            Item {
+                id: body
+                width: parent.width
+                height: parent.height
 
             CCNav {
                 id: rail
@@ -111,6 +153,30 @@ PanelWindow {
                 height: item ? item.implicitHeight : 200
                 // v2: the nav stretches to the content (CCNav.minHeight), the content keeps its own height
                 sourceComponent: ({ home: homeTab, audio: audioTab, network: networkTab, bluetooth: bluetoothTab, media: mediaTab, calendar: calendarTab, clipboard: clipboardTab, notifications: notificationsTab })[ControlCenter.tab] ?? placeholder
+                // a tab switch while open: rebuild just the new tab, quicker
+                onLoaded: if (ControlCenter.open && !opening.running && root.sweep >= 1) Qt.callLater(() => {
+                    builder.speed = 1.6;
+                    builder.prepare([content]);
+                    builder.run();
+                })
+            }
+            }
+
+            // the sweep's front: an orange band riding the bottom edge of what's down so far
+            Rectangle {
+                objectName: "nobuild"
+                visible: root.sweep > 0.001 && root.sweep < 0.999
+                y: parent.height * root.sweep - height
+                width: parent.width
+                height: 14
+                color: GroundTheme.acc
+            }
+
+            Builder {
+                id: builder
+                objectName: "nobuild"
+                anchors.fill: parent
+                z: 10
             }
 
         }
