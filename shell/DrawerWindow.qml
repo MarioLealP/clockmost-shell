@@ -100,9 +100,10 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "clockmost-drawer"
     WlrLayershell.layer: WlrLayer.Overlay
-    // exclusive from the moment the surface maps (it only exists while open): flipping it on in the same tick the
-    // window appears left KWin's keyboard focus on the window underneath
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    // exclusive from the moment the surface maps (flipping it on in the same tick the window appears left KWin's
+    // keyboard focus on the window underneath), let go the moment it starts closing - holding it through the closing
+    // motion kept the next click on another window from focusing it
+    WlrLayershell.keyboardFocus: Drawer.open || !visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     onVisibleChanged: if (visible) Qt.callLater(() => search.forceActiveFocus())
 
     // input everywhere but the bar and dock strips (they stay usable and close the drawer themselves)
