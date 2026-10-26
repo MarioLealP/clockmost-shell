@@ -4,7 +4,7 @@
 // Motion (Mario 2026-10-26): sending squeezes your text up out of the box; while she thinks, her orange bar splits
 // out of its box (halves up / down) and hazard stripes slide in, every other one from the other side (1st from above,
 // 2nd from below ...), and crawl; her reply: the stripes leave the same way, the bar comes back, the line types on
-// behind an orange block cursor - over the old line, like Insert on Windows, blanking whatever the new line doesn't
+// behind an orange block cursor - over the old line, like Insert on Windows, wiping whatever the new line doesn't
 // reach (Mario 2026-10-26).
 import QtQuick
 import Quickshell.Io
@@ -35,10 +35,12 @@ Rectangle {
     // she never answered (tray down, model busy): stop thinking after 2 min
     Timer { id: thinkTimeout; interval: 120000; onTriggered: root.thinking = false }
 
-    // overtype: the new line up to the cursor, blanks where it's shorter than the old one, the cursor, the old rest
+    // overtype, display only (lastLine / oldLine are never changed by it): the new line up to the cursor; where the
+    // new line is shorter, the old characters it passed drawn transparent (wiped, nothing moves); the cursor; the old rest
     function overtype(n, cursorOn) {
         const nw = root.lastLine, old = root.oldLine;
-        const head = escaped(nw.slice(0, n)) + "&nbsp;".repeat(Math.max(0, Math.min(n, old.length) - nw.length));
+        const wiped = old.slice(nw.length, Math.max(nw.length, Math.min(n, old.length)));
+        const head = escaped(nw.slice(0, n)) + (wiped ? "<font color='transparent'>" + escaped(wiped) + "</font>" : "");
         return head + (cursorOn ? "<font color='" + GroundTheme.acc + "'>█</font>" : "") + escaped(old.slice(n));
     }
 
