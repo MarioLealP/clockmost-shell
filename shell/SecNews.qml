@@ -36,9 +36,21 @@ Column {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 10
-                        Pager { glyph: "‹"; onHit: feed.page = (feed.page + feed.pages - 1) % feed.pages }
+                        Text {
+                            text: "‹"
+                            color: paL.containsMouse ? GroundTheme.acc : GroundTheme.ink
+                            font.family: GroundTheme.mono
+                            font.pixelSize: 16
+                            MouseArea { id: paL; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: feed.page = (feed.page + feed.pages - 1) % feed.pages }
+                        }
                         Text { anchors.verticalCenter: parent.verticalCenter; text: (feed.page + 1) + " / " + feed.pages; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 2 }
-                        Pager { glyph: "›"; onHit: feed.page = (feed.page + 1) % feed.pages }
+                        Text {
+                            text: "›"
+                            color: paR.containsMouse ? GroundTheme.acc : GroundTheme.ink
+                            font.family: GroundTheme.mono
+                            font.pixelSize: 16
+                            MouseArea { id: paR; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: feed.page = (feed.page + 1) % feed.pages }
+                        }
                     }
                 }
                 Repeater {
@@ -67,16 +79,5 @@ Column {
                 }
             }
         }
-    }
-
-    component Pager: Text {
-        id: pg
-        property string glyph
-        signal hit
-        text: glyph
-        color: pa.containsMouse ? GroundTheme.acc : GroundTheme.ink
-        font.family: GroundTheme.mono
-        font.pixelSize: 16
-        MouseArea { id: pa; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: pg.hit() }
     }
 }
