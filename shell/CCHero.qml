@@ -33,6 +33,7 @@ Column {
             color: Theme.dim
             font.family: GroundTheme.display
             font.weight: Font.Black
+            font.variableAxes: { "wght": 900 }
             font.pixelSize: root.size * 0.32
         }
     }

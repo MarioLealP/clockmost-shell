@@ -53,6 +53,7 @@ TileFrame {
         color: "#e8e9ec"
         font.family: Theme.body
         font.weight: Font.Bold
+        font.variableAxes: { "wght": 700 }
         font.pixelSize: 29
     }
 

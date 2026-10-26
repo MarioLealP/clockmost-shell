@@ -114,6 +114,7 @@ CCTab {
                             color: Theme.dim
                             font.family: GroundTheme.display
                             font.weight: Font.Bold
+                            font.variableAxes: { "wght": 700 }
                             font.pixelSize: 13
                         }
                     }

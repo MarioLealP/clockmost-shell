@@ -93,6 +93,7 @@ Item {
         color: root.muted ? Theme.dim : Theme.ink
         font.family: GroundTheme.display
         font.weight: Font.Black
+        font.variableAxes: { "wght": 900 }
         font.pixelSize: 18
         font.letterSpacing: Theme.em(16, 0.06)
     }

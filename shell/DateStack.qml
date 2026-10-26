@@ -28,6 +28,7 @@ Column {
             font.family: GroundTheme.display
             font.pixelSize: 112
             font.weight: Font.Black
+            font.variableAxes: { "wght": 900 }
             font.letterSpacing: -3
         }
         Rectangle {
@@ -67,6 +68,7 @@ Column {
         font.family: GroundTheme.display
         font.pixelSize: 44
         font.weight: Font.Black
+        font.variableAxes: { "wght": 900 }
     }
     Big { text: "→" + Qt.formatTime(clock.date, "hh"); slash: true; tint: GroundTheme.acc }
     Big { text: Qt.formatTime(clock.date, "mm"); tint: GroundTheme.acc }

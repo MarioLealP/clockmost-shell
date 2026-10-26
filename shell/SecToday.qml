@@ -16,6 +16,7 @@ Column {
             font.family: GroundTheme.display
             font.pixelSize: 96
             font.weight: Font.Black
+            font.variableAxes: { "wght": 900 }
         }
         Column {
             anchors.verticalCenter: parent.verticalCenter

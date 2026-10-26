@@ -29,6 +29,7 @@ Column {
                         font.family: GroundTheme.display
                         font.pixelSize: 17
                         font.weight: Font.DemiBold
+                        font.variableAxes: { "wght": 600 }
                     }
                 }
             }

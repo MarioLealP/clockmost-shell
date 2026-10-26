@@ -255,6 +255,7 @@ PanelWindow {
                     color: "#111111"
                     font.family: Theme.body
                     font.weight: Font.DemiBold
+                    font.variableAxes: { "wght": 600 }
                     font.pixelSize: 18
                     font.letterSpacing: Theme.em(18, 0.04)
                 }

@@ -131,6 +131,7 @@ Rectangle {
                     font.family: GroundTheme.display
                     font.pixelSize: 30
                     font.weight: Font.DemiBold
+                    font.variableAxes: { "wght": 600 }
                     lineHeight: 1.18
                 }
                 Text { text: root.lastMeta; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 3 }

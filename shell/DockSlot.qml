@@ -106,6 +106,7 @@ Item {
                 color: root.c
                 font.family: Theme.body
                 font.weight: Font.Bold
+                font.variableAxes: { "wght": 700 }
                 font.pixelSize: 20
             }
 

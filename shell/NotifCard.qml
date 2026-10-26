@@ -86,6 +86,7 @@ Item {
             color: Theme.plateInk
             font.family: Theme.body
             font.weight: Font.Bold
+            font.variableAxes: { "wght": 700 }
             font.pixelSize: 18
         }
         DotGrid {
@@ -132,6 +133,7 @@ Item {
             color: Theme.ink
             font.family: Theme.body
             font.weight: Font.DemiBold
+            font.variableAxes: { "wght": 600 }
             font.pixelSize: 14
         }
         Text {

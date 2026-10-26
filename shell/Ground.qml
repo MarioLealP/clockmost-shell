@@ -54,6 +54,7 @@ PanelWindow {
             font.family: GroundTheme.display
             font.pixelSize: 40
             font.weight: Font.Black
+            font.variableAxes: { "wght": 900 }
             font.letterSpacing: 2
             lineHeight: 0.8
         }

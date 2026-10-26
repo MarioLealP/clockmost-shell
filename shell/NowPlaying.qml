@@ -83,6 +83,7 @@ Rectangle {
                 color: root.player ? Theme.ink : Theme.dim
                 font.family: Theme.body
                 font.weight: Font.DemiBold
+                font.variableAxes: { "wght": 600 }
                 font.pixelSize: 11
             }
             Text {
