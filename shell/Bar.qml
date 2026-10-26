@@ -81,12 +81,13 @@ PanelWindow {
         item: band
     }
 
-    // input: hidden = only the top-edge strip; shown = band + plate
+    // input: hidden = only the top-edge strip; shown = the whole bar height, fixed (not the sliding band: mid-slide
+    // the band is still above the screen, and the pointer coming down from the edge fell out of the bar and hid it)
     mask: root.bandP > 0.01 ? shownMask : hiddenMask
     Region {
         id: shownMask
-        item: band
-        Region { item: edge }
+        width: root.width
+        height: Math.ceil(Theme.band * root.s)
     }
     Region {
         id: hiddenMask
