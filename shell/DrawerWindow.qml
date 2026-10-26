@@ -67,9 +67,20 @@ PanelWindow {
     function windowsOf(e) {
         return e ? (DockApps.slots.find(s => s.key === e.id)?.windows.length ?? 0) : 0;
     }
+    // launching: the app starts at once (it takes a second or so to show), its square fills orange from the bottom,
+    // holds a beat, then the drawer closes
+    property real launchP: 0
     function launch(e) {
+        if (launching.running)
+            return;
         Apps.launch(e);
-        Drawer.close();
+        launching.restart();
+    }
+    SequentialAnimation {
+        id: launching
+        NumberAnimation { target: root; property: "launchP"; from: 0; to: 1; duration: 240; easing.type: Easing.OutCubic }
+        PauseAnimation { duration: 140 }
+        ScriptAction { script: Drawer.close() }
     }
 
     // motion (Mario 2026-10-26): the panel comes in as two halves cut on a diagonal through its middle - the left one
@@ -152,6 +163,7 @@ PanelWindow {
                 search.text = "";
                 root.query = "";
                 root.sliding = false;
+                root.launchP = 0;
                 root.selected = 0;
                 search.forceActiveFocus();
                 root.seam = 0;
@@ -396,6 +408,7 @@ PanelWindow {
                             visible: slot !== null || glide.running
                             entry: modelData
                             featured: slot?.dist === 0
+                            fill: featured ? root.launchP : 0
                             number: index + 1
                             windows: root.windowsOf(modelData)
                             onClicked: featured ? root.launch(modelData) : root.pick(index)

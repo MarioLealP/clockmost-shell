@@ -12,6 +12,7 @@ Rectangle {
     property bool featured: false
     property int number: 0
     property int windows: 0
+    property real fill: 0 // launching: orange rising from the bottom, under the logo
     signal clicked
 
     // curated marks win over the theme icon (the dock's firefox.svg)
@@ -27,6 +28,13 @@ Rectangle {
     border.width: featured ? 2 : 1
     border.color: featured ? GroundTheme.acc : GroundTheme.lineSolid
 
+    Rectangle {
+        anchors.bottom: parent.bottom
+        width: parent.width
+        height: parent.height * root.fill
+        visible: root.fill > 0
+        color: GroundTheme.acc
+    }
     Image {
         id: icon
         visible: root.logo !== "" && status !== Image.Error
