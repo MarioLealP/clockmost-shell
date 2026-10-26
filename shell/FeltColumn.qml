@@ -181,5 +181,37 @@ Rectangle {
                 Text { id: kbd; anchors.centerIn: parent; text: "META+F"; color: GroundTheme.bg; font.family: GroundTheme.mono; font.pixelSize: 10 }
             }
         }
+
+        // today's brief: sensor.felt_brief (the Felt HA integration looks it up in her Margins) - only once she's
+        // given one today; click = the whole text
+        Item { width: 1; height: 26; visible: brief.visible }
+        Column {
+            id: brief
+            readonly property string text: HaClient.attr("sensor.felt_brief", "text") ?? ""
+            readonly property string at: HaClient.st("sensor.felt_brief")
+            property bool open: false
+            visible: text !== ""
+            width: parent.width
+            spacing: 8
+            Text {
+                text: "TODAY'S BRIEF  ·  " + (/^\d{4}-/.test(brief.at) ? Qt.formatTime(new Date(brief.at), "hh:mm") : "")
+                color: GroundTheme.ink2
+                font.family: GroundTheme.mono
+                font.pixelSize: 11
+                font.letterSpacing: 2
+            }
+            Text {
+                width: parent.width
+                wrapMode: Text.WordWrap
+                maximumLineCount: brief.open ? 40 : 5
+                elide: Text.ElideRight
+                text: brief.text
+                color: GroundTheme.ink
+                font.family: GroundTheme.display
+                font.pixelSize: 15
+                lineHeight: 1.25
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: brief.open = !brief.open }
+            }
+        }
     }
 }

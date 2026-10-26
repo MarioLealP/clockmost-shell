@@ -60,7 +60,7 @@ Singleton {
     Component.onCompleted: HaClient.entities = root.room.concat(root.calendars, root.news, [
         "switch.felt_quiet", "switch.felt_hidden", "switch.felt_dj_mode", "todo.shopping_list",
         "sensor.ender_state", "sensor.ender_progress", "sensor.3d_printer_status_atual", "sensor.elegoo_progress",
-        "sensor.felt_needs_you", "sensor.shelf_power", "sensor.core_300s_series_pm2_5", "sensor.extraplug_power",
+        "sensor.felt_needs_you", "sensor.felt_brief", "sensor.shelf_power", "sensor.core_300s_series_pm2_5", "sensor.extraplug_power",
         "weather.forecast_home", "sensor.pocox7_next_alarm",
         "sensor.ender_file", "sensor.ender_layer", "sensor.ender_elapsed", "sensor.ender_time_left", "sensor.ender_done_at",
         "sensor.ender_nozzle", "sensor.ender_bed", "sensor.3d_printer_status_de_impressao", "sensor.elegoo_file",
