@@ -1,7 +1,8 @@
 // A silhouette picture as ASCII art (Mario 2026-10-26: the FFXIV meteor, right of the orange line): one character per
 // 12x18 cell, 5x7 pixel glyphs drawn 2x. Dark parts of the picture are the shape, filled with a soft diagonal
 // shading of bone glyphs ': - = + * #' (no orange edge - Mario), the rest empty. presence 1 -> 0 dissolves it (an HA
-// section opening), 0 -> 1 materializes it: each cell flickers through random glyphs around its own threshold. t 0 -> 1 = a scramble (on every hero
+// section opening): each cell flickers through random glyphs around its own threshold. Materializing replays the
+// start-up scramble from nothing (fromEmpty). t 0 -> 1 = a scramble (on every hero
 // art swap): each cell runs random glyphs - some empty cells too, a burst around the shape - and settles back.
 // Compile: /usr/lib/qt6/bin/qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o ascii.frag.qsb ascii.frag
 #version 440
@@ -15,6 +16,7 @@ layout(std140, binding = 0) uniform buf {
     float t;
     float time;
     float presence;
+    float fromEmpty; // 1 = the scramble builds up from nothing (start-up, materializing)
     vec2 size;
     vec4 ink;
 };
@@ -61,6 +63,8 @@ void main() {
     float start = n * 0.3, settle = 0.35 + n * 0.6;
     if (t > start && t < settle && (in0 || hash(id + 7.0) < 0.25))
         g = 1 + int(hash(id + floor(time * 14.0)) * 7.99);
+    else if (fromEmpty > 0.5 && t <= start)
+        g = 0;
 
     // dissolve / materialize: gone below this cell's threshold, flickering just above it
     float thr = hash(id + 3.0);

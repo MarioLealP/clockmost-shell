@@ -34,11 +34,17 @@ PanelWindow {
         width: parent.width
         height: parent.height
 
-        GroundLine { id: line; targetX: HaSections.current !== "" ? 1620 : 920; y: -140; onAway: stage.lineAway() }
+        GroundLine {
+            id: line
+            targetX: HaSections.current !== "" ? 1620 : 920
+            y: -140
+            hold: HaSections.current !== "" && ascii.presence > 0.01 // open: lands once the silhouette is gone
+            onAway: stage.lineAway()
+        }
 
         SectionStage {
             id: stage
-            hold: ascii.presence > 0.01 // the ASCII silhouette dissolves before a section builds over it
+            hold: HaSections.current !== "" && ascii.presence > 0.01 // the silhouette dissolves before a section builds
             x: 472 // on the grid (dots at x 16 + 24k, y 12 + 24k on 3440 x 1440)
             y: 108
             sections: ({

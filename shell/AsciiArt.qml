@@ -10,13 +10,27 @@ ShaderEffect {
 
     property real t: 0
     property real time: 0
-    property real presence: HaSections.current !== "" ? 0 : 1
-    Behavior on presence {
-        SequentialAnimation {
-            // closing waits for the section to clear and the line to land
-            PauseAnimation { duration: HaSections.current !== "" ? 0 : 450 }
-            NumberAnimation { duration: HaSections.current !== "" ? 450 : 900 }
+    property real presence: 1
+    property real fromEmpty: 1
+    // an HA section opens: dissolve; it closes: wait for it to clear and the line to land, then the start-up
+    // scramble from nothing
+    Connections {
+        target: HaSections
+        function onCurrentChanged() {
+            if (HaSections.current !== "") {
+                form.stop();
+                dissolve.restart();
+            } else if (root.presence < 1 || dissolve.running) {
+                dissolve.stop();
+                form.restart();
+            }
         }
+    }
+    NumberAnimation { id: dissolve; target: root; property: "presence"; to: 0; duration: 450 }
+    SequentialAnimation {
+        id: form
+        PauseAnimation { duration: 450 }
+        ScriptAction { script: { root.fromEmpty = 1; root.presence = 1; scramble.restart(); } }
     }
     property variant src: img
     property size size: Qt.size(width, height)
@@ -37,19 +51,22 @@ ShaderEffect {
 
     Connections {
         target: HeroArt
-        function onRequestsChanged() { scramble.restart(); }
+        function onRequestsChanged() {
+            if (root.presence >= 1 && !scramble.running)
+                scramble.restart();
+        }
     }
-    Component.onCompleted: scramble.restart() // forms on start
+    Component.onCompleted: scramble.restart() // forms on start, from nothing
     SequentialAnimation {
         id: scramble
         NumberAnimation { target: root; property: "t"; from: 0; to: 1; duration: 2600 }
-        ScriptAction { script: root.t = 0 }
+        ScriptAction { script: { root.t = 0; root.fromEmpty = 0; } }
     }
     // the scramble's tick, only while it runs
     Timer {
         interval: 50
         repeat: true
-        running: scramble.running || (root.presence > 0 && root.presence < 1)
+        running: scramble.running || dissolve.running
         onTriggered: root.time += 0.05
     }
 }
