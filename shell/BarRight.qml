@@ -1,4 +1,4 @@
-// .right: the app tray (hidden while empty), the status tray plate, the user chip. Now playing: left of the clock (Bar).
+// .right: the app tray (hidden while empty), the status tray plate (v2: no user chip - Mario 2026-10-26). Now playing: left of the clock (Bar).
 import QtQuick
 
 Row {
@@ -8,9 +8,6 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
     }
     StatusTray {
-        anchors.verticalCenter: parent.verticalCenter
-    }
-    UserChip {
         anchors.verticalCenter: parent.verticalCenter
     }
 }
