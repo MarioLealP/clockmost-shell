@@ -82,6 +82,7 @@ Rectangle {
                     root.oldLine = first ? "" : root.lastLine;
                     root.lastLine = l.text;
                     root.lastMeta = Qt.formatTime(new Date(l.at * 1000), "hh:mm") + "  ·  " + String(l.source).toUpperCase();
+                    line.open = false;
                     if (first) {
                         root.typed = Math.max(l.text.length, root.oldLine.length); // there before the shell started: no show
                         return;
@@ -155,7 +156,8 @@ Rectangle {
         Item {
             id: lineBox
             width: parent.width
-            height: Math.max(quote.height, 120)
+            // one fixed size (Mario 2026-10-26): 6 lines of her text + the meta line, whatever she says
+            height: line.lineCount > 6 && line.open ? quote.height : 6 * 26 + 12 + 14
 
             // the bar: solid halves, or hazard halves while she thinks; both slide in and out of this rail
             Item {
@@ -200,16 +202,23 @@ Rectangle {
                 opacity: root.thinking ? 0.35 : 1
                 Behavior on opacity { NumberAnimation { duration: 180 } }
                 Text {
+                    id: line
+                    property bool open: false // click: the whole line when it's longer than the box
                     width: parent.width
+                    height: open ? implicitHeight : Math.min(implicitHeight, 6 * 26)
                     textFormat: Text.StyledText
                     text: root.overtype(root.typed, cursor.on)
                     wrapMode: Text.WordWrap
+                    maximumLineCount: open ? 40 : 6
+                    elide: Text.ElideRight
                     color: GroundTheme.ink
                     font.family: GroundTheme.display
-                    font.pixelSize: 30
+                    font.pixelSize: 22
                     font.weight: Font.DemiBold
                     font.variableAxes: { "wght": 600 }
-                    lineHeight: 1.18
+                    lineHeightMode: Text.FixedHeight
+                    lineHeight: 26
+                    MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: line.open = !line.open }
                 }
                 RollText { value: root.lastMeta; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 3 }
             }
