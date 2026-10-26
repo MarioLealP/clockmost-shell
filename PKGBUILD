@@ -4,7 +4,7 @@
 
 pkgname=clockmost-shell
 pkgver=0.2.10
-pkgrel=1
+pkgrel=2
 pkgdesc="The clockmost desktop shell for KDE Plasma: v2 desktop layer (ground), bar, control center, dock, app drawer, notifications, Win+V clipboard (Quickshell)"
 arch=('x86_64')
 url="https://git.clockmost.com/pkgs/${pkgname}"
