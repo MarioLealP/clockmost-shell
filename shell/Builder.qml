@@ -61,7 +61,10 @@ Item {
                 const drawn = c.color !== undefined || isImage || c.fragmentShader !== undefined;
                 // outward from originX: the distance of the part's centre from it
                 const out = originX >= 0 ? Math.abs(p.x + c.width / 2 - originX) * 0.45 : 0;
-                if (isText) {
+                if (c.objectName === "buildline") {
+                    // a composite rule (the hazard strips): drawn out as one line, its insides untouched
+                    list.push({ item: c, kind: "line", start: (p.y * 0.25 + out) * k, dur: 420 * k });
+                } else if (isText) {
                     const big = c.font.pixelSize >= 40 && /\d/.test(c.text);
                     list.push({ item: c, kind: big ? "roll" : "type", start: (260 + p.y * 0.35 + (originX >= 0 ? out : p.x * 0.05)) * k, dur: (big ? 520 : 200) * k });
                 } else if (isRect && c.border.width > 0 && c.width > traceMin && c.height > 40) {
@@ -185,7 +188,7 @@ Item {
                 // the cover slides off from the start edge: the line draws out
                 const r = a.item.mapToItem(root, 0, 0);
                 a.cv.visible = p < 1;
-                if (a.item.height <= 2) {
+                if (a.item.width >= a.item.height) {
                     a.cv.x = r.x - 1 + a.item.width * e;
                     a.cv.width = a.item.width * (1 - e) + 2;
                 } else {

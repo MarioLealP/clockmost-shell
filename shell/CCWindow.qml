@@ -163,6 +163,7 @@ PanelWindow {
                 width: content.width - 34
                 height: 4
                 clip: true
+                objectName: "buildline"
                 z: 2
                 Row {
                     spacing: 8

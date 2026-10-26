@@ -444,6 +444,7 @@ PanelWindow {
                 width: parent.width - 96
                 height: 4
                 clip: true
+                objectName: "buildline"
                 Row {
                     spacing: 8
                     Repeater {
