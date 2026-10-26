@@ -24,8 +24,18 @@ Item {
     property var atoms: [] // {item, kind: trace|pop|flicker|type|roll, start, dur, i, ov, done}
     property var overlays: [] // stand-ins alive right now (traces, rolling numbers)
 
+    // something else has to clear first (the ASCII silhouette dissolving): opening waits until hold drops
+    property bool hold: false
+    property bool armed: false
+    onHoldChanged: if (!hold && armed) lineAway()
+
     function lineAway() {
-        if (current !== "" && shown === "")
+        armed = false;
+        if (current === "" || shown !== "")
+            return;
+        if (hold)
+            armed = true;
+        else
             shown = current;
     }
 

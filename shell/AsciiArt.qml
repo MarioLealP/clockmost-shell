@@ -15,7 +15,7 @@ ShaderEffect {
         SequentialAnimation {
             // closing waits for the section to clear and the line to land
             PauseAnimation { duration: HaSections.current !== "" ? 0 : 450 }
-            NumberAnimation { duration: HaSections.current !== "" ? 650 : 900 }
+            NumberAnimation { duration: HaSections.current !== "" ? 450 : 900 }
         }
     }
     property variant src: img
