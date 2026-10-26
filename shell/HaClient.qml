@@ -89,14 +89,17 @@ Singleton {
 
     Component.onCompleted: if (root.token.length > 0) sock.active = true
     Process {
+        id: lookup
         command: ["secret-tool", "lookup", "service", "clockmost-ha", "account", "clockmost-desktop"]
         running: root.token.length === 0
         stdout: StdioCollector {
             onStreamFinished: {
                 root.token = text.trim();
                 sock.active = root.token.length > 0;
-                if (!sock.active)
-                    console.warn("ha: no token in the Secret Service (KeePassXC locked?)");
+                if (!sock.active && !tokenRetry.warned) {
+                    console.warn("ha: no token in the Secret Service (KeePassXC locked?) - retrying every 5 s");
+                    tokenRetry.warned = true;
+                }
             }
         }
     }
@@ -122,5 +125,16 @@ Singleton {
             sock.active = false;
             sock.active = root.token.length > 0;
         }
+    }
+
+    // at login the shell can ask before the tang unlock has opened KeePassXC (cm-ozlw: one miss left the HA panel
+    // empty all evening): keep asking until the token is there
+    Timer {
+        id: tokenRetry
+        property bool warned: false
+        interval: 5000
+        repeat: true
+        running: root.token.length === 0 && !lookup.running
+        onTriggered: lookup.running = true
     }
 }

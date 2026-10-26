@@ -170,7 +170,9 @@ Item {
 
     function step() {
         for (const a of atoms) {
-            if (!a.item) { // its tab was swapped out mid-build
+            // its tab was swapped out mid-build, or the part was destroyed (a model refresh): a destroyed Item's
+            // wrapper stays truthy but has lost its methods (cm-ozlw)
+            if (typeof a.item?.mapToItem !== "function") {
                 if (a.cv)
                     a.cv.visible = false;
                 if (a.ov)
