@@ -16,14 +16,27 @@ PanelWindow {
     Connections {
         target: ControlCenter
         function onOpenChanged() {
+            if (!root.mine) { // the other screens' windows stay out of it
+                opening.stop();
+                closing.stop();
+                builder.finish();
+                root.sweep = 0;
+                return;
+            }
             if (ControlCenter.open) {
                 closing.stop();
                 builder.finish();
                 body.visible = false;
                 opening.restart();
-            } else {
+            } else if (opening.running) {
+                // closed mid-open: just wipe it back up
                 opening.stop();
                 builder.finish();
+                body.visible = false;
+                closing.restart();
+            } else {
+                builder.speed = 2.2;
+                builder.prepare([panel], true);
                 closing.restart();
             }
         }
@@ -40,10 +53,17 @@ PanelWindow {
             }
         }
     }
+    // closing is the open backwards: details go, frames retract, then the band sweeps the background back up
     SequentialAnimation {
         id: closing
-        ScriptAction { script: body.visible = false }
-        NumberAnimation { target: root; property: "sweep"; to: 0; duration: 220; easing.type: Easing.InCubic }
+        NumberAnimation { target: builder; property: "clock"; to: 0; duration: builder.total; easing.type: Easing.InQuad }
+        ScriptAction {
+            script: {
+                body.visible = false;
+                builder.finish();
+            }
+        }
+        NumberAnimation { target: root; property: "sweep"; to: 0; duration: 240; easing.type: Easing.InOutCubic }
     }
 
     readonly property bool mine: ControlCenter.screenName === "" || ControlCenter.screenName === screen?.name
@@ -60,9 +80,15 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: ControlCenter.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    // input everywhere while open (outside = close), nowhere while fading out
+    // input everywhere while open (outside = close) except the bar's strip - its widgets stay live, so another icon
+    // swaps the tab and the same one closes; nowhere while closing
     mask: Region {
         item: ControlCenter.open ? catcher : null
+        Region {
+            width: root.width
+            height: Math.ceil(Theme.band * root.s)
+            intersection: Intersection.Subtract
+        }
     }
 
     MouseArea {

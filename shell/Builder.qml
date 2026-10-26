@@ -15,7 +15,7 @@ Item {
     property color cover: GroundTheme.bg // the labels' covers
     property real clock: 0
     property real total: 600
-    property var atoms: [] // {item, kind: trace|line|pop|type|roll, start, dur, i, ov, done}
+    property var atoms: [] // {item, kind: trace|line|pop|type|roll, start, dur, i, ov (overlay), cv (cover)}
     property var overlays: []
     readonly property bool running: play.running
 
@@ -35,16 +35,13 @@ Item {
     function finish() {
         play.stop();
         clear();
-        for (const a of atoms) {
-            a.ov = null;
-            a.cv = null;
-            a.done = true;
-        }
         atoms = [];
+        total = 0;
     }
 
-    // hide everything to build in `items` (their own frames stay where they are, their insides go)
-    function prepare(items) {
+    // hide everything to build in `items` (their own frames stay where they are, their insides go); reversed = start
+    // from built, for taking it apart by running the clock back to 0
+    function prepare(items, reversed) {
         finish();
         const list = [];
         const at = c => c.mapToItem(root, 0, 0);
@@ -86,7 +83,9 @@ Item {
         });
         atoms = list;
         total = list.reduce((m, a) => Math.max(m, a.start + a.dur), 300) + 40;
-        clock = 0;
+        clock = reversed ? total : 0;
+        if (reversed)
+            step(); // the covers are up already: drop them before a frame shows them
     }
     // a background-coloured block over a label, 1 px proud on every side
     function coverFor(item) {
@@ -99,13 +98,6 @@ Item {
         c.color = root.cover;
         overlays = overlays.concat([c]);
         return c;
-    }
-    function uncover(a) {
-        if (a.cv) {
-            a.cv.destroy();
-            overlays = overlays.filter(o => o !== a.cv);
-            a.cv = null;
-        }
     }
 
     function run() {
@@ -122,16 +114,17 @@ Item {
         onFinished: root.finish()
     }
 
+    // every part's state is a pure function of its progress p (0 = hidden, 1 = built), so the clock runs either way;
+    // covers and overlays are kept (hidden) until finish()
     function trace(a, p) {
         if (!a.ov) {
             const pos = a.item.mapToItem(root, 0, 0);
             a.ov = Qt.createQmlObject("import QtQuick; Item { Rectangle { height: 2 } Rectangle { width: 2 } Rectangle { height: 2 } Rectangle { width: 2 } }", root);
             a.ov.x = pos.x;
             a.ov.y = pos.y;
-            for (const r of a.ov.children)
-                r.color = GroundTheme.acc;
             overlays = overlays.concat([a.ov]);
         }
+        a.ov.visible = p > 0 && p < 1;
         const w = a.item.width, h = a.item.height, d = p * 2 * (w + h);
         const [top, right, bottom, left] = a.ov.children;
         top.width = Math.min(d, w);
@@ -146,15 +139,8 @@ Item {
         const k = p < 0.85 ? 0 : (p - 0.85) / 0.15;
         for (const r of a.ov.children)
             r.color = Qt.tint(GroundTheme.acc, Qt.rgba(GroundTheme.lineSolid.r, GroundTheme.lineSolid.g, GroundTheme.lineSolid.b, k));
-        if (p >= 1)
-            drop(a);
     }
     function roll(a, p) {
-        if (p >= 1) {
-            drop(a);
-            uncover(a);
-            return;
-        }
         if (!a.ov) {
             const pos = a.item.mapToItem(root, 0, 0);
             a.ov = Qt.createQmlObject("import QtQuick; Text {}", root);
@@ -167,66 +153,48 @@ Item {
             a.ov.z = 1; // above the label's cover
             overlays = overlays.concat([a.ov]);
         }
-        a.ov.text = a.item.text.replace(/\d/g, () => String(Math.floor(Math.random() * 10)));
-    }
-    function drop(a) {
-        if (a.ov) {
-            a.ov.destroy();
-            overlays = overlays.filter(o => o !== a.ov);
-            a.ov = null;
-        }
-        a.done = true;
+        a.ov.visible = p > 0 && p < 1;
+        a.cv.visible = p < 1;
+        if (a.ov.visible)
+            a.ov.text = a.item.text.replace(/\d/g, () => String(Math.floor(Math.random() * 10)));
     }
 
-    onClockChanged: {
+    function step() {
         for (const a of atoms) {
-            if (a.done)
-                continue;
             if (!a.item) { // its tab was swapped out mid-build
-                drop(a);
-                uncover(a);
+                if (a.cv)
+                    a.cv.visible = false;
+                if (a.ov)
+                    a.ov.visible = false;
                 continue;
             }
             const p = Math.max(0, Math.min(1, (clock - a.start) / a.dur));
-            if (p <= 0)
-                continue;
             const e = 1 - Math.pow(1 - p, 3);
             if (a.kind === "trace") {
-                trace(a, p);
+                if (p > 0 || a.ov)
+                    trace(a, p);
             } else if (a.kind === "roll") {
                 roll(a, p);
             } else if (a.kind === "line") {
                 // the cover slides off from the start edge: the line draws out
-                if (p >= 1) {
-                    uncover(a);
-                    a.done = true;
-                } else if (a.cv) {
-                    const r = a.item.mapToItem(root, 0, 0);
-                    if (a.item.height <= 2) {
-                        a.cv.x = r.x - 1 + a.item.width * e;
-                        a.cv.width = a.item.width * (1 - e) + 2;
-                    } else {
-                        a.cv.y = r.y - 1 + a.item.height * e;
-                        a.cv.height = a.item.height * (1 - e) + 2;
-                    }
+                const r = a.item.mapToItem(root, 0, 0);
+                a.cv.visible = p < 1;
+                if (a.item.height <= 2) {
+                    a.cv.x = r.x - 1 + a.item.width * e;
+                    a.cv.width = a.item.width * (1 - e) + 2;
+                } else {
+                    a.cv.y = r.y - 1 + a.item.height * e;
+                    a.cv.height = a.item.height * (1 - e) + 2;
                 }
             } else if (a.kind === "type") {
                 // the cover flickers off: hard blinks while it runs, then gone
-                if (p >= 1) {
-                    uncover(a);
-                    a.done = true;
-                } else if (a.cv) {
-                    a.cv.visible = (Math.floor(clock / 45) + a.i) % 3 !== 1 && p < 0.35 + 0.65 * ((a.i * 7) % 10) / 10;
-                }
+                a.cv.visible = p <= 0 || (p < 1 && (Math.floor(clock / 45) + a.i) % 3 !== 1 && p < 0.35 + 0.65 * ((a.i * 7) % 10) / 10);
             } else {
                 // pop: the cover shrinks into the middle of the part
-                if (p >= 1) {
-                    uncover(a);
-                    a.done = true;
-                } else if (a.cv) {
-                    a.cv.scale = 1 - e;
-                }
+                a.cv.visible = p < 1;
+                a.cv.scale = 1 - e;
             }
         }
     }
+    onClockChanged: step()
 }
