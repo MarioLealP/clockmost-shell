@@ -62,6 +62,7 @@ ShellRoot {
         target: "ground"
         function open(section: string): void { HaSections.current = section.toUpperCase(); }
         function close(): void { HaSections.current = ""; }
+        function art(): void { HeroArt.next(); } // swap the hero's picture now
     }
     Variants {
         model: root.groundOff ? [] : Quickshell.screens
