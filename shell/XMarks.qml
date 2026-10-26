@@ -1,6 +1,8 @@
 // Soft white X marks scattered around the art; the two big ones blurred for depth (Good Smile Racing fan art).
 // Motion (Mario 2026-10-26: "focus looks interesting, and restrike"), one at random every 25-55 s:
-// - re-strike: an X takes its two strokes back and draws them on again, like a pen marking it;
+// - re-strike: one of the blurred X's - a mark left over so long it went soft - takes its strokes back and gets drawn
+//   on again sharp and fresh, then slowly goes soft again over ~30 s (Mario: "so it feels like they fading out from
+//   being left over for too long");
 // - focus pull: a sharp X goes soft while a blurred one comes into focus, holds, then they trade back.
 import QtQuick
 import QtQuick.Effects
@@ -24,7 +26,7 @@ Item {
     Connections {
         target: HeroArt
         function onMarkPokesChanged() {
-            root.pickOne(false).restrike();
+            root.pickOne(true).restrike();
             focusPull.start(root.pickOne(false), root.pickOne(true));
         }
     }
@@ -35,7 +37,7 @@ Item {
         running: true
         onTriggered: {
             if (Math.random() < 0.5)
-                root.pickOne(Math.random() < 0.8 ? false : true).restrike();
+                root.pickOne(true).restrike();
             else
                 focusPull.start(root.pickOne(false), root.pickOne(true));
             interval = 25000 + Math.random() * 30000;
@@ -49,7 +51,7 @@ Item {
         property Item sharp
         property Item soft
         function start(a, b) {
-            if (pull.running)
+            if (pull.running || b.haze < 0.99 || a.busy || b.busy)
                 return;
             sharp = a;
             soft = b;
@@ -80,17 +82,22 @@ Item {
             property real d1: 1 // how much of each stroke is drawn
             property real d2: 1
 
+            readonly property bool busy: strike.running
             function restrike() {
-                if (!strike.running)
+                if (!strike.running && !pull.running)
                     strike.restart();
             }
             SequentialAnimation {
                 id: strike
                 NumberAnimation { target: mark; property: "d2"; to: 0; duration: 110; easing.type: Easing.InCubic }
                 NumberAnimation { target: mark; property: "d1"; to: 0; duration: 110; easing.type: Easing.InCubic }
+                ScriptAction { script: mark.haze = 0 } // fresh ink
                 PauseAnimation { duration: 140 }
                 NumberAnimation { target: mark; property: "d1"; to: 1; duration: 190; easing.type: Easing.OutCubic }
                 NumberAnimation { target: mark; property: "d2"; to: 1; duration: 190; easing.type: Easing.OutCubic }
+                PauseAnimation { duration: 3000 }
+                // left over again: back to soft (only the ones that started blurred)
+                NumberAnimation { target: mark; property: "haze"; to: mark.modelData[4] ? 1 : 0; duration: 30000; easing.type: Easing.InOutSine }
             }
 
             // padded so the round caps and the blur aren't cut off at the item's edge
