@@ -67,7 +67,7 @@ Singleton {
         "sensor.3d_printer_current_layer", "sensor.3d_printer_total_layers", "sensor.3d_printer_remaining_print_time",
         "sensor.3d_printer_end_time", "sensor.3d_printer_uv_led_temp", "sensor.3d_printer_release_film",
         "sensor.3d_printer_razao_do_status_de_erro", "update.3d_printer_firmware", "image.3d_printer_cover_image",
-        "number.ender_set_nozzle_target", "number.ender_set_bed_target", "sensor.pocox7_battery_level", "sensor.felt_server", "sensor.felt_backups",
+        "number.ender_set_nozzle_target", "number.ender_set_bed_target", "sensor.pocox7_battery_level", "sensor.felt_needs_you", "sensor.shelf_energy", "sensor.extraplug_energy", "sensor.felt_server", "sensor.felt_backups",
         "sensor.felt_security", "sensor.felt_desktop", "sensor.felt_laptop", "sensor.felt_router", "sensor.backup_state",
         "sensor.backup_last_successful_automatic_backup"])
 }
