@@ -59,8 +59,6 @@ PanelWindow {
             lineHeight: 0.8
         }
 
-        ArtStrip { x: 568; y: 1044 } // on the 568 dot column, 1044-1260 dot rows
-
         HeroSlices { x: 1640; y: 125 }
         XMarks {}
 
