@@ -3,12 +3,15 @@
 // tracks draw out from their start - then the details: small fills and icons pop in, labels flicker on like they're
 // being typed, big numbers roll through digits. Everything in order down the screen. Put it on top of what it builds
 // (it draws the traces and rolling numbers itself); prepare(items) hides, run() plays, finish() snaps to the end.
+// Labels are never touched: they're hidden under covers in the background colour that flicker off (changing a Text's
+// opacity on this Qt wiped the window's alpha under it - the desktop showed through the control center).
 import QtQuick
 
 Item {
     id: root
 
     property real speed: 1 // > 1 = quicker (tab switches)
+    property color cover: GroundTheme.bg // the labels' covers
     property real clock: 0
     property real total: 600
     property var atoms: [] // {item, kind: trace|line|pop|type|roll, start, dur, i, ov, done}
@@ -32,9 +35,12 @@ Item {
         play.stop();
         clear();
         for (const a of atoms) {
-            a.item.opacity = 1;
-            a.item.scale = 1;
+            if (a.kind !== "type" && a.kind !== "roll") {
+                a.item.opacity = 1;
+                a.item.scale = 1;
+            }
             a.ov = null;
+            a.cv = null;
             a.done = true;
         }
         atoms = [];
@@ -82,13 +88,35 @@ Item {
                 a.item.transformOrigin = a.item.height <= 2 ? Item.Left : Item.Top;
                 a.item.scale = 0; // scaling up from its start edge reads as the line drawing out
             }
-            if (a.kind !== "trace")
+            if (a.kind === "type" || a.kind === "roll")
+                a.cv = coverFor(a.item);
+            else if (a.kind !== "trace")
                 a.item.opacity = 0;
         });
         atoms = list;
         total = list.reduce((m, a) => Math.max(m, a.start + a.dur), 300) + 40;
         clock = 0;
     }
+    // a background-coloured block over a label, 1 px proud on every side
+    function coverFor(item) {
+        const pos = item.mapToItem(root, 0, 0);
+        const c = Qt.createQmlObject("import QtQuick; Rectangle {}", root);
+        c.x = pos.x - 1;
+        c.y = pos.y - 1;
+        c.width = item.width + 2;
+        c.height = item.height + 2;
+        c.color = root.cover;
+        overlays = overlays.concat([c]);
+        return c;
+    }
+    function uncover(a) {
+        if (a.cv) {
+            a.cv.destroy();
+            overlays = overlays.filter(o => o !== a.cv);
+            a.cv = null;
+        }
+    }
+
     function run() {
         play.restart();
     }
@@ -130,7 +158,7 @@ Item {
     function roll(a, p) {
         if (p >= 1) {
             drop(a);
-            a.item.opacity = 1;
+            uncover(a);
             return;
         }
         if (!a.ov) {
@@ -142,6 +170,7 @@ Item {
             a.ov.color = a.item.color;
             a.ov.lineHeightMode = a.item.lineHeightMode;
             a.ov.lineHeight = a.item.lineHeight;
+            a.ov.z = 1; // above the label's cover
             overlays = overlays.concat([a.ov]);
         }
         a.ov.text = a.item.text.replace(/\d/g, () => String(Math.floor(Math.random() * 10)));
@@ -173,8 +202,13 @@ Item {
                 a.item.scale = e;
                 a.done = p >= 1;
             } else if (a.kind === "type") {
-                a.item.opacity = p >= 1 ? 1 : ((Math.floor(clock / 45) + a.i) % 3 === 0 ? 0.15 : 0.5 + p / 2);
-                a.done = p >= 1;
+                // the cover flickers off: hard blinks while it runs, then gone
+                if (p >= 1) {
+                    uncover(a);
+                    a.done = true;
+                } else if (a.cv) {
+                    a.cv.visible = (Math.floor(clock / 45) + a.i) % 3 !== 1 && p < 0.35 + 0.65 * ((a.i * 7) % 10) / 10;
+                }
             } else {
                 a.item.opacity = e;
                 a.item.scale = 0.6 + 0.4 * e;
