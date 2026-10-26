@@ -19,7 +19,7 @@ PanelWindow {
             if (ControlCenter.open) {
                 closing.stop();
                 builder.finish();
-                body.opacity = 0;
+                body.visible = false;
                 opening.restart();
             } else {
                 opening.stop();
@@ -34,15 +34,15 @@ PanelWindow {
         ScriptAction {
             script: {
                 builder.speed = 1;
+                body.visible = true;
                 builder.prepare([panel]);
-                body.opacity = 1;
                 builder.run();
             }
         }
     }
-    ParallelAnimation {
+    SequentialAnimation {
         id: closing
-        NumberAnimation { target: body; property: "opacity"; to: 0; duration: 120 }
+        ScriptAction { script: body.visible = false }
         NumberAnimation { target: root; property: "sweep"; to: 0; duration: 220; easing.type: Easing.InCubic }
     }
 
@@ -112,8 +112,8 @@ PanelWindow {
                 border.color: GroundTheme.line
             }
 
-            // everything on the panel (closing: it fades out fast while the band sweeps the background up - a clip
-            // here, nested in the panel's, left holes in the background under the tab list)
+            // everything on the panel: switched off (never faded) while the band sweeps - opacity on the control
+            // center's items wipes the window's alpha under them on this Qt, and the desktop shows through
             Item {
                 id: body
                 width: parent.width

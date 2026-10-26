@@ -3,8 +3,9 @@
 // tracks draw out from their start - then the details: small fills and icons pop in, labels flicker on like they're
 // being typed, big numbers roll through digits. Everything in order down the screen. Put it on top of what it builds
 // (it draws the traces and rolling numbers itself); prepare(items) hides, run() plays, finish() snaps to the end.
-// Labels are never touched: they're hidden under covers in the background colour that flicker off (changing a Text's
-// opacity on this Qt wiped the window's alpha under it - the desktop showed through the control center).
+// Nothing being built is ever touched: every part starts under a cover in the background colour and the covers do
+// the moving (changing opacity / scale on the control center's items wiped the window's alpha - the desktop showed
+// through the panel).
 import QtQuick
 
 Item {
@@ -35,10 +36,6 @@ Item {
         play.stop();
         clear();
         for (const a of atoms) {
-            if (a.kind !== "type" && a.kind !== "roll") {
-                a.item.opacity = 1;
-                a.item.scale = 1;
-            }
             a.ov = null;
             a.cv = null;
             a.done = true;
@@ -84,14 +81,8 @@ Item {
         }
         list.forEach((a, i) => {
             a.i = i;
-            if (a.kind === "line") {
-                a.item.transformOrigin = a.item.height <= 2 ? Item.Left : Item.Top;
-                a.item.scale = 0; // scaling up from its start edge reads as the line drawing out
-            }
-            if (a.kind === "type" || a.kind === "roll")
+            if (a.kind !== "trace")
                 a.cv = coverFor(a.item);
-            else if (a.kind !== "trace")
-                a.item.opacity = 0;
         });
         atoms = list;
         total = list.reduce((m, a) => Math.max(m, a.start + a.dur), 300) + 40;
@@ -174,7 +165,6 @@ Item {
             overlays = overlays.concat([a.ov]);
         }
         a.ov.text = a.item.text.replace(/\d/g, () => String(Math.floor(Math.random() * 10)));
-        a.ov.opacity = Math.min(1, p * 4);
     }
     function drop(a) {
         if (a.ov) {
@@ -198,9 +188,20 @@ Item {
             } else if (a.kind === "roll") {
                 roll(a, p);
             } else if (a.kind === "line") {
-                a.item.opacity = 1;
-                a.item.scale = e;
-                a.done = p >= 1;
+                // the cover slides off from the start edge: the line draws out
+                if (p >= 1) {
+                    uncover(a);
+                    a.done = true;
+                } else if (a.cv) {
+                    const r = a.item.mapToItem(root, 0, 0);
+                    if (a.item.height <= 2) {
+                        a.cv.x = r.x - 1 + a.item.width * e;
+                        a.cv.width = a.item.width * (1 - e) + 2;
+                    } else {
+                        a.cv.y = r.y - 1 + a.item.height * e;
+                        a.cv.height = a.item.height * (1 - e) + 2;
+                    }
+                }
             } else if (a.kind === "type") {
                 // the cover flickers off: hard blinks while it runs, then gone
                 if (p >= 1) {
@@ -210,9 +211,13 @@ Item {
                     a.cv.visible = (Math.floor(clock / 45) + a.i) % 3 !== 1 && p < 0.35 + 0.65 * ((a.i * 7) % 10) / 10;
                 }
             } else {
-                a.item.opacity = e;
-                a.item.scale = 0.6 + 0.4 * e;
-                a.done = p >= 1;
+                // pop: the cover shrinks into the middle of the part
+                if (p >= 1) {
+                    uncover(a);
+                    a.done = true;
+                } else if (a.cv) {
+                    a.cv.scale = 1 - e;
+                }
             }
         }
     }
