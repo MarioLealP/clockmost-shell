@@ -9,6 +9,7 @@ import Quickshell
 Singleton {
     property bool open: false
     property real closedAt: 0
+    signal stepRequested(int d) // IPC `drawer step <n>`: walk the deck without a keyboard (testing)
 
     function toggle() {
         if (!open && Date.now() - closedAt < 400)

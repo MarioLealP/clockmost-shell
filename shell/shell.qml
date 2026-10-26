@@ -31,6 +31,7 @@ ShellRoot {
         function toggle(): void { Drawer.toggle(); }
         function open(): void { Drawer.open = true; }
         function close(): void { Drawer.close(); }
+        function step(d: int): void { Drawer.stepRequested(d); }
     }
 
     // Win+V (KWin script shortcut). Here, not in Clipboard: a singleton only exists once something uses it, so a

@@ -45,10 +45,24 @@ PanelWindow {
         return out;
     }
 
+    // index -> its deck slot
+    readonly property var deckAt: {
+        const m = {};
+        for (const d of deck)
+            m[d.index] = d;
+        return m;
+    }
+    property bool sliding: false // walking the deck (squares slide) vs a new query (the deck re-deals)
     function step(d) {
         const n = results.length;
-        if (n)
-            selected = ((selected + d) % n + n) % n;
+        if (!n)
+            return;
+        sliding = true;
+        selected = ((selected + d) % n + n) % n;
+    }
+    function pick(i) {
+        sliding = true;
+        selected = i;
     }
     function windowsOf(e) {
         return e ? (DockApps.slots.find(s => s.key === e.id)?.windows.length ?? 0) : 0;
@@ -128,12 +142,16 @@ PanelWindow {
 
     Connections {
         target: Drawer
+        function onStepRequested(d) {
+            root.step(d);
+        }
         function onOpenChanged() {
             if (Drawer.open) {
                 root.grabbed = false;
                 grabTimer.restart();
                 search.text = "";
                 root.query = "";
+                root.sliding = false;
                 root.selected = 0;
                 search.forceActiveFocus();
                 root.seam = 0;
@@ -188,7 +206,8 @@ PanelWindow {
                     ShapePath {
                         strokeWidth: -1
                         fillColor: GroundTheme.bg
-                        PathPolyline { path: [Qt.point(0, 0), Qt.point(panel.width / 2 + panel.lean, 0), Qt.point(panel.width / 2 - panel.lean, panel.height), Qt.point(0, panel.height)] }
+                        // 4px past the cut: the halves overlap, no antialiased hairline between them once met
+                        PathPolyline { path: [Qt.point(0, 0), Qt.point(panel.width / 2 + panel.lean + 4, 0), Qt.point(panel.width / 2 - panel.lean + 4, panel.height), Qt.point(0, panel.height)] }
                     }
                 }
                 Rectangle { width: panel.width / 2 + panel.lean; height: 1; color: GroundTheme.lineSolid }
@@ -296,6 +315,7 @@ PanelWindow {
                         color: GroundTheme.bg
                         cursorDelegate: Item {}
                         onTextChanged: {
+                            root.sliding = false; // a new list: the deck just re-deals, nothing slides
                             root.query = text;
                             root.selected = 0;
                         }
@@ -331,19 +351,59 @@ PanelWindow {
                     id: deckRow
                     width: parent.width
                     height: 232
+                    clip: true // squares coming in / going out slide from / to past the deck's ends
+                    // one square per app in the results, kept alive while you walk the deck, so a step slides and
+                    // resizes every square from its old place to its new one; off-deck ones park just past the end
+                    // they'll come in from (the side they're nearer to around the wrap)
                     Repeater {
-                        model: root.deck
+                        model: root.results
                         DrawerSquare {
+                            id: sq
                             required property var modelData
-                            x: deckRow.width / 2 + modelData.x
-                            y: (232 - modelData.size) / 2
-                            width: modelData.size
-                            height: modelData.size
-                            entry: modelData.entry
-                            featured: modelData.dist === 0
-                            number: modelData.index + 1
-                            windows: root.windowsOf(modelData.entry)
-                            onClicked: modelData.dist === 0 ? root.launch(modelData.entry) : (root.selected = modelData.index)
+                            required property int index
+                            readonly property var slot: root.deckAt[index] ?? null
+                            readonly property real park: {
+                                const n = root.results.length, d = ((index - root.selected) % n + n) % n;
+                                return d <= n / 2 ? deckRow.width / 2 + 600 : deckRow.width / 2 - 600 - 60;
+                            }
+                            readonly property real tx: slot ? deckRow.width / 2 + slot.x : park
+                            readonly property real tw: slot ? slot.size : 60
+                            property bool parked: true
+                            // slide to the new place when on the deck before or after; parked ones just jump
+                            function move() {
+                                const nowParked = slot === null;
+                                if (!root.sliding || (parked && nowParked)) {
+                                    glide.stop();
+                                    x = tx;
+                                    width = tw;
+                                } else {
+                                    gx.to = tx;
+                                    gw.to = tw;
+                                    glide.restart();
+                                }
+                                parked = nowParked;
+                            }
+                            onTxChanged: move()
+                            onTwChanged: move()
+                            Component.onCompleted: {
+                                x = tx;
+                                width = tw;
+                                parked = slot === null;
+                            }
+                            y: (232 - height) / 2
+                            height: width
+                            z: slot ? 10 - Math.abs(slot.dist) : 0
+                            visible: slot !== null || glide.running
+                            entry: modelData
+                            featured: slot?.dist === 0
+                            number: index + 1
+                            windows: root.windowsOf(modelData)
+                            onClicked: featured ? root.launch(modelData) : root.pick(index)
+                            ParallelAnimation {
+                                id: glide
+                                NumberAnimation { id: gx; target: sq; property: "x"; duration: 260; easing.type: Easing.OutCubic }
+                                NumberAnimation { id: gw; target: sq; property: "width"; duration: 260; easing.type: Easing.OutCubic }
+                            }
                         }
                     }
                     Text {
@@ -359,10 +419,11 @@ PanelWindow {
 
                 // the featured app: its name as the second poster, a spec line under it
                 Item { width: 1; height: 24 }
-                Text {
+                RollText {
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
-                    text: (root.featured?.name ?? " ").toUpperCase()
+                    value: (root.featured?.name ?? " ").toUpperCase()
+                    duration: 320
                     elide: Text.ElideRight
                     color: GroundTheme.ink
                     font.family: GroundTheme.display
