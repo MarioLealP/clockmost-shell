@@ -1,4 +1,4 @@
-// The machine's live numbers as one strip along the bottom, right of the orange line, left of the hero (Mario
+// The machine's live numbers in two rows (CPU GPU NET / RAM VRAM) at the bottom, right of the orange line, left of the hero (Mario
 // 2026-10-26: that stretch was empty): CPU + GPU load and temperature, RAM, VRAM, network. Read every 2 s from /proc
 // and /sys (hwmon found by name - the numbers move between boots); the bars ease to each new value.
 import QtQuick
@@ -70,17 +70,17 @@ Rectangle {
         }
     }
 
-    Row {
+    Grid {
         id: strip
-        spacing: 24
-        Reading { width: 186; label: "CPU"; value: Math.round(root.cpu * 100); unit: "%"; note: Math.round(root.cpuTemp) + " °C"; level: root.cpu; hot: root.cpuTemp >= 85 }
-        Reading { width: 186; label: "GPU"; value: Math.round(root.gpu * 100); unit: "%"; note: Math.round(root.gpuTemp) + " °C"; level: root.gpu; hot: root.gpuTemp >= 90 }
-        Reading { width: 186; label: "RAM"; value: root.gb(root.ramUsed); unit: "GB"; note: "OF " + root.gb(root.ramTotal); level: root.ramUsed / root.ramTotal }
-        Reading { width: 186; label: "VRAM"; value: root.gb(root.vramUsed); unit: "GB"; note: "OF " + root.gb(root.vramTotal); level: root.vramUsed / root.vramTotal }
+        columns: 3
+        columnSpacing: 24
+        rowSpacing: 18
+        Reading { width: 220; label: "CPU"; value: Math.round(root.cpu * 100); unit: "%"; note: Math.round(root.cpuTemp) + " °C"; level: root.cpu; hot: root.cpuTemp >= 85 }
+        Reading { width: 220; label: "GPU"; value: Math.round(root.gpu * 100); unit: "%"; note: Math.round(root.gpuTemp) + " °C"; level: root.gpu; hot: root.gpuTemp >= 90 }
         // network: no bar, the two rates
         Item {
-            width: 186
-            height: 62
+            width: 220
+            height: 66
             Text { y: 4; text: "NET"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 3 }
             Column {
                 anchors.bottom: parent.bottom
@@ -91,5 +91,7 @@ Rectangle {
             }
             Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
         }
+        Reading { width: 220; label: "RAM"; value: root.gb(root.ramUsed); unit: "GB"; note: "OF " + root.gb(root.ramTotal); level: root.ramUsed / root.ramTotal }
+        Reading { width: 220; label: "VRAM"; value: root.gb(root.vramUsed); unit: "GB"; note: "OF " + root.gb(root.vramTotal); level: root.vramUsed / root.vramTotal }
     }
 }
