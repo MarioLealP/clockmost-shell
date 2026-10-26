@@ -1,6 +1,6 @@
 // A silhouette picture as ASCII art (Mario 2026-10-26: the FFXIV meteor, right of the orange line): one character per
 // 12x18 cell, 5x7 pixel glyphs drawn 2x. Dark parts of the picture are the shape, filled with a soft diagonal
-// shading of bone glyphs ': - = + * #' (no orange edge - Mario), the rest empty. presence 1 -> 0 dissolves it (an HA
+// shading of bone glyphs ': - = + * #' (no orange edge - Mario) that slowly travels across it, the rest empty. presence 1 -> 0 dissolves it (an HA
 // section opening): each cell flickers through random glyphs around its own threshold. Materializing replays the
 // start-up scramble from nothing (fromEmpty). t 0 -> 1 = a scramble (on every hero
 // art swap): each cell runs random glyphs - some empty cells too, a burst around the shape - and settles back.
@@ -17,6 +17,7 @@ layout(std140, binding = 0) uniform buf {
     float time;
     float presence;
     float fromEmpty; // 1 = the scramble builds up from nothing (start-up, materializing)
+    float phase;     // the shading's travel, radians (slowly increasing: the bands drift across the shape)
     vec2 size;
     vec4 ink;
 };
@@ -56,7 +57,7 @@ void main() {
     bool in0 = shape(id);
     int g = 0;
     if (in0)
-        g = 2 + int(clamp(0.5 + 0.45 * sin(uv.x * 5.0 + uv.y * 3.5), 0.0, 0.999) * 6.0); // : - = + * #
+        g = 2 + int(clamp(0.5 + 0.45 * sin(uv.x * 5.0 + uv.y * 3.5 - phase), 0.0, 0.999) * 6.0); // : - = + * #
 
     // the scramble: cells in or around the shape (and a quarter of the empty ones) run random glyphs, then settle
     float n = hash(id);
