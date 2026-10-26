@@ -1,6 +1,10 @@
 // Felt's column: her tray's status, her switches (HA), her last line and a talk box - all through the Felt tray's
 // session-bus API (org.clockmost.Felt: Status, LastLine, Say). The tray holds the felt-core credential; the shell
 // never does (Mario 2026-10-25: "send through the tray").
+// Motion (Mario 2026-10-26): sending squeezes your text up out of the box; while she thinks, her orange bar splits
+// out of its box (halves up / down) and hazard stripes slide in, every other one from the other side (1st from above,
+// 2nd from below ...), and crawl; her reply: the stripes leave the same way, the bar comes back, the line types on
+// behind an orange block cursor.
 import QtQuick
 import Quickshell.Io
 
@@ -10,6 +14,10 @@ Rectangle {
     property string state: "CHECKING"
     property string lastLine: "…"
     property string lastMeta: ""
+    property real lastAt: -1 // the line's time: a new value = a new line
+    property bool thinking: false
+    property real sentAt: 0
+    property int typed: 0 // characters of lastLine shown
     readonly property var api: ["busctl", "--user", "--json=short"]
     readonly property var obj: ["org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt"]
 
@@ -18,6 +26,15 @@ Rectangle {
             return;
         sayProc.command = ["busctl", "--user", "call"].concat(root.obj, ["Say", "s", text.trim()]);
         sayProc.running = true;
+        root.sentAt = Date.now() / 1000;
+        root.thinking = true;
+        thinkTimeout.restart();
+    }
+    // she never answered (tray down, model busy): stop thinking after 2 min
+    Timer { id: thinkTimeout; interval: 120000; onTriggered: root.thinking = false }
+
+    function escaped(t) {
+        return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     // polled: the tray emits no change signals yet; 3 s is plenty for a line on the desktop
@@ -48,9 +65,18 @@ Rectangle {
             onStreamFinished: {
                 try {
                     const l = JSON.parse(JSON.parse(text).data);
-                    if (!l.text) return;
+                    if (!l.text || l.at === root.lastAt) return;
+                    const first = root.lastAt < 0;
+                    root.lastAt = l.at;
                     root.lastLine = l.text;
                     root.lastMeta = Qt.formatTime(new Date(l.at * 1000), "hh:mm") + "  ·  " + String(l.source).toUpperCase();
+                    if (first) {
+                        root.typed = l.text.length; // what was there before the shell started: no show
+                        return;
+                    }
+                    root.thinking = false;
+                    thinkTimeout.stop();
+                    typing.restart();
                 } catch (e) {}
             }
         }
@@ -115,17 +141,57 @@ Rectangle {
 
         Item { width: 1; height: 26 }
         Item {
+            id: lineBox
             width: parent.width
-            height: quote.height
-            Rectangle { width: 4; height: parent.height; color: GroundTheme.acc }
+            height: Math.max(quote.height, 120)
+
+            // the bar: solid halves, or hazard halves while she thinks; both slide in and out of this rail
+            Item {
+                id: rail
+                width: 10
+                height: parent.height
+                clip: true
+                property real solidOut: root.thinking ? 1 : 0 // 0 = in place .. 1 = out of the box
+                property real hazardIn: root.thinking ? 1 : 0
+                Behavior on solidOut { NumberAnimation { duration: root.thinking ? 260 : 480; easing.type: root.thinking ? Easing.InCubic : Easing.OutQuart } }
+                Behavior on hazardIn {
+                    SequentialAnimation {
+                        PauseAnimation { duration: root.thinking ? 200 : 0 }
+                        NumberAnimation { duration: root.thinking ? 480 : 260; easing.type: root.thinking ? Easing.OutQuart : Easing.InCubic }
+                    }
+                }
+                Rectangle { width: 4; height: rail.height / 2; y: -rail.solidOut * rail.height / 2; color: GroundTheme.acc }
+                Rectangle { width: 4; height: rail.height / 2; y: rail.height / 2 + rail.solidOut * rail.height / 2; color: GroundTheme.acc }
+                // hazard stripes: odd ones arrive from above, even ones from below; they crawl down while she thinks
+                property real crawl: 0
+                NumberAnimation on crawl { from: 0; to: 14; duration: 420; loops: Animation.Infinite; running: root.thinking || rail.hazardIn > 0 }
+                Repeater {
+                    model: Math.ceil(rail.height / 14) + 2
+                    Rectangle {
+                        required property int index
+                        x: -3
+                        y: (index - 1) * 14 + rail.crawl + (1 - rail.hazardIn) * (index % 2 ? rail.height + 28 : -(rail.height + 28))
+                        width: 16
+                        height: 8
+                        rotation: -45
+                        color: GroundTheme.acc
+                        visible: rail.hazardIn > 0
+                    }
+                }
+            }
+
             Column {
                 id: quote
                 x: 22
                 width: parent.width - 22
                 spacing: 12
+                opacity: root.thinking ? 0 : 1
+                Behavior on opacity { NumberAnimation { duration: 180 } }
                 Text {
                     width: parent.width
-                    text: root.lastLine
+                    textFormat: Text.StyledText
+                    text: root.escaped(root.lastLine.slice(0, root.typed))
+                        + (cursor.on ? "<font color='" + GroundTheme.acc + "'>█</font>" : "")
                     wrapMode: Text.WordWrap
                     color: GroundTheme.ink
                     font.family: GroundTheme.display
@@ -134,7 +200,26 @@ Rectangle {
                     font.variableAxes: { "wght": 600 }
                     lineHeight: 1.18
                 }
-                Text { text: root.lastMeta; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 3 }
+                RollText { value: root.lastMeta; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 3 }
+            }
+
+            // typing: ~30 characters a second (capped at 4 s), then the cursor blinks twice and goes
+            SequentialAnimation {
+                id: typing
+                ScriptAction { script: { root.typed = 0; cursor.on = true; } }
+                PauseAnimation { duration: 260 } // the hazard leaves first
+                NumberAnimation { target: root; property: "typed"; from: 0; to: root.lastLine.length; duration: Math.min(4000, root.lastLine.length * 33) }
+                ScriptAction { script: blink.restart() }
+            }
+            QtObject { id: cursor; property bool on: false }
+            SequentialAnimation {
+                id: blink
+                loops: 2
+                ScriptAction { script: cursor.on = false }
+                PauseAnimation { duration: 220 }
+                ScriptAction { script: cursor.on = true }
+                PauseAnimation { duration: 220 }
+                onFinished: cursor.on = false
             }
         }
 
@@ -158,10 +243,45 @@ Rectangle {
                 clip: true
                 cursorDelegate: Rectangle { width: 9; height: 18; color: GroundTheme.acc; visible: input.activeFocus }
                 onAccepted: {
+                    if (text.trim() === "")
+                        return;
+                    ghost.text = text;
+                    sent.restart();
                     root.say(text);
                     text = "";
                 }
                 Keys.onEscapePressed: { text = ""; focus = false; }
+            }
+            // sent: the box flashes orange, your text squeezes narrow and shoots up out of it
+            Rectangle {
+                id: flash
+                anchors.fill: parent
+                color: GroundTheme.acc
+                opacity: 0
+            }
+            Text {
+                id: ghost
+                x: 14
+                y: (parent.height - height) / 2
+                opacity: 0
+                color: GroundTheme.ink
+                font.family: GroundTheme.mono
+                font.pixelSize: 13
+                transform: Scale { id: squeeze; xScale: 1 }
+            }
+            ParallelAnimation {
+                id: sent
+                SequentialAnimation {
+                    NumberAnimation { target: flash; property: "opacity"; from: 0.9; to: 0; duration: 220 }
+                }
+                SequentialAnimation {
+                    ScriptAction { script: { ghost.opacity = 1; ghost.y = (ghost.parent.height - ghost.height) / 2; squeeze.xScale = 1; } }
+                    NumberAnimation { target: squeeze; property: "xScale"; to: 0.25; duration: 140; easing.type: Easing.InCubic }
+                    ParallelAnimation {
+                        NumberAnimation { target: ghost; property: "y"; to: -70; duration: 260; easing.type: Easing.InCubic }
+                        NumberAnimation { target: ghost; property: "opacity"; to: 0; duration: 260; easing.type: Easing.InCubic }
+                    }
+                }
             }
             Row {
                 x: 14
