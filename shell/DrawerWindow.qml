@@ -318,6 +318,34 @@ PanelWindow {
                             transform: Translate { x: -12 } // hugs the last letter, like a terminal block caret
                         }
                     }
+                    // the time, so a Win tap tells it while windows cover the desktop's clock (Mario 2026-10-26)
+                    SystemClock {
+                        id: clock
+                        precision: SystemClock.Minutes
+                    }
+                    Column {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 4
+                        RollText {
+                            anchors.right: parent.right
+                            value: Qt.formatDateTime(clock.date, "hh:mm")
+                            duration: 320
+                            color: GroundTheme.acc
+                            font.family: GroundTheme.display
+                            font.weight: Font.Black
+                            font.variableAxes: { "wdth": 70, "wght": 900 }
+                            font.pixelSize: 38
+                        }
+                        Text {
+                            anchors.right: parent.right
+                            text: Qt.formatDateTime(clock.date, "ddd dd/MM").toUpperCase()
+                            color: GroundTheme.ink2
+                            font.family: GroundTheme.mono
+                            font.pixelSize: 11
+                            font.letterSpacing: 3
+                        }
+                    }
                     // the real input: 1px wide and clipped (the poster above draws what it holds)
                     TextInput {
                         id: search
