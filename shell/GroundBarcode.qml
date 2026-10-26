@@ -1,4 +1,5 @@
-// Barcode built from the date + time digits, with the readable stamp under it: changes every minute.
+// Barcode built from the date + time digits, with the readable stamp under it: changes every minute. The change is a
+// scan: an orange line sweeps left to right, the bars behind it already the new code, the stamp rolls.
 import QtQuick
 import Quickshell
 
@@ -13,6 +14,15 @@ Column {
     }
 
     readonly property string digits: Qt.formatDateTime(clock.date, "ddMMyyyyhhmm")
+    property string old: digits
+    property real sweep: 1 // 0..1 across the bars; bars left of it show the new code
+
+    onDigitsChanged: scan.restart()
+    SequentialAnimation {
+        id: scan
+        NumberAnimation { target: root; property: "sweep"; from: 0; to: 1; duration: 480; easing.type: Easing.InOutQuad }
+        ScriptAction { script: root.old = root.digits }
+    }
 
     Rectangle {
         // the line runs behind the barcode, never through it
@@ -29,7 +39,8 @@ Column {
                 model: root.digits.length * 4
                 Item {
                     required property int index
-                    readonly property int n: Number(root.digits[Math.floor(index / 4)])
+                    readonly property bool fresh: (index + 0.5) / (root.digits.length * 4) < root.sweep
+                    readonly property int n: Number((fresh ? root.digits : root.old)[Math.floor(index / 4)])
                     readonly property int k: index % 4
                     width: bar.width + 2 + ((n + k) % 3)
                     height: bars.height
@@ -42,10 +53,18 @@ Column {
                 }
             }
         }
+        Rectangle {
+            visible: root.sweep < 1
+            x: 5 + bars.width * root.sweep - 1
+            width: 2
+            height: parent.height + 8
+            y: -4
+            color: GroundTheme.acc
+        }
     }
 
-    Text {
-        text: Qt.formatDateTime(clock.date, "dd.MM.yyyy  ·  hh:mm")
+    RollText {
+        value: Qt.formatDateTime(clock.date, "dd.MM.yyyy  ·  hh:mm")
         color: GroundTheme.ink2
         font.family: GroundTheme.mono
         font.pixelSize: 11
