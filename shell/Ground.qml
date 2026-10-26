@@ -38,13 +38,11 @@ PanelWindow {
             id: line
             targetX: HaSections.current !== "" ? 1620 : 920
             y: -140
-            hold: HaSections.current !== "" && ascii.presence > 0.01 // open: lands once the silhouette is gone
             onAway: stage.lineAway()
         }
 
         SectionStage {
             id: stage
-            hold: HaSections.current !== "" && ascii.presence > 0.01 // the silhouette dissolves before a section builds
             x: 472 // on the grid (dots at x 16 + 24k, y 12 + 24k on 3440 x 1440)
             y: 108
             sections: ({
@@ -66,7 +64,6 @@ PanelWindow {
             lineHeight: 0.8
         }
 
-        AsciiArt { id: ascii; x: 784; y: 684 } // centred between the line and the hero; dots 784-1360 x 684-1260
 
         HeroSlices { x: 1640; y: 125 }
         XMarks {}
