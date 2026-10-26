@@ -11,6 +11,7 @@ Singleton {
     id: root
 
     readonly property string url: "ws://192.168.10.117:8123/api/websocket"
+    readonly property string base: "http://192.168.10.117:8123" // images (entity_picture paths carry their own token)
     property var entities: [] // set by HaSections
     property var states: ({}) // entity_id -> { s: state, a: attributes }
     property bool connected: false

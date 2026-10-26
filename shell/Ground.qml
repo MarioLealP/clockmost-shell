@@ -76,6 +76,12 @@ PanelWindow {
             title: "ENDER"; stateId: "sensor.ender_state"; progressId: "sensor.ender_progress"
             rows: [["FILE", "sensor.ender_file"], ["LAYER", "sensor.ender_layer"], ["ELAPSED", "sensor.ender_elapsed"],
                 ["LEFT", "sensor.ender_time_left"], ["DONE AT", "sensor.ender_done_at"], ["NOZZLE", "sensor.ender_nozzle", " °C"], ["BED", "sensor.ender_bed", " °C"]]
+            targets: [["NOZZLE TARGET", "number.ender_set_nozzle_target", " °C"], ["BED TARGET", "number.ender_set_bed_target", " °C"]]
+            groups: [
+                [["PAUSE", "button.ender_pause"], ["RESUME", "button.ender_resume"], ["CANCEL", "button.ender_cancel_print", true]],
+                [["PREHEAT PLA", "button.ender_preheat_pla"], ["NOZZLE CLEAN", "button.ender_nozzle_clean"], ["COOL DOWN", "button.ender_cool_down"]],
+                [["HOME", "button.ender_home_all_axes"], ["MOTORS OFF", "button.ender_motors_off"], ["FIRMWARE RESTART", "button.ender_firmware_restart"], ["E-STOP", "button.ender_emergency_stop", true]]
+            ]
         }
     }
     Component {
@@ -83,7 +89,10 @@ PanelWindow {
         SecPrinter {
             title: "ELEGOO"; stateId: "sensor.3d_printer_status_atual"; progressId: "sensor.elegoo_progress"
             rows: [["FILE", "sensor.elegoo_file"], ["PRINT", "sensor.3d_printer_status_de_impressao"], ["LAYER", "sensor.3d_printer_current_layer"],
-                ["OF", "sensor.3d_printer_total_layers"], ["LEFT", "sensor.3d_printer_remaining_print_time"], ["ENDS", "sensor.3d_printer_end_time"], ["UV LED", "sensor.3d_printer_uv_led_temp", " °C"]]
+                ["OF", "sensor.3d_printer_total_layers"], ["LEFT", "sensor.3d_printer_remaining_print_time"], ["ENDS", "sensor.3d_printer_end_time"], ["UV LED", "sensor.3d_printer_uv_led_temp", " °C"],
+                ["RELEASE FILM", "sensor.3d_printer_release_film", " / 60000"], ["ERROR", "sensor.3d_printer_razao_do_status_de_erro"], ["FIRMWARE", "update.3d_printer_firmware"]]
+            coverId: "image.3d_printer_cover_image"
+            groups: [[["PAUSE", "button.3d_printer_pause_print"], ["RESUME", "button.3d_printer_resume_print"], ["STOP", "button.3d_printer_stop_print", true]]]
         }
     }
     Component { id: secSystems; SecSystems {} }
