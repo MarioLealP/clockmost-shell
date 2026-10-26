@@ -33,7 +33,7 @@ Column {
         width: 500
         font.pixelSize: 56
         font.weight: Font.Black
-        font.variableAxes: { "wdth": 70 }
+        font.variableAxes: { "wdth": 70, "wght": 900 }
         wrapMode: Text.WordWrap
         maximumLineCount: 2
         elide: Text.ElideRight

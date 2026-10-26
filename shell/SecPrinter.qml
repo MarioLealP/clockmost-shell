@@ -23,7 +23,7 @@ Column {
             font.family: GroundTheme.display
             font.pixelSize: 96
             font.weight: Font.Black
-            font.variableAxes: { "wdth": 70 }
+            font.variableAxes: { "wdth": 70, "wght": 900 }
         }
     }
     Rectangle {

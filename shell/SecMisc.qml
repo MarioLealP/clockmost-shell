@@ -49,7 +49,7 @@ Column {
             width: 560 - 170
             spacing: 6
             Text { text: Media.player ? (Media.player.identity + "  ·  " + (Media.playing ? "PLAYING" : "PAUSED")).toUpperCase() : "NOTHING PLAYING"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 2 }
-            Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight; text: (Media.player?.trackTitle ?? "").toUpperCase(); color: GroundTheme.ink; font.family: GroundTheme.display; font.pixelSize: 36; font.weight: Font.Black; font.variableAxes: { "wdth": 70 }; lineHeight: 0.9 }
+            Text { width: parent.width; wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight; text: (Media.player?.trackTitle ?? "").toUpperCase(); color: GroundTheme.ink; font.family: GroundTheme.display; font.pixelSize: 36; font.weight: Font.Black; font.variableAxes: { "wdth": 70, "wght": 900 }; lineHeight: 0.9 }
             Text { text: (Media.player?.trackArtist ?? "").toUpperCase(); color: GroundTheme.ink; font.family: GroundTheme.mono; font.pixelSize: 13; font.letterSpacing: 2 }
             Text { text: (Media.player?.trackAlbum ?? "").toUpperCase(); color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 11; font.letterSpacing: 2; width: parent.width; elide: Text.ElideRight }
             Item { width: 1; height: 6 }

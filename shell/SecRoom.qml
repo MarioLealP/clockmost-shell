@@ -87,7 +87,7 @@ Column {
                 font.family: GroundTheme.display
                 font.pixelSize: 96
                 font.weight: Font.Black
-                font.variableAxes: { "wdth": 62 }
+                font.variableAxes: { "wdth": 62, "wght": 900 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: HaClient.toggle("fan.core_300s_series") }
             }
             Text {

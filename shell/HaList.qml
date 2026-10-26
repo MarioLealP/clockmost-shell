@@ -50,7 +50,7 @@ Rectangle {
                     font.family: GroundTheme.display
                     font.pixelSize: 22
                     font.weight: Font.ExtraBold
-                    font.variableAxes: { "wdth": 75 }
+                    font.variableAxes: { "wdth": 75, "wght": 800 }
                 }
                 Text {
                     anchors.right: parent.right
