@@ -4,7 +4,8 @@
 // Motion (Mario 2026-10-26): sending squeezes your text up out of the box; while she thinks, her orange bar splits
 // out of its box (halves up / down) and hazard stripes slide in, every other one from the other side (1st from above,
 // 2nd from below ...), and crawl; her reply: the stripes leave the same way, the bar comes back, the line types on
-// behind an orange block cursor.
+// behind an orange block cursor - over the old line, like Insert on Windows, blanking whatever the new line doesn't
+// reach (Mario 2026-10-26).
 import QtQuick
 import Quickshell.Io
 
@@ -17,7 +18,8 @@ Rectangle {
     property real lastAt: -1 // the line's time: a new value = a new line
     property bool thinking: false
     property real sentAt: 0
-    property int typed: 0 // characters of lastLine shown
+    property int typed: 0 // the overtype cursor's position
+    property string oldLine: "" // what the new line types over
     readonly property var api: ["busctl", "--user", "--json=short"]
     readonly property var obj: ["org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt"]
 
@@ -32,6 +34,13 @@ Rectangle {
     }
     // she never answered (tray down, model busy): stop thinking after 2 min
     Timer { id: thinkTimeout; interval: 120000; onTriggered: root.thinking = false }
+
+    // overtype: the new line up to the cursor, blanks where it's shorter than the old one, the cursor, the old rest
+    function overtype(n, cursorOn) {
+        const nw = root.lastLine, old = root.oldLine;
+        const head = escaped(nw.slice(0, n)) + "&nbsp;".repeat(Math.max(0, Math.min(n, old.length) - nw.length));
+        return head + (cursorOn ? "<font color='" + GroundTheme.acc + "'>█</font>" : "") + escaped(old.slice(n));
+    }
 
     function escaped(t) {
         return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -68,10 +77,11 @@ Rectangle {
                     if (!l.text || l.at === root.lastAt) return;
                     const first = root.lastAt < 0;
                     root.lastAt = l.at;
+                    root.oldLine = first ? "" : root.lastLine;
                     root.lastLine = l.text;
                     root.lastMeta = Qt.formatTime(new Date(l.at * 1000), "hh:mm") + "  ·  " + String(l.source).toUpperCase();
                     if (first) {
-                        root.typed = l.text.length; // what was there before the shell started: no show
+                        root.typed = Math.max(l.text.length, root.oldLine.length); // there before the shell started: no show
                         return;
                     }
                     root.thinking = false;
@@ -185,13 +195,12 @@ Rectangle {
                 x: 22
                 width: parent.width - 22
                 spacing: 12
-                opacity: root.thinking ? 0 : 1
+                opacity: root.thinking ? 0.35 : 1
                 Behavior on opacity { NumberAnimation { duration: 180 } }
                 Text {
                     width: parent.width
                     textFormat: Text.StyledText
-                    text: root.escaped(root.lastLine.slice(0, root.typed))
-                        + (cursor.on ? "<font color='" + GroundTheme.acc + "'>█</font>" : "")
+                    text: root.overtype(root.typed, cursor.on)
                     wrapMode: Text.WordWrap
                     color: GroundTheme.ink
                     font.family: GroundTheme.display
@@ -203,13 +212,20 @@ Rectangle {
                 RollText { value: root.lastMeta; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 10; font.letterSpacing: 3 }
             }
 
-            // typing: ~30 characters a second (capped at 4 s), then the cursor blinks twice and goes
+            // typing: ~30 characters a second over the longer of new / old (capped at 4 s), then the cursor blinks
+            // twice and goes; the old line is dropped once it's fully overwritten
             SequentialAnimation {
                 id: typing
                 ScriptAction { script: { root.typed = 0; cursor.on = true; } }
                 PauseAnimation { duration: 260 } // the hazard leaves first
-                NumberAnimation { target: root; property: "typed"; from: 0; to: root.lastLine.length; duration: Math.min(4000, root.lastLine.length * 33) }
-                ScriptAction { script: blink.restart() }
+                NumberAnimation {
+                    target: root
+                    property: "typed"
+                    from: 0
+                    to: Math.max(root.lastLine.length, root.oldLine.length)
+                    duration: Math.min(4000, Math.max(root.lastLine.length, root.oldLine.length) * 33)
+                }
+                ScriptAction { script: { root.oldLine = ""; blink.restart(); } }
             }
             QtObject { id: cursor; property bool on: false }
             SequentialAnimation {
