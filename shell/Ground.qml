@@ -34,12 +34,13 @@ PanelWindow {
         width: parent.width
         height: parent.height
 
-        GroundLine { x: HaSections.current !== "" ? 1620 : 920; y: -140 }
+        GroundLine { id: line; targetX: HaSections.current !== "" ? 1620 : 920; y: -140 }
 
+        // the section shows once the line has left its resting spot (it would cross the section on its way out)
         Loader {
             x: 470
             y: 104
-            active: HaSections.current !== ""
+            active: HaSections.current !== "" && line.x > 1000
             sourceComponent: ({
                 ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
                 ENDER: secEnder, ELEGOO: secElegoo, SYSTEMS: secSystems
