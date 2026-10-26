@@ -13,12 +13,12 @@ ShaderEffect {
     property real presence: 1
     property real fromEmpty: 1
     property real phase: 0
-    // the shading drifts (Mario 2026-10-26: "make it slowly cycle", then "slower"), one cycle ~20 s; 5 updates a second
+    // the shading drifts (Mario 2026-10-26: "make it slowly cycle", then "30s for full"), one cycle 30 s; 5 updates a second
     Timer {
         interval: 200
         repeat: true
         running: root.visible && root.presence > 0
-        onTriggered: root.phase = (root.phase + 0.063) % (2 * Math.PI)
+        onTriggered: root.phase = (root.phase + 2 * Math.PI / 150) % (2 * Math.PI) // 150 ticks = 30 s
     }
     // an HA section opens: dissolve; it closes: wait for it to clear and the line to land, then the start-up
     // scramble from nothing
