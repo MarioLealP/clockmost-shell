@@ -1,8 +1,9 @@
-// The app drawer (ds-app-drawer): centred 980x600, solid white head fading into frosted glass, a grid of 120px
-// sockets with app tiles on top, search at the bottom. Motion per the mock: open = fade 280ms + slide up 60px
-// (500ms ease-out), then the tiles fade in over their sockets (150ms); close = fade in place (exits never move).
+// The app drawer (v2, mock design/v2-2026-10-25/drawer.html): search first, logos only. The query is the poster;
+// under it a deck of logo squares - the featured app dead centre and big, the rest shrinking away on both sides like a
+// carousel (it wraps: next ones right, the ones before / the list's end left, each app once); the featured app's name
+// and a spec line under it. No query = every app, most launched first. ← → (or the wheel) walk the deck, Enter opens
+// the featured app, a side square click features it, the featured one's click opens it. Solid colours only (cm-1jun).
 import QtQuick
-import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 
@@ -10,61 +11,53 @@ PanelWindow {
     id: root
 
     readonly property real s: Math.min(1, width / 1920, height / 1080)
-    readonly property int cols: 7
-    readonly property int rows: 3
     property string query: ""
     property int selected: 0
-    // the keyboard selection only shows once it means something: a query typed (Enter = top match) or arrows used
-    property bool keyed: false
-    readonly property bool showSelection: keyed || query !== ""
     readonly property var results: Apps.search(query)
-    // scrolling (Mario: more apps than the 7x3 grid holds): whole-row steps - the sockets and the glass holes stay put,
-    // the apps step through them. Wheel / arrows / PageUp-PageDown; `selected` indexes `results`, not the cells.
-    property int rowOffset: 0
-    readonly property int totalRows: Math.ceil(results.length / cols)
-    readonly property int maxOffset: Math.max(0, totalRows - rows)
-    readonly property var shownApps: results.slice(rowOffset * cols, (rowOffset + rows) * cols)
-    // -1..1: the direction of the last step, easing back to 0 (tiles slide 12px and fade in from that side)
-    property real stepShift: 0
-    NumberAnimation {
-        id: stepAnim
-        target: root
-        property: "stepShift"
-        to: 0
-        duration: 180
-        easing.type: Easing.OutCubic
-    }
-    function scrollTo(offset) {
-        const o = Math.max(0, Math.min(maxOffset, offset));
-        if (o === rowOffset)
-            return;
-        stepShift = o > rowOffset ? 1 : -1;
-        rowOffset = o;
-        stepAnim.restart();
-    }
-    function select(i) {
-        keyed = true;
-        selected = Math.max(0, Math.min(results.length - 1, i));
-        const r = Math.floor(selected / cols);
-        if (r < rowOffset)
-            scrollTo(r);
-        else if (r >= rowOffset + rows)
-            scrollTo(r - rows + 1);
-    }
-    readonly property int running: {
-        const apps = new Set(KWin.windows.map(w => (w.app || "").toLowerCase()));
-        return apps.size;
+    readonly property var featured: results[selected] ?? null
+
+    // the deck's squares, by distance from the centre
+    readonly property var sizes: [232, 148, 116, 92, 76]
+    readonly property int gap: 12
+    // [{entry, index, dist, x, size}] - x from the deck's centre; each app shown once, the shorter side left empty
+    readonly property var deck: {
+        const n = results.length;
+        if (!n)
+            return [];
+        const at = Math.min(selected, n - 1);
+        const out = [{ entry: results[at], index: at, dist: 0, x: -sizes[0] / 2, size: sizes[0] }];
+        const used = new Set([at]);
+        let r = sizes[0] / 2 + gap, l = -sizes[0] / 2 - gap;
+        for (let d = 1; d < sizes.length; d++) {
+            const ri = (at + d) % n, li = ((at - d) % n + n) % n;
+            if (!used.has(ri)) {
+                used.add(ri);
+                out.push({ entry: results[ri], index: ri, dist: d, x: r, size: sizes[d] });
+            }
+            r += sizes[d] + gap;
+            if (!used.has(li)) {
+                used.add(li);
+                out.push({ entry: results[li], index: li, dist: -d, x: l - sizes[d], size: sizes[d] });
+            }
+            l -= sizes[d] + gap;
+        }
+        return out;
     }
 
-    // motion state: p = drawer (fade + slide), tilesP = tiles over their sockets
-    property real p: 0
-    property real tilesP: 0
+    function step(d) {
+        const n = results.length;
+        if (n)
+            selected = ((selected + d) % n + n) % n;
+    }
+    function windowsOf(e) {
+        return e ? (DockApps.slots.find(s => s.key === e.id)?.windows.length ?? 0) : 0;
+    }
     function launch(e) {
         Apps.launch(e);
         Drawer.close();
     }
 
-    visible: Drawer.open || p > 0.001
+    visible: Drawer.open
     anchors {
         top: true
         bottom: true
@@ -75,8 +68,8 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "clockmost-drawer"
     WlrLayershell.layer: WlrLayer.Overlay
-    // exclusive from the moment the surface maps (it only exists while open or fading out): flipping it on in the
-    // same tick the window appears left KWin's keyboard focus on the window underneath
+    // exclusive from the moment the surface maps (it only exists while open): flipping it on in the same tick the
+    // window appears left KWin's keyboard focus on the window underneath
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     onVisibleChanged: if (visible) Qt.callLater(() => search.forceActiveFocus())
 
@@ -95,49 +88,17 @@ PanelWindow {
             height: Drawer.bottomInset(root.width)
         }
     }
-    // .glass backdrop-filter: blur(22px) - KWin's blur, behind the whole drawer rect in window coordinates (an
-    // item-based region doesn't follow the scaled parent). Off while closed: a zero-size region trips KWin's GL.
-    // Not translatable: saturate(1.2) (KWin's blur has no saturation) and the tiles' own 14px strength (KWin uses
-    // one strength per screen) - tiles get the same blur through their holes in the glass.
-    readonly property bool blurOn: root.p > 0.3 && root.width > 0
-    BackgroundEffect.blurRegion: blurOn ? blurRect : null
-    Region {
-        id: blurRect
-        x: Math.round((root.width - 980 * root.s) / 2)
-        y: Math.round((root.height - 600 * root.s) / 2 + frame.y * root.s - frame.restY * root.s)
-        width: Math.round(980 * root.s)
-        height: Math.round(600 * root.s)
-    }
 
     Connections {
         target: Drawer
         function onOpenChanged() {
             if (Drawer.open) {
-                root.query = "";
                 search.text = "";
+                root.query = "";
                 root.selected = 0;
-                root.keyed = false;
-                root.rowOffset = 0;
-                openAnim.restart();
                 search.forceActiveFocus();
-            } else {
-                openAnim.stop();
-                closeAnim.restart();
             }
         }
-    }
-    SequentialAnimation {
-        id: openAnim
-        ScriptAction { script: { root.tilesP = 0; } }
-        NumberAnimation { target: root; property: "p"; to: 1; duration: 500 } // linear clock; fade + SETTLE derive from it
-        NumberAnimation { target: root; property: "tilesP"; to: 1; duration: 150 }
-    }
-    NumberAnimation {
-        id: closeAnim
-        target: root
-        property: "p"
-        to: 0
-        duration: 280
     }
 
     MouseArea {
@@ -153,275 +114,241 @@ PanelWindow {
         scale: root.s
         transformOrigin: Item.TopLeft
 
-        // moves and fades the drawer with its shadow. The mock's open frame (e = elapsed ms):
-        //   opacity = clamp(e / 280), translateY = 60 * (1 - SETTLE(e / 500)), SETTLE = 1 - (1 - t)^4
-        // close = opacity 1 -> 0 over 280ms linear, no movement (exits never move).
-        Item {
-            id: frame
-            readonly property real restY: (parent.height - 600) / 2
-            width: 980
-            height: 600
-            x: (parent.width - width) / 2
-            y: restY + (Drawer.open ? 60 * Math.pow(1 - root.p, 4) : 0)
-            opacity: Drawer.open ? Math.min(1, root.p * 500 / 280) : root.p
+        Rectangle {
+            id: panel
+            width: 1296
+            height: col.height + 36 + 40
+            x: Math.round((parent.width - width) / 2)
+            y: Math.round((parent.height - height) / 2)
+            color: GroundTheme.bg
+            border.width: 1
+            border.color: GroundTheme.lineSolid
 
-            // .drawer box-shadow: 0 20px 60px rgba(0,0,0,.45)
-            RectangularShadow {
-                anchors.fill: parent
-                offset.y: 20
-                blur: 60
-                radius: 2
-                color: Qt.rgba(0, 0, 0, 0.45)
-            }
-        }
-
-        Item {
-            id: drawer
-            x: frame.x
-            y: frame.y
-            width: 980
-            height: 600
-            opacity: frame.opacity
-            // .drawer border-radius 2px + overflow hidden
-            layer.enabled: true
-            layer.effect: MultiEffect {
-                maskEnabled: true
-                maskSource: drawerShape
-                maskThresholdMin: 0.5
-                maskSpreadAtMin: 1.0
-            }
-
-            // swallow clicks inside the drawer; the wheel steps rows. Not a WheelHandler: on metal it never fired
-            // (every wheel event fell through to the catcher), MouseArea.onWheel takes any pointer device
+            // swallow clicks inside; the wheel walks the deck. MouseArea.onWheel, not a WheelHandler (on metal that
+            // never fired)
             MouseArea {
                 anchors.fill: parent
                 property real acc: 0
                 onWheel: wheel => {
                     acc += wheel.angleDelta.y;
                     while (Math.abs(acc) >= 120) {
-                        root.scrollTo(root.rowOffset + (acc > 0 ? -1 : 1));
+                        root.step(acc > 0 ? -1 : 1);
                         acc -= acc > 0 ? 120 : -120;
                     }
                 }
             }
 
-            // .glass: linear-gradient(180deg, #fff 0%, #fff 16%, rgba(255,255,255,.7) 24%, rgba(230,232,238,.32) 40%,
-            // rgba(40,42,48,.5) 100%), with a 6px-rounded hole cut under every tile (the mock's SVG mask)
-            Rectangle {
-                anchors.fill: parent
-                gradient: Gradient {
-                    GradientStop { position: 0.00; color: "#FFFFFF" }
-                    GradientStop { position: 0.16; color: "#FFFFFF" }
-                    GradientStop { position: 0.24; color: Qt.rgba(1, 1, 1, 0.7) }
-                    GradientStop { position: 0.40; color: Qt.rgba(230 / 255, 232 / 255, 238 / 255, 0.32) }
-                    GradientStop { position: 1.00; color: Qt.rgba(40 / 255, 42 / 255, 48 / 255, 0.5) }
-                }
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    maskEnabled: true
-                    maskInverted: true
-                    maskSource: holes
-                    maskThresholdMin: 0.5
-                    maskSpreadAtMin: 1.0
-                }
-            }
-            Item {
-                id: holes
-                anchors.fill: parent
-                visible: false
-                layer.enabled: true
-                Repeater {
-                    model: root.cols * root.rows
-                    Rectangle {
-                        required property int index
-                        x: grid.x + (index % root.cols) * 134
-                        y: grid.y + Math.floor(index / root.cols) * 134
-                        width: 120
-                        height: 120
-                        radius: 6
-                        color: "white"
-                    }
-                }
-            }
+            Column {
+                id: col
+                x: 48
+                y: 36
+                width: parent.width - 96
 
-            // head
-            Item {
-                width: parent.width
-                height: 64
-                Text {
-                    x: 24
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Applications"
-                    color: "#111111"
-                    font.family: Theme.body
-                    font.weight: Font.DemiBold
-                    font.variableAxes: { "wght": 600 }
-                    font.pixelSize: 18
-                    font.letterSpacing: Theme.em(18, 0.04)
-                }
-                Text {
-                    anchors.right: parent.right
-                    anchors.rightMargin: 24
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: Apps.all.length + " APPS · " + root.running + " RUNNING"
-                    color: "#6c6f76"
-                    font.family: Theme.mono
-                    font.pixelSize: 12
-                    font.letterSpacing: Theme.em(12, 0.14)
-                }
-                Rectangle {
-                    x: 24
-                    anchors.bottom: parent.bottom
-                    width: parent.width - 48
-                    height: 1
-                    color: "#33363C"
-                }
-            }
-
-            // grid: sockets everywhere, app tiles on top
-            Grid {
-                id: grid
-                x: 24
-                y: 64 + 22
-                columns: root.cols
-                spacing: 14
-                Repeater {
-                    model: root.cols * root.rows
-                    Item {
-                        id: cell
-                        required property int index
-                        readonly property var entry: root.shownApps[index] ?? null
-                        width: 120
-                        height: 120
-                        // .tile.empty: the socket under every cell, fading out as the app tile fades in over it
-                        TileFrame {
-                            empty: true
-                            opacity: cell.entry ? 1 - root.tilesP : 1
+                // the query as the poster: › QUERY▌ (centred); empty = a dark SEARCH
+                Item {
+                    width: parent.width
+                    height: 104
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        height: parent.height
+                        spacing: 18
+                        Text {
+                            anchors.baseline: shown.baseline
+                            text: "›"
+                            color: GroundTheme.acc
+                            font.family: GroundTheme.display
+                            font.weight: Font.Black
+                            font.variableAxes: { "wght": 900 }
+                            font.pixelSize: 72
                         }
-                        Loader {
-                            active: !!cell.entry
-                            opacity: root.tilesP * (1 - Math.abs(root.stepShift))
-                            y: 12 * root.stepShift
-                            sourceComponent: AppTile {
-                                entry: cell.entry
-                                selected: root.showSelection && root.rowOffset * root.cols + cell.index === root.selected
-                                onActivated: root.launch(cell.entry)
+                        Text {
+                            id: shown
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: root.query !== "" ? root.query.toUpperCase() : "SEARCH"
+                            color: root.query !== "" ? GroundTheme.ink : "#2e2e2b"
+                            font.family: GroundTheme.display
+                            font.weight: Font.Black
+                            font.variableAxes: { "wdth": 70, "wght": 900 }
+                            font.pixelSize: 104
+                        }
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 14
+                            height: 84
+                            color: GroundTheme.acc
+                            transform: Translate { x: -12 } // hugs the last letter, like a terminal block caret
+                        }
+                    }
+                    // the real input: 1px wide and clipped (the poster above draws what it holds)
+                    TextInput {
+                        id: search
+                        width: 1
+                        height: 1
+                        clip: true
+                        color: GroundTheme.bg
+                        cursorDelegate: Item {}
+                        onTextChanged: {
+                            root.query = text;
+                            root.selected = 0;
+                        }
+                        Keys.onEscapePressed: Drawer.close()
+                        Keys.onReturnPressed: if (root.featured) root.launch(root.featured)
+                        Keys.onEnterPressed: if (root.featured) root.launch(root.featured)
+                        Keys.onLeftPressed: root.step(-1)
+                        Keys.onRightPressed: root.step(1)
+                        Keys.onUpPressed: root.step(-1)
+                        Keys.onDownPressed: root.step(1)
+                        Keys.onPressed: event => {
+                            if (event.key === Qt.Key_PageDown || event.key === Qt.Key_Tab) {
+                                root.step(event.key === Qt.Key_Tab ? 1 : 5);
+                                event.accepted = true;
+                            } else if (event.key === Qt.Key_PageUp || event.key === Qt.Key_Backtab) {
+                                root.step(event.key === Qt.Key_Backtab ? -1 : -5);
+                                event.accepted = true;
                             }
                         }
                     }
                 }
-            }
 
-            // scroll indicator in the 18px right of the grid: a 2px track, the visible rows as a yellow thumb
-            Item {
-                visible: root.maxOffset > 0
-                x: grid.x + grid.width + 8
-                y: grid.y
-                width: 2
-                height: grid.height
-                Rectangle {
-                    anchors.fill: parent
-                    color: Qt.rgba(1, 1, 1, 0.12)
+                // the rule, its orange mark over the featured square
+                Item {
+                    width: parent.width
+                    height: 18 + 36
+                    Rectangle { y: 18; width: parent.width; height: 1; color: GroundTheme.lineSolid }
+                    Rectangle { x: (parent.width - 232) / 2; y: 17; width: 232; height: 3; color: GroundTheme.acc }
                 }
-                Rectangle {
-                    width: 2
-                    height: parent.height * root.rows / Math.max(1, root.totalRows)
-                    y: parent.height * root.rowOffset / Math.max(1, root.totalRows)
-                    color: Theme.yellow
-                    Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                }
-            }
 
-            // .search: 44px, 1px rgba(255,255,255,.22) border, 6px corners, rgba(20,21,24,.55),
-            // inset 0 2px 8px rgba(0,0,0,.5); padding 0 16px, gap 12px; 13px mono .14em #8a8e96; b = #FFFA00 700 .1em
-            Rectangle {
-                id: searchBox
-                x: 24
-                width: parent.width - 48
-                height: 44
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 22
-                radius: 6
-                color: Qt.rgba(20 / 255, 21 / 255, 24 / 255, 0.55)
-                InsetShadow {
-                    anchors.margins: 1 // inset shadows sit inside the border (padding box)
-                    radius: 5
-                    offsetY: 2
-                    blur: 8
-                    color: Qt.rgba(0, 0, 0, 0.5)
-                }
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 6
-                    color: "transparent"
-                    border.width: 1
-                    border.color: Qt.rgba(1, 1, 1, 0.22)
-                }
-                Text {
-                    id: prompt
-                    x: 16
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "›››"
-                    color: Theme.yellow
-                    font.family: Theme.mono
-                    font.weight: Font.Bold
-                    font.pixelSize: 13
-                    font.letterSpacing: Theme.em(13, 0.1)
-                }
-                TextInput {
-                    id: search
-                    anchors.left: prompt.right
-                    anchors.leftMargin: 12
-                    anchors.right: parent.right
-                    anchors.rightMargin: 16
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: "#e8e9ec"
-                    font.family: Theme.mono
-                    font.pixelSize: 13
-                    font.letterSpacing: Theme.em(13, 0.14)
-                    selectionColor: Theme.yellow
-                    selectedTextColor: Theme.plateInk
-                    clip: true
-                    onTextChanged: {
-                        root.query = text;
-                        root.selected = 0;
-                        root.rowOffset = 0;
-                    }
-                    Keys.onEscapePressed: Drawer.close()
-                    Keys.onReturnPressed: if (root.results[root.selected]) root.launch(root.results[root.selected])
-                    Keys.onEnterPressed: if (root.results[root.selected]) root.launch(root.results[root.selected])
-                    Keys.onLeftPressed: root.select(root.selected - 1)
-                    Keys.onRightPressed: root.select(root.selected + 1)
-                    Keys.onUpPressed: root.select(root.selected - root.cols)
-                    Keys.onDownPressed: root.select(root.selected + root.cols)
-                    Keys.onPressed: event => {
-                        if (event.key === Qt.Key_PageDown) {
-                            root.select(root.selected + root.rows * root.cols);
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_PageUp) {
-                            root.select(root.selected - root.rows * root.cols);
-                            event.accepted = true;
+                // the deck
+                Item {
+                    id: deckRow
+                    width: parent.width
+                    height: 232
+                    Repeater {
+                        model: root.deck
+                        DrawerSquare {
+                            required property var modelData
+                            x: deckRow.width / 2 + modelData.x
+                            y: (232 - modelData.size) / 2
+                            width: modelData.size
+                            height: modelData.size
+                            entry: modelData.entry
+                            featured: modelData.dist === 0
+                            number: modelData.index + 1
+                            windows: root.windowsOf(modelData.entry)
+                            onClicked: modelData.dist === 0 ? root.launch(modelData.entry) : (root.selected = modelData.index)
                         }
                     }
                     Text {
-                        visible: !search.text
+                        visible: root.results.length === 0
+                        anchors.centerIn: parent
+                        text: "NOTHING MATCHES"
+                        color: GroundTheme.ink2
+                        font.family: GroundTheme.mono
+                        font.pixelSize: 12
+                        font.letterSpacing: 3
+                    }
+                }
+
+                // the featured app: its name as the second poster, a spec line under it
+                Item { width: 1; height: 24 }
+                Text {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    text: (root.featured?.name ?? " ").toUpperCase()
+                    elide: Text.ElideRight
+                    color: GroundTheme.ink
+                    font.family: GroundTheme.display
+                    font.weight: Font.Black
+                    font.variableAxes: { "wdth": 75, "wght": 900 }
+                    font.pixelSize: 64
+                }
+                Item { width: 1; height: 12 }
+                Text {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    textFormat: Text.StyledText
+                    text: {
+                        const e = root.featured;
+                        if (!e)
+                            return " ";
+                        const n = Apps.usage[e.id] || 0, w = root.windowsOf(e);
+                        return [Apps.code(e), (e.genericName || e.comment || "").toUpperCase(), n + (n === 1 ? " LAUNCH" : " LAUNCHES"),
+                            w ? "<font color=\"" + GroundTheme.acc + "\">" + w + " OPEN</font>" : "NOT RUNNING"]
+                            .filter(x => x).join("  ·  ");
+                    }
+                    color: GroundTheme.ink2
+                    font.family: GroundTheme.mono
+                    font.pixelSize: 11
+                    font.letterSpacing: 2
+                }
+
+                // foot: the scrubber (a tick per app, the featured one orange), the count, the keys
+                Item { width: 1; height: 40 }
+                Rectangle { width: parent.width; height: 1; color: GroundTheme.lineSolid }
+                Item {
+                    width: parent.width
+                    height: 38
+                    Row {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "SEARCH APPLICATIONS"
-                        color: "#8a8e96"
-                        font: search.font
+                        spacing: 4
+                        Repeater {
+                            model: Math.min(root.results.length, 24)
+                            Rectangle {
+                                required property int index
+                                // past 24 apps a tick stands for a stretch of the list
+                                readonly property bool on: Math.floor(root.selected * Math.min(root.results.length, 24) / root.results.length) === index
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: on ? 28 : 14
+                                height: 6
+                                color: on ? GroundTheme.acc : GroundTheme.lineSolid
+                            }
+                        }
+                        Item { width: 8; height: 1 }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: String(root.selected + 1).padStart(2, "0") + " / " + String(root.results.length).padStart(2, "0")
+                            color: GroundTheme.ink2
+                            font.family: GroundTheme.mono
+                            font.pixelSize: 10
+                            font.letterSpacing: 2
+                        }
+                        Item { width: 14; height: 1 }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            textFormat: Text.StyledText
+                            text: root.query !== "" ? "<font color=\"" + GroundTheme.acc + "\">" + root.results.length + "</font>  MATCHES"
+                                : "MOST LAUNCHED FIRST  ·  <font color=\"" + GroundTheme.acc + "\">" + Apps.all.length + "</font>  APPS"
+                            color: GroundTheme.ink2
+                            font.family: GroundTheme.mono
+                            font.pixelSize: 11
+                            font.letterSpacing: 3
+                        }
+                    }
+                    Text {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "↵ OPEN     ← → PICK     ESC CLOSE"
+                        color: GroundTheme.ink2
+                        font.family: GroundTheme.mono
+                        font.pixelSize: 10
+                        font.letterSpacing: 2
                     }
                 }
             }
 
+            // the hazard strip along the bottom edge
             Item {
-                id: drawerShape
-                anchors.fill: parent
-                visible: false
-                layer.enabled: true
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 2
-                    color: "white"
+                x: 48
+                y: parent.height - 12
+                width: parent.width - 96
+                height: 4
+                clip: true
+                Row {
+                    spacing: 8
+                    Repeater {
+                        model: Math.ceil(parent.parent.width / 16) + 2
+                        Rectangle { width: 8; height: 20; y: -6; color: GroundTheme.acc; rotation: 45 }
+                    }
                 }
             }
         }
