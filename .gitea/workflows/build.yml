@@ -12,6 +12,6 @@ jobs:
     with:
       pkgname: clockmost-shell
       # makepkg runs without sudo in CI: runtime depends must be preinstalled here
-      extra_pacman_deps: "quickshell qt6-websockets sqlite wl-clipboard"
+      extra_pacman_deps: "quickshell qt6-websockets sqlite wl-clipboard clevis"
     secrets:
       PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
