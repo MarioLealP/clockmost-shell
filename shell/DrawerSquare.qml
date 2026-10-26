@@ -15,12 +15,19 @@ Rectangle {
     property real fill: 0 // launching: orange rising from the bottom, under the logo
     signal clicked
 
+    // stock icons that say nothing about the app: those get the monogram instead
+    readonly property var generic: ["utilities-terminal", "application-x-executable", "applications-other", "system-run"]
     // curated marks win over the theme icon (the dock's firefox.svg)
-    readonly property string logo: !entry ? "" : ({ "firefox": Qt.resolvedUrl("assets/logo-firefox.svg") })[(entry.id || "").toLowerCase()]
-        ?? Quickshell.iconPath(entry.icon || "", true)
-    // two letters: the first two words' initials, or the name's first two letters
+    readonly property string logo: !entry || generic.includes(entry.icon) ? ""
+        : ({ "firefox": Qt.resolvedUrl("assets/logo-firefox.svg") })[(entry.id || "").toLowerCase()] ?? Quickshell.iconPath(entry.icon || "", true)
+    // a bracketed qualifier in the name ("Claude Code (Enterprise)") tells look-alike entries apart: a tag on the
+    // square, only when another app shares the base name (not "Spotify (Launcher)")
+    readonly property string base: (entry?.name ?? "").replace(/\s*\([^)]*\)/g, "")
+    readonly property string qualifier: !entry || !Apps.all.some(o => o !== entry && o.name.replace(/\s*\([^)]*\)/g, "") === base) ? ""
+        : ((entry.name.match(/\(([^)]+)\)/)?.[1]) ?? "").toUpperCase()
+    // two letters: the first two words' initials, or the name's first two letters (the qualifier left out)
     readonly property string monogram: {
-        const w = (entry?.name ?? "").toUpperCase().split(/[^A-Z0-9]+/).filter(x => x);
+        const w = (entry?.name ?? "").replace(/\([^)]*\)/g, "").toUpperCase().split(/[^A-Z0-9]+/).filter(x => x);
         return w.length > 1 ? w[0][0] + w[1][0] : (w[0] ?? "").slice(0, 2);
     }
 
@@ -62,6 +69,17 @@ Rectangle {
         font.weight: Font.Black
         font.variableAxes: { "wdth": 70, "wght": 900 }
         font.pixelSize: Math.round(parent.height * 0.42)
+    }
+    Text {
+        visible: root.qualifier !== ""
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Math.round(parent.height * 0.1)
+        text: root.qualifier
+        color: GroundTheme.acc
+        font.family: GroundTheme.mono
+        font.pixelSize: root.featured ? 12 : 8
+        font.letterSpacing: root.featured ? 3 : 1
     }
     Text {
         visible: !root.featured && root.number > 0
