@@ -48,7 +48,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
             height: 4
-            color: GroundTheme.line
+            color: GroundTheme.lineSolid
             Rectangle { width: parent.width * Math.max(0, Math.min(1, root.value)); height: parent.height; color: root.muted ? Theme.faint : GroundTheme.acc }
         }
         MouseArea {
@@ -60,5 +60,5 @@ Item {
             onWheel: wheel => root.changed(Math.max(0, Math.min(1, root.value + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))))
         }
     }
-    Rectangle { visible: root.compact; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
+    Rectangle { visible: root.compact; anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.lineSolid }
 }

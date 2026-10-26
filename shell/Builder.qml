@@ -142,7 +142,10 @@ Item {
         bottom.x = w - bottom.width;
         left.height = Math.max(0, Math.min(d - 2 * w - h, h));
         left.y = h - left.height;
-        a.ov.opacity = p < 0.85 ? 1 : (1 - p) / 0.15;
+        // the trace cools from orange into the frame's own hairline (a colour, never opacity - cm-1jun)
+        const k = p < 0.85 ? 0 : (p - 0.85) / 0.15;
+        for (const r of a.ov.children)
+            r.color = Qt.tint(GroundTheme.acc, Qt.rgba(GroundTheme.lineSolid.r, GroundTheme.lineSolid.g, GroundTheme.lineSolid.b, k));
         if (p >= 1)
             drop(a);
     }
@@ -179,6 +182,11 @@ Item {
         for (const a of atoms) {
             if (a.done)
                 continue;
+            if (!a.item) { // its tab was swapped out mid-build
+                drop(a);
+                uncover(a);
+                continue;
+            }
             const p = Math.max(0, Math.min(1, (clock - a.start) / a.dur));
             if (p <= 0)
                 continue;

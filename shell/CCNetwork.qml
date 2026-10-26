@@ -118,7 +118,7 @@ CCTab {
                             font.pixelSize: 13
                         }
                     }
-                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
+                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.lineSolid }
                 }
             }
         }
@@ -128,7 +128,7 @@ CCTab {
             visible: !!root.wired
             width: btn.implicitWidth + 30
             height: 36
-            color: btnArea.containsMouse ? Qt.rgba(1, 95 / 255, 31 / 255, 0.12) : "transparent"
+            color: btnArea.containsMouse ? GroundTheme.over(Qt.rgba(1, 95 / 255, 31 / 255, 0.12)) : GroundTheme.bg
             border.width: 1
             border.color: GroundTheme.acc
             Text {

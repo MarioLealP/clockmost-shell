@@ -144,9 +144,9 @@ CCTab {
                     required property var modelData
                     width: 26
                     height: 26
-                    color: navArea.containsMouse ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
+                    color: navArea.containsMouse ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.08)) : GroundTheme.bg
                     border.width: 1
-                    border.color: GroundTheme.line
+                    border.color: GroundTheme.lineSolid
                     Text {
                         anchors.centerIn: parent
                         text: nav.modelData.t
@@ -201,7 +201,7 @@ CCTab {
                 font.letterSpacing: Theme.em(9, 0.18)
             }
         }
-        Rectangle { y: 24; width: parent.width; height: 1; color: Qt.rgba(1, 1, 1, 0.08) }
+        Rectangle { y: 24; width: parent.width; height: 1; color: GroundTheme.over(Qt.rgba(1, 1, 1, 0.08)) }
 
         // week rows
         Repeater {
@@ -241,7 +241,7 @@ CCTab {
                             anchors.fill: parent
                             anchors.margins: 3
                             visible: cell.today
-                            color: "transparent"
+                            color: GroundTheme.bg
                             border.width: 1
                             border.color: Theme.yellow
                         }
@@ -258,7 +258,7 @@ CCTab {
                             anchors.fill: parent
                             anchors.margins: 3
                             visible: root.selected === root.key(cell.day)
-                            color: Qt.rgba(1, 1, 1, 0.08)
+                            color: GroundTheme.over(Qt.rgba(1, 1, 1, 0.08))
                         }
                         // has events: a small cyan square under the number
                         Rectangle {
@@ -311,7 +311,7 @@ CCTab {
                 height: 34
                 Rectangle {
                     anchors.fill: parent
-                    color: evArea.containsMouse && ev.modelData.link ? Qt.rgba(1, 1, 1, 0.06) : "transparent"
+                    color: evArea.containsMouse && ev.modelData.link ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.06)) : GroundTheme.bg
                 }
                 Rectangle {
                     width: 2

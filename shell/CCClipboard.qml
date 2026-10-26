@@ -71,9 +71,9 @@ CCTab {
         x: 22
         width: parent.width - 44
         height: 32
-        color: "transparent"
+        color: GroundTheme.bg
         border.width: 1
-        border.color: search.activeFocus ? Qt.rgba(1, 1, 1, 0.28) : Qt.rgba(1, 1, 1, 0.16)
+        border.color: search.activeFocus ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.28)) : GroundTheme.over(Qt.rgba(1, 1, 1, 0.16))
         Text {
             id: prompt
             x: 12
@@ -187,9 +187,9 @@ CCTab {
                 Rectangle {
                     width: keyText.implicitWidth + 10
                     height: 18
-                    color: "transparent"
+                    color: GroundTheme.bg
                     border.width: 1
-                    border.color: Qt.rgba(1, 1, 1, 0.22)
+                    border.color: GroundTheme.over(Qt.rgba(1, 1, 1, 0.22))
                     Text {
                         id: keyText
                         anchors.centerIn: parent

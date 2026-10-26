@@ -27,7 +27,7 @@ Item {
                 readonly property bool active: ControlCenter.tab === modelData.id
                 width: list.width
                 height: 37
-                color: active ? GroundTheme.acc : area.containsMouse ? Qt.rgba(1, 1, 1, 0.05) : "transparent"
+                color: active ? GroundTheme.acc : area.containsMouse ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.05)) : GroundTheme.bg
                 Text {
                     x: cell.active ? 10 : 4
                     anchors.verticalCenter: parent.verticalCenter
@@ -46,7 +46,7 @@ Item {
                     font.variableAxes: { "wdth": 75, "wght": 800 }
                     font.pixelSize: 19
                 }
-                Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line; visible: !cell.active }
+                Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.lineSolid; visible: !cell.active }
                 MouseArea {
                     id: area
                     anchors.fill: parent
@@ -93,9 +93,9 @@ Item {
                     required property var modelData
                     width: at.implicitWidth + 14
                     height: 24
-                    color: aa.containsMouse ? (act.modelData.hot ? GroundTheme.acc : Qt.rgba(1, 1, 1, 0.08)) : "transparent"
+                    color: aa.containsMouse ? (act.modelData.hot ? GroundTheme.acc : GroundTheme.over(Qt.rgba(1, 1, 1, 0.08))) : GroundTheme.bg
                     border.width: 1
-                    border.color: act.modelData.hot ? GroundTheme.acc : GroundTheme.line
+                    border.color: act.modelData.hot ? GroundTheme.acc : GroundTheme.lineSolid
                     Text {
                         id: at
                         anchors.centerIn: parent

@@ -11,7 +11,7 @@ Item {
     width: parent ? parent.width : 0
     implicitHeight: 66
 
-    Rectangle { width: parent.width; height: 1; color: GroundTheme.line }
+    Rectangle { width: parent.width; height: 1; color: GroundTheme.lineSolid }
     Text {
         x: 22
         y: 12

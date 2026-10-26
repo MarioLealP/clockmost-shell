@@ -13,7 +13,7 @@ Item {
     width: parent ? parent.width : 0
     height: 34
 
-    Rectangle { anchors.fill: parent; color: area.containsMouse && root.available ? Qt.rgba(1, 1, 1, 0.04) : "transparent" }
+    Rectangle { anchors.fill: parent; color: area.containsMouse && root.available ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.04)) : GroundTheme.bg }
     Text {
         anchors.verticalCenter: parent.verticalCenter
         text: root.label
@@ -31,7 +31,7 @@ Item {
         font.pixelSize: 11
         font.letterSpacing: 2
     }
-    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
+    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.lineSolid }
     MouseArea {
         id: area
         anchors.fill: parent

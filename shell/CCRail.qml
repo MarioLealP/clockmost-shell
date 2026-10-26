@@ -23,7 +23,7 @@ Column {
                 anchors.centerIn: parent
                 width: 38
                 height: 38
-                color: cell.active ? GroundTheme.acc : area.containsMouse ? Qt.rgba(1, 1, 1, 0.06) : "transparent"
+                color: cell.active ? GroundTheme.acc : area.containsMouse ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.06)) : GroundTheme.bg
             }
             Glyph {
                 anchors.centerIn: parent

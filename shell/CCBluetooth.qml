@@ -78,8 +78,9 @@ CCTab {
                     width: parent.width
                     height: 44
                     Rectangle {
+                        id: devFill
                         anchors.fill: parent
-                        color: Qt.rgba(1, 1, 1, dev.modelData.connected ? 0.06 : devArea.containsMouse ? 0.035 : 0)
+                        color: GroundTheme.over(Qt.rgba(1, 1, 1, dev.modelData.connected ? 0.06 : devArea.containsMouse ? 0.035 : 0))
                         Behavior on color { ColorAnimation { duration: 140 } }
                     }
                     Rectangle {
@@ -122,9 +123,9 @@ CCTab {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 34
                         height: 10
-                        color: "transparent"
+                        color: devFill.color
                         border.width: 1
-                        border.color: Qt.rgba(1, 1, 1, 0.2)
+                        border.color: GroundTheme.over(Qt.rgba(1, 1, 1, 0.2))
                         Rectangle {
                             x: 2
                             y: 2
@@ -164,9 +165,9 @@ CCTab {
                 anchors.right: parent.right
                 width: scanText.implicitWidth + 16
                 height: 22
-                color: root.adapter?.discovering ? Qt.rgba(1, 95 / 255, 31 / 255, 0.34) : scanArea.containsMouse ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
+                color: root.adapter?.discovering ? GroundTheme.over(Qt.rgba(1, 95 / 255, 31 / 255, 0.34)) : scanArea.containsMouse ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.08)) : GroundTheme.bg
                 border.width: 1
-                border.color: root.adapter?.discovering ? Qt.rgba(1, 95 / 255, 31 / 255, 0.45) : Qt.rgba(1, 1, 1, 0.16)
+                border.color: root.adapter?.discovering ? GroundTheme.over(Qt.rgba(1, 95 / 255, 31 / 255, 0.45)) : GroundTheme.over(Qt.rgba(1, 1, 1, 0.16))
                 Text {
                     id: scanText
                     anchors.centerIn: parent

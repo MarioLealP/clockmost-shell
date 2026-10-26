@@ -10,6 +10,11 @@ Singleton {
     readonly property color line: Qt.rgba(0.91, 0.9, 0.87, 0.15)
     readonly property color faint: Qt.rgba(0.91, 0.9, 0.87, 0.09)
     readonly property color acc: "#ff5f1f"
+    // solid versions over bg, for the control center: on Qt 6.12 a translucent fill there can draw as a hole to the
+    // desktop once its build motion has run (cm-1jun), so the control center only uses solid colours
+    readonly property color lineSolid: Qt.tint(bg, line)
+    readonly property color faintSolid: Qt.tint(bg, faint)
+    function over(c) { return Qt.tint(bg, c); }
     readonly property color accInk: "#111110"
 
     readonly property string mono: "JetBrains Mono"

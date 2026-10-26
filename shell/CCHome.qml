@@ -100,7 +100,7 @@ Item {
         }
 
         Item { width: 1; height: 18 }
-        Rectangle { width: parent.width; height: 1; color: GroundTheme.line }
+        Rectangle { width: parent.width; height: 1; color: GroundTheme.lineSolid }
         Item { width: 1; height: 12 }
         Column {
             visible: root.player !== null
@@ -147,9 +147,9 @@ Item {
                             required property var modelData
                             width: bt.implicitWidth + 16
                             height: 24
-                            color: ba.containsMouse ? Theme.ink : "transparent"
+                            color: ba.containsMouse ? Theme.ink : GroundTheme.bg
                             border.width: 1
-                            border.color: GroundTheme.line
+                            border.color: GroundTheme.lineSolid
                             Text { id: bt; anchors.centerIn: parent; text: parent.modelData.t; color: ba.containsMouse ? GroundTheme.bg : Theme.ink; font.family: Theme.mono; font.pixelSize: 10 }
                             MouseArea { id: ba; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: parent.modelData.f() }
                         }

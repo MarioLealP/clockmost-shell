@@ -52,7 +52,7 @@ Column {
         visible: root.bar >= 0
         width: parent.width
         height: 4
-        color: GroundTheme.line
+        color: GroundTheme.lineSolid
         Rectangle { width: parent.width * Math.max(0, Math.min(1, root.bar)); height: parent.height; color: GroundTheme.acc }
         MouseArea {
             anchors.fill: parent

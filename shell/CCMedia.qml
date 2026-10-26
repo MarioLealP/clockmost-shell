@@ -203,8 +203,7 @@ CCTab {
                     anchors.bottom: parent.bottom
                     width: (parent.width - 47 * 3) / 48
                     height: 3 + (root.bars[index] ?? 0) / 255 * 49
-                    color: played ? GroundTheme.acc : Theme.dim
-                    opacity: played ? 1 : 0.55
+                    color: played ? GroundTheme.acc : GroundTheme.over(Qt.rgba(Theme.dim.r, Theme.dim.g, Theme.dim.b, 0.55))
                 }
             }
         }
@@ -247,8 +246,8 @@ CCTab {
         x: 22
         width: parent.width - 44
         height: 48
-        Rectangle { width: parent.width; height: 1; color: GroundTheme.line }
-        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
+        Rectangle { width: parent.width; height: 1; color: GroundTheme.lineSolid }
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.lineSolid }
         Row {
             id: transport
             y: 1
@@ -269,8 +268,7 @@ CCTab {
             Rectangle {
                 width: transport.unit * 2
                 height: parent.height
-                color: GroundTheme.acc
-                opacity: root.player?.canTogglePlaying ? 1 : 0.4
+                color: root.player?.canTogglePlaying ?? false ? GroundTheme.acc : GroundTheme.over(Qt.rgba(GroundTheme.acc.r, GroundTheme.acc.g, GroundTheme.acc.b, 0.4))
                 Row {
                     anchors.centerIn: parent
                     spacing: 10
@@ -351,7 +349,7 @@ CCTab {
             font.pixelSize: 11
             font.letterSpacing: 2
         }
-        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.lineSolid }
     }
     Item { width: 1; height: 16 }
 
@@ -365,13 +363,12 @@ CCTab {
 
         width: transport.unit
         height: parent.height
-        opacity: enabled ? 1 : 0.35
-        Rectangle { anchors.fill: parent; color: area.containsMouse ? Qt.rgba(1, 1, 1, 0.05) : "transparent" }
+        Rectangle { anchors.fill: parent; color: area.containsMouse ? GroundTheme.over(Qt.rgba(1, 1, 1, 0.05)) : GroundTheme.bg }
         Text {
             visible: cell.label !== ""
             anchors.centerIn: parent
             text: cell.label
-            color: cell.on ? GroundTheme.acc : Theme.ink
+            color: !cell.enabled ? Theme.faint : cell.on ? GroundTheme.acc : Theme.ink
             font.family: Theme.mono
             font.pixelSize: 11
             font.letterSpacing: 2
@@ -381,9 +378,9 @@ CCTab {
             anchors.centerIn: parent
             size: 16
             path: cell.glyph
-            color: area.containsMouse ? GroundTheme.acc : Theme.ink
+            color: !cell.enabled ? Theme.faint : area.containsMouse ? GroundTheme.acc : Theme.ink
         }
-        Rectangle { visible: cell.divider; anchors.right: parent.right; width: 1; height: parent.height; color: GroundTheme.line }
+        Rectangle { visible: cell.divider; anchors.right: parent.right; width: 1; height: parent.height; color: GroundTheme.lineSolid }
         MouseArea {
             id: area
             anchors.fill: parent

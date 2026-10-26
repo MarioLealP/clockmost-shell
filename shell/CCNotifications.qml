@@ -106,7 +106,7 @@ CCTab {
                     anchors.rightMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
                     height: 1
-                    color: Qt.rgba(1, 1, 1, 0.08)
+                    color: GroundTheme.over(Qt.rgba(1, 1, 1, 0.08))
                 }
                 Text {
                     id: clearText
@@ -169,7 +169,7 @@ CCTab {
                         x: 50
                         width: parent.width - 68
                         height: 1
-                        color: Qt.rgba(1, 1, 1, 0.05)
+                        color: GroundTheme.over(Qt.rgba(1, 1, 1, 0.05))
                     }
                     MouseArea {
                         anchors.fill: parent

@@ -109,7 +109,7 @@ PanelWindow {
                 height: parent.height * root.sweep
                 color: GroundTheme.bg
                 border.width: 1
-                border.color: GroundTheme.line
+                border.color: GroundTheme.lineSolid
             }
 
             // everything on the panel: switched off (never faded) while the band sweeps - opacity on the control
@@ -127,7 +127,7 @@ PanelWindow {
                 x: rail.width
                 width: 1
                 height: parent.height
-                color: Qt.rgba(1, 1, 1, 0.08)
+                color: GroundTheme.over(Qt.rgba(1, 1, 1, 0.08))
             }
 
             // the break: an orange hazard strip along the bottom edge of the content
