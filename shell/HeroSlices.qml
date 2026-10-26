@@ -114,7 +114,7 @@ Item {
                     property variant srcA: imgA
                     property variant srcB: imgB
                     property real t: root.t
-                    property real cell: 14
+                    property real cell: 9 // dot pitch (Mario: smaller than 14)
                     property size size: Qt.size(width, height)
                     property vector2d fitA: root.fitFor(imgA)
                     property vector2d fitB: root.fitFor(imgB)
