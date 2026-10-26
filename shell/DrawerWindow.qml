@@ -101,31 +101,37 @@ PanelWindow {
     WlrLayershell.namespace: "clockmost-drawer"
     WlrLayershell.layer: WlrLayer.Overlay
     // exclusive from the moment the surface maps (flipping it on in the same tick the window appears left KWin's
-    // keyboard focus on the window underneath), let go the moment it starts closing - holding it through the closing
-    // motion kept the next click on another window from focusing it
-    WlrLayershell.keyboardFocus: Drawer.open || !visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    // keyboard focus on the window underneath), then on-demand once it has the keyboard: an exclusive layer keeps KWin
+    // from switching windows on a click, so clicking another window neither focused it nor told us to close
+    property bool grabbed: false
+    WlrLayershell.keyboardFocus: !visible || (Drawer.open && !grabbed) ? WlrKeyboardFocus.Exclusive
+        : Drawer.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    Timer {
+        id: grabTimer
+        interval: 250
+        onTriggered: root.grabbed = true
+    }
     onVisibleChanged: if (visible) Qt.callLater(() => search.forceActiveFocus())
 
-    // input everywhere but the bar and dock strips (they stay usable and close the drawer themselves)
+    // input only on the panel: a click anywhere else goes straight to what's under it (a window gets focused and
+    // the click at once), and the drawer closes itself - on another window becoming active, or a press on the ground
+    // (Ground.qml) / the bar / the dock (DrawerCloser)
     mask: Region {
-        item: Drawer.open ? catcher : null
-        Region {
-            intersection: Intersection.Subtract
-            width: root.width
-            height: Drawer.topInset(root.width)
-        }
-        Region {
-            intersection: Intersection.Subtract
-            y: root.height - Drawer.bottomInset(root.width)
-            width: root.width
-            height: Drawer.bottomInset(root.width)
-        }
+        item: Drawer.open ? panel : null
+    }
+    readonly property string activeWindow: KWin.windows.find(w => w.active)?.id ?? ""
+    onActiveWindowChanged: {
+        // "" = the drawer itself took the focus (opening): only another window becoming active closes it
+        if (Drawer.open && activeWindow !== "")
+            Drawer.close();
     }
 
     Connections {
         target: Drawer
         function onOpenChanged() {
             if (Drawer.open) {
+                root.grabbed = false;
+                grabTimer.restart();
                 search.text = "";
                 root.query = "";
                 root.selected = 0;

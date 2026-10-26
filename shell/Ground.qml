@@ -26,6 +26,15 @@ PanelWindow {
 
     RegMarks { anchors.fill: parent }
 
+    // a press on the bare ground closes the app drawer (its input is only its own panel)
+    MouseArea {
+        anchors.fill: parent
+        onPressed: mouse => {
+            Drawer.close();
+            mouse.accepted = false;
+        }
+    }
+
     // the poster. Opening an HA section only moves the orange line out of the way - everything else stays still
     // (Mario 2026-10-25: "just shift the orange bar, keep everything else still"). Motion: GroundLine + SectionStage.
     Item {
