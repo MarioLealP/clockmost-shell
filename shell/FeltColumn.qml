@@ -122,7 +122,7 @@ Rectangle {
 
         Item {
             width: parent.width
-            height: 66
+            height: 76 // tall enough that the 64 px FELT sits fully on the column's backing
             Text {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 10
