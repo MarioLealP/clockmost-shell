@@ -91,9 +91,9 @@ PanelWindow {
             // the break: an orange hazard strip along the bottom edge of the content
             Item {
                 x: rail.width + 17
-                y: parent.height - 18
+                y: parent.height - 9
                 width: content.width - 34
-                height: 8
+                height: 4
                 clip: true
                 z: 2
                 Row {

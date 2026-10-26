@@ -9,7 +9,7 @@ Item {
     default property alias actions: actionsRow.data
 
     width: parent ? parent.width : 0
-    implicitHeight: 56
+    implicitHeight: 66
 
     Rectangle { width: parent.width; height: 1; color: GroundTheme.line }
     Text {
