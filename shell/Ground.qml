@@ -59,6 +59,8 @@ PanelWindow {
             lineHeight: 0.8
         }
 
+        DotField { x: 568; y: 948 } // right of the line, left of the hero; 568 dot column, 948-1260 dot rows
+
         HeroSlices { x: 1640; y: 125 }
         XMarks {}
 
