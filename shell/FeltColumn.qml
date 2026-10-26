@@ -156,8 +156,9 @@ Rectangle {
         Item {
             id: lineBox
             width: parent.width
-            // one fixed size (Mario 2026-10-26): 6 lines of her text + the meta line, whatever she says
-            height: line.lineCount > 6 && line.open ? quote.height : 6 * 26 + 12 + 14
+            // one fixed size (Mario 2026-10-26): 4 lines of her text + the meta line, whatever she says (6 ran into the
+            // weather at the top of the date stack)
+            height: line.lineCount > 4 && line.open ? quote.height : 4 * 26 + 12 + 14
 
             // the bar: solid halves, or hazard halves while she thinks; both slide in and out of this rail
             Item {
@@ -205,11 +206,11 @@ Rectangle {
                     id: line
                     property bool open: false // click: the whole line when it's longer than the box
                     width: parent.width
-                    height: open ? implicitHeight : Math.min(implicitHeight, 6 * 26)
+                    height: open ? implicitHeight : Math.min(implicitHeight, 4 * 26)
                     textFormat: Text.StyledText
                     text: root.overtype(root.typed, cursor.on)
                     wrapMode: Text.WordWrap
-                    maximumLineCount: open ? 40 : 6
+                    maximumLineCount: open ? 40 : 4
                     elide: Text.ElideRight
                     color: GroundTheme.ink
                     font.family: GroundTheme.display
