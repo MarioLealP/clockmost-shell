@@ -12,6 +12,8 @@ Item {
     property bool pending: false // a swap waiting for its picture to load
     property bool started: false
     property real t: 0 // the shader's 0 = A .. 1 = B
+    readonly property url showing: onB ? urlB : urlA
+    onShowingChanged: HeroArt.hero = showing
 
     // the first picture: a random one from the folder, no show
     Connections {

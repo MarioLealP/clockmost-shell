@@ -13,6 +13,7 @@ Singleton {
     readonly property string folder: Quickshell.env("HOME") + "/.config/clockmost/ground-art"
     property var files: [] // file:// urls
     property int requests: 0
+    property url hero: "" // the hero's picture right now (the other art windows avoid it)
     property int markPokes: 0 // IPC ground marks: the X marks re-strike + focus pull now (preview)
 
     function next() {
