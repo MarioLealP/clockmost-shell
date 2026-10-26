@@ -118,7 +118,7 @@ CCTab {
                 color: Theme.ink
                 font.family: GroundTheme.display
                 font.weight: Font.Black
-                font.variableAxes: { "wdth": 68 }
+                font.variableAxes: { "wdth": 68, "wght": 900 }
                 font.pixelSize: 64
             }
             Text {
@@ -127,7 +127,7 @@ CCTab {
                 color: Theme.dim
                 font.family: GroundTheme.display
                 font.weight: Font.Black
-                font.variableAxes: { "wdth": 68 }
+                font.variableAxes: { "wdth": 68, "wght": 900 }
                 font.pixelSize: 64
             }
         }

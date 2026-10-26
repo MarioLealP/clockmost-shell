@@ -45,7 +45,7 @@ Item {
         color: root.selected ? Theme.plateInk : Theme.dim
         font.family: GroundTheme.display
         font.weight: Font.Black
-        font.variableAxes: { "wdth": 70 }
+        font.variableAxes: { "wdth": 70, "wght": 900 }
         font.pixelSize: 22
     }
 

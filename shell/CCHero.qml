@@ -21,7 +21,7 @@ Column {
             color: Theme.ink
             font.family: GroundTheme.display
             font.weight: Font.Black
-            font.variableAxes: { "wdth": 68 }
+            font.variableAxes: { "wdth": 68, "wght": 900 }
             font.pixelSize: root.size
             lineHeightMode: Text.FixedHeight
             lineHeight: root.size * 0.84

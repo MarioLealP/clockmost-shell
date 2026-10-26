@@ -1,5 +1,5 @@
 // Control center NETWORK tab: wired connection details (from NetworkManager), Wi-Fi when a Wi-Fi device exists,
-// and every VPN with a switch. No mock of its own - built from the panel parts.
+// and every VPN with a switch. v2 mock: clockmost-desktop design/v2-2026-10-25/cc.html?tab=network.
 import QtQuick
 import Quickshell.Io
 import Quickshell.Networking
@@ -62,128 +62,101 @@ CCTab {
     Column {
         x: 22
         width: parent.width - 44
-        spacing: 10
+        spacing: 0
         bottomPadding: 14
 
-        // ---- wired ----
-        SectionLabel { text: "WIRED"; note: String(root.wiredDevices.length).padStart(2, "0") }
-        Repeater {
-            model: root.wiredDevices
-            Rectangle {
-                id: card
-                required property var modelData
-                width: parent.width
-                height: col.implicitHeight + 24
-                color: Qt.rgba(51 / 255, 54 / 255, 60 / 255, 0.35)
-                border.width: 1
-                border.color: Qt.rgba(1, 1, 1, 0.07)
-                Column {
-                    id: col
-                    x: 12
-                    y: 12
-                    width: parent.width - 24
-                    spacing: 10
-                    Row {
-                        spacing: 12
-                        Rectangle {
-                            width: 26
-                            height: 26
-                            color: card.modelData.connected ? Theme.cyan : Qt.rgba(1, 1, 1, 0.08)
-                            Glyph {
-                                anchors.centerIn: parent
-                                size: 16
-                                path: Icons.ethernet
-                                color: card.modelData.connected ? Theme.plateInk : Theme.dim
-                            }
-                        }
-                        Column {
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 3
-                            Text {
-                                text: (card.modelData === root.wired && root.ip["GENERAL.CONNECTION"]) || card.modelData.network?.name || card.modelData.name
-                                color: Theme.ink
-                                font.family: Theme.body
-                                font.weight: Font.DemiBold
-                                font.pixelSize: 13
-                            }
-                            Micro {
-                                text: card.modelData.name + " · " + (card.modelData.connected
-                                    ? "CONNECTED" + (root.speed(card.modelData.linkSpeed) ? " · " + root.speed(card.modelData.linkSpeed) : "")
-                                    : card.modelData.hasLink ? "CABLE IN · DOWN" : "NO CABLE")
-                            }
-                        }
-                    }
-                    // details: label / value pairs
-                    Grid {
-                        visible: card.modelData === root.wired && card.modelData.connected
-                        columns: 2
-                        columnSpacing: 14
-                        rowSpacing: 6
-                        Repeater {
-                            model: [["IPV4", root.ip["IP4.ADDRESS"]], ["GATEWAY", root.ip["IP4.GATEWAY"]], ["DNS", root.ip["IP4.DNS"]], ["MAC", card.modelData.address]]
-                            Repeater {
-                                required property var modelData
-                                model: modelData[1] ? [modelData[0], modelData[1]] : []
-                                Text {
-                                    required property string modelData
-                                    required property int index
-                                    text: modelData
-                                    color: index === 0 ? Theme.faint : Theme.ink2
-                                    font.family: Theme.mono
-                                    font.pixelSize: index === 0 ? 9 : 11
-                                    font.letterSpacing: index === 0 ? Theme.em(9, 0.18) : 0.3
-                                }
-                            }
-                        }
-                    }
-                }
-                // connect / disconnect
-                Rectangle {
-                    anchors.right: parent.right
-                    anchors.rightMargin: 12
-                    y: 12
-                    width: btn.implicitWidth + 16
-                    height: 22
-                    color: btnArea.containsMouse ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
-                    border.width: 1
-                    border.color: Qt.rgba(1, 1, 1, 0.16)
+        // ---- wired: the connection as a spec sheet, two columns of key / value ----
+        Grid {
+            visible: !!root.wired
+            width: parent.width
+            columns: 2
+            columnSpacing: 22
+            Repeater {
+                model: [
+                    ["CONNECTION", root.ip["GENERAL.CONNECTION"] || root.wired?.name || "", ""],
+                    ["IPV4", (root.ip["IP4.ADDRESS"] || "—").split("/")[0], root.ip["IP4.ADDRESS"]?.includes("/") ? "/" + root.ip["IP4.ADDRESS"].split("/")[1] : ""],
+                    ["GATEWAY", root.ip["IP4.GATEWAY"] || "—", ""],
+                    ["DNS", (root.ip["IP4.DNS"] || "—").split(",")[0], ""],
+                    ["MAC", root.wired?.address || "—", ""],
+                    ["LINK", root.wired?.connected ? String(root.wired.linkSpeed || "—") : root.wired?.hasLink ? "DOWN" : "NO CABLE", root.wired?.connected && root.wired.linkSpeed ? "MB/S" : ""]
+                ]
+                Item {
+                    required property var modelData
+                    width: (parent.width - 22) / 2
+                    height: 62
                     Text {
-                        id: btn
-                        anchors.centerIn: parent
-                        text: card.modelData.connected ? "DISCONNECT" : "CONNECT"
-                        color: Theme.ink2
+                        y: 10
+                        text: parent.modelData[0]
+                        color: Theme.dim
                         font.family: Theme.mono
-                        font.weight: Font.Bold
-                        font.pixelSize: 9
-                        font.letterSpacing: Theme.em(9, 0.18)
+                        font.pixelSize: 10
+                        font.letterSpacing: 2
                     }
-                    MouseArea {
-                        id: btnArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: card.modelData.connected ? card.modelData.disconnect() : card.modelData.network?.connect()
+                    Row {
+                        y: 26
+                        width: parent.width
+                        spacing: 4
+                        Text {
+                            id: val
+                            width: Math.min(implicitWidth, parent.width - unit.implicitWidth - 4)
+                            elide: Text.ElideRight
+                            text: parent.parent.modelData[1]
+                            color: Theme.ink
+                            font.family: GroundTheme.display
+                            font.weight: Font.ExtraBold
+                            font.variableAxes: { "wdth": 80, "wght": 800 }
+                            font.pixelSize: 22
+                        }
+                        Text {
+                            id: unit
+                            anchors.baseline: val.baseline
+                            text: parent.parent.modelData[2]
+                            color: Theme.dim
+                            font.family: GroundTheme.display
+                            font.weight: Font.Bold
+                            font.pixelSize: 13
+                        }
                     }
+                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line }
                 }
             }
         }
-        Micro {
-            visible: root.wiredDevices.length === 0
-            text: "NO WIRED DEVICE"
+        Item { width: 1; height: 14 }
+        // connect / disconnect: orange outline
+        Rectangle {
+            visible: !!root.wired
+            width: btn.implicitWidth + 30
+            height: 36
+            color: btnArea.containsMouse ? Qt.rgba(1, 95 / 255, 31 / 255, 0.12) : "transparent"
+            border.width: 1
+            border.color: GroundTheme.acc
+            Text {
+                id: btn
+                anchors.centerIn: parent
+                text: root.wired?.connected ? "DISCONNECT" : "CONNECT"
+                color: GroundTheme.acc
+                font.family: Theme.mono
+                font.weight: Font.Bold
+                font.pixelSize: 11
+                font.letterSpacing: 2.2
+            }
+            MouseArea {
+                id: btnArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.wired.connected ? root.wired.disconnect() : root.wired.network?.connect()
+            }
         }
+        Item { width: 1; height: 22 }
 
         // ---- wi-fi (only with a Wi-Fi device) ----
-        Item {
-            width: parent.width
-            height: wifiHead.implicitHeight
+        Group { visible: !!root.wifi; text: "WI-FI · " + String(root.wifiNetworks.length).padStart(2, "0") }
+        CCSwitch {
             visible: !!root.wifi
-            SectionLabel { id: wifiHead; text: "WI-FI"; width: parent.width - 50 }
-            Switch {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                on: Networking.wifiEnabled
-                onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
-            }
+            label: "WI-FI"
+            on: Networking.wifiEnabled
+            onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
         }
         Column {
             width: parent.width
@@ -202,52 +175,31 @@ CCTab {
                 }
             }
         }
+        Item { visible: !!root.wifi; width: 1; height: 18 }
 
-        // ---- vpn ----
-        SectionLabel { text: "VPN"; note: String(Vpn.connections.length).padStart(2, "0") }
+        // ---- vpn: switch rows ----
+        Group { text: "VPN · " + String(Vpn.connections.length).padStart(2, "0") }
         Repeater {
             model: Vpn.connections
-            Item {
-                id: vpnRow
+            CCSwitch {
                 required property var modelData
-                width: parent.width
-                height: 40
-                Rectangle {
-                    anchors.fill: parent
-                    color: Qt.rgba(1, 1, 1, vpnRow.modelData.active ? 0.06 : 0)
-                }
-                Rectangle {
-                    width: 3
-                    height: parent.height
-                    color: Theme.green
-                    visible: vpnRow.modelData.active
-                }
-                Column {
-                    x: 14
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 3
-                    Text {
-                        text: vpnRow.modelData.name
-                        color: vpnRow.modelData.active ? Theme.ink : Theme.ink2
-                        font.family: Theme.body
-                        font.pixelSize: 13
-                    }
-                    Micro {
-                        text: vpnRow.modelData.type.toUpperCase() + " · " + (vpnRow.modelData.active ? "UP" : "DOWN")
-                    }
-                }
-                Switch {
-                    anchors.right: parent.right
-                    anchors.rightMargin: 10
-                    anchors.verticalCenter: parent.verticalCenter
-                    on: vpnRow.modelData.active
-                    onToggled: Vpn.toggle(vpnRow.modelData.name)
-                }
+                label: modelData.name.toUpperCase() + " · " + modelData.type.toUpperCase()
+                on: modelData.active
+                onClicked: Vpn.toggle(modelData.name)
             }
         }
-        Micro {
+        CCSwitch {
             visible: Vpn.connections.length === 0
-            text: "NO VPN IN NETWORKMANAGER"
+            label: "NO VPN IN NETWORKMANAGER"
+            available: false
         }
+    }
+
+    component Group: Text {
+        bottomPadding: 4
+        color: Theme.dim
+        font.family: Theme.mono
+        font.pixelSize: 10
+        font.letterSpacing: 2.4
     }
 }

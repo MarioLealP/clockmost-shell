@@ -43,7 +43,7 @@ Item {
                     color: cell.active ? GroundTheme.accInk : Theme.ink
                     font.family: GroundTheme.display
                     font.weight: Font.ExtraBold
-                    font.variableAxes: { "wdth": 75 }
+                    font.variableAxes: { "wdth": 75, "wght": 800 }
                     font.pixelSize: 19
                 }
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: GroundTheme.line; visible: !cell.active }
@@ -69,7 +69,7 @@ Item {
             color: Theme.ink
             font.family: GroundTheme.display
             font.weight: Font.Black
-            font.variableAxes: { "wdth": 70 }
+            font.variableAxes: { "wdth": 70, "wght": 900 }
             font.pixelSize: 22
         }
         Text {
