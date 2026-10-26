@@ -3,8 +3,8 @@
 // row and pulls away the other way, uncovering it ("do the sweep for the title, then drop the content"). Then every
 // section builds the same way, from inside ("the outlines show up, and then the details"): per block, in order down
 // the screen, the block lands (drops 24 px), framed shapes get an orange trace around their border, then the small
-// squares / dots / grid cells pop or flicker on, then the labels flicker on like they're being typed and big numbers
-// roll through digits before settling. Close: the content fades while the slab wipes back over the title, the section
+// squares / dots / grid cells pop or flicker on, pictures fade in as their frame's trace ends, then the labels
+// flicker on like they're being typed and big numbers roll through digits before settling. Close: the content fades while the slab wipes back over the title, the section
 // unloads under it, the slab leaves. Switching: the same cover, swap under the slab, reveal.
 import QtQuick
 
@@ -100,7 +100,12 @@ Item {
                         continue;
                     const isText = c.font !== undefined && c.text !== undefined;
                     const isRect = c.border !== undefined && c.radius !== undefined;
-                    if (isText) {
+                    const isImage = c.fillMode !== undefined && c.source !== undefined && c.sourceSize !== undefined;
+                    if (isImage) {
+                        // pictures (album covers, the printer plate): fade + settle in as their frame's trace finishes
+                        list.push({ item: c, kind: "image", start: t0 + 300, dur: 320 });
+                        walk(c);
+                    } else if (isText) {
                         texts.push(c);
                     } else if (isRect && c.border.width > 0 && c.width > 100 && c.height > 60) {
                         list.push({ item: c, kind: "trace", start: t0 + 60, dur: 420 });
@@ -223,6 +228,11 @@ Item {
                 a.done = p >= 1;
             } else if (a.kind === "flicker") {
                 a.item.opacity = p >= 1 || Math.random() < p ? 1 : 0;
+                a.done = p >= 1;
+            } else if (a.kind === "image") {
+                const e = 1 - Math.pow(1 - p, 3);
+                a.item.opacity = e;
+                a.item.scale = 0.94 + 0.06 * e;
                 a.done = p >= 1;
             } else { // pop
                 const e = 1 - Math.pow(1 - p, 3);
