@@ -59,7 +59,7 @@ PanelWindow {
             lineHeight: 0.8
         }
 
-        AsciiArt { x: 568; y: 948 } // right of the line, left of the hero; 568 dot column, 948-1260 dot rows
+        AsciiArt { x: 784; y: 684 } // centred between the line and the hero; dots 784-1360 x 684-1260
 
         HeroSlices { x: 1640; y: 125 }
         XMarks {}

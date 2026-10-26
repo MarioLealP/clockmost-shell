@@ -1,80 +1,49 @@
-// The hero's current picture as ASCII art (shaders/ascii.frag), right of the orange line. It follows HeroArt.hero:
-// on a swap the characters scramble and settle on the new picture. Static between swaps; fades while an HA section is
-// open (it would sit behind it).
+// A silhouette as ASCII art (shaders/ascii.frag) right of the orange line - the picture is private:
+// ~/.config/clockmost/ascii-art.png (Mario 2026-10-26: the FFXIV meteor; not in the repo). Static; scrambles and
+// re-forms on every hero art swap. Fades while an HA section is open (it would sit behind it). No file: nothing.
 import QtQuick
+import Quickshell
 
 ShaderEffect {
     id: root
 
-    property url urlA: ""
-    property url urlB: ""
-    property bool onB: false // which image holds the picture shown
-    property bool pending: false
     property real t: 0
     property real time: 0
-
-    property variant from: onB ? imgB : imgA
-    property variant to: onB ? imgA : imgB
+    property variant src: img
     property size size: Qt.size(width, height)
-    property vector2d fitFrom: fitFor(onB ? imgB : imgA)
-    property vector2d fitTo: fitFor(onB ? imgA : imgB)
     property color ink: GroundTheme.ink
     property color hot: GroundTheme.acc
 
-    width: 912
-    height: 312
+    width: 576
+    height: 576
+    visible: img.status === Image.Ready
     opacity: HaSections.current !== "" ? 0 : 1
     Behavior on opacity { NumberAnimation { duration: 260 } }
     fragmentShader: Qt.resolvedUrl("shaders/ascii.frag.qsb")
 
-    function fitFor(img) {
-        const r = width / Math.max(1, height), a = img.implicitWidth / Math.max(1, img.implicitHeight);
-        return a > r ? Qt.vector2d(r / a, 1) : Qt.vector2d(1, a / r);
+    Image {
+        id: img
+        visible: false
+        source: "file://" + Quickshell.env("HOME") + "/.config/clockmost/ascii-art.png"
+        sourceSize.width: 600
+        asynchronous: true
     }
 
     Connections {
         target: HeroArt
-        function onHeroChanged() { root.follow(); }
+        function onRequestsChanged() { scramble.restart(); }
     }
-    Component.onCompleted: follow()
-    function follow() {
-        const url = HeroArt.hero;
-        if (String(url) === "")
-            return;
-        if (String(urlA) === "") { // the first picture: no show
-            urlA = url;
-            urlB = url;
-            return;
-        }
-        if (String(url) === String(onB ? urlB : urlA))
-            return;
-        if (onB)
-            urlA = url;
-        else
-            urlB = url;
-        pending = true;
-        Qt.callLater(go);
-    }
-    function go() {
-        const img = onB ? imgA : imgB;
-        if (!pending || img.status !== Image.Ready)
-            return;
-        pending = false;
-        swap.restart();
-    }
+    Component.onCompleted: scramble.restart() // forms on start
     SequentialAnimation {
-        id: swap
+        id: scramble
         NumberAnimation { target: root; property: "t"; from: 0; to: 1; duration: 2600 }
-        ScriptAction { script: { root.onB = !root.onB; root.t = 0; } }
+        ScriptAction { script: root.t = 0 }
     }
-    // the scramble's tick, only while swapping
+    // the scramble's tick, only while it runs
     Timer {
         interval: 50
         repeat: true
-        running: swap.running
+        running: scramble.running
         onTriggered: root.time += 0.05
     }
-
-    Image { id: imgA; visible: false; source: root.urlA; sourceSize.width: 800; asynchronous: true; onStatusChanged: root.go() }
-    Image { id: imgB; visible: false; source: root.urlB; sourceSize.width: 800; asynchronous: true; onStatusChanged: root.go() }
 }
