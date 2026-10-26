@@ -75,8 +75,18 @@ Item {
         }
     }
 
+    // lay out every row / column / grid now, innermost first: prepare() runs the moment the section loads, before
+    // Qt's own layout pass, and every position would read 0 (the album cover sorted as the title - Mario 2026-10-26)
+    function layoutAll(item) {
+        for (const c of item.children)
+            layoutAll(c);
+        if (typeof item.forceLayout === "function")
+            item.forceLayout();
+    }
+
     function prepare() {
         const sec = loader.item;
+        layoutAll(sec);
         clearOverlays();
         boxW = sec.width;
         blocks = collect(sec, 0).map(b => {
