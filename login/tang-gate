@@ -1,0 +1,18 @@
+#!/bin/bash
+# tang-gate: the login screen's no-password path (pam_exec in /etc/pam.d/sddm, see login/README.md). Passes (exit 0)
+# only when the login came with an empty password, it is the first one this boot, and the tang server on the home LAN
+# unlocks the sealed file - "this PC is at home", not "this is Mario" (desktop-environment-v2 stage 4). Anything else
+# exits nonzero and PAM carries on to the normal password check.
+set -u
+blob=/etc/clockmost/tang-gate.jwe
+used=/run/clockmost-tang-gate.used
+log() { logger -t tang-gate "$*"; }
+
+IFS= read -r -d '' pw || true # expose_authtok: the typed password on stdin
+[ -z "${pw:-}" ] || exit 1
+unset pw
+[ -e "$used" ] && { log "refused: already used this boot"; exit 1; }
+[ -r "$blob" ] || { log "refused: no sealed file at $blob"; exit 1; }
+timeout 5 clevis decrypt <"$blob" >/dev/null 2>&1 || { log "refused: tang did not unlock"; exit 1; }
+touch "$used"
+log "passed for ${PAM_USER:-?} via tang"

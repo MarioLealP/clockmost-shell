@@ -1,0 +1,8 @@
+[SddmGreeterTheme]
+Name=clockmost
+Comment=The clockmost v2 login: the tang gate's wait, then the desktop (or the password field when tang does not answer)
+Author=clockmost
+Type=sddm-theme
+Version=0.1
+MainScript=Main.qml
+ConfigFile=theme.conf

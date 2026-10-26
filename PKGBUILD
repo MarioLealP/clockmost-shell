@@ -13,6 +13,7 @@ depends=(
   'gcc-libs' 'glibc'
   'quickshell' 'qt6-websockets'  # the shell; the media tab's spectrum socket
   'sqlite' 'wl-clipboard'        # clipboard history: Klipper's database, putting images back
+  'clevis'                       # the login's tang gate
 )
 makedepends=('rust' 'cargo' 'mold')
 options=('!lto' '!debug')
@@ -44,6 +45,10 @@ package() {
   install -Dm644 install/clockmost-uinput.conf "$pkgdir/usr/lib/modules-load.d/clockmost-uinput.conf"
   install -Dm644 install/60-clockmost-uinput.rules "$pkgdir/usr/lib/udev/rules.d/60-clockmost-uinput.rules"
   install -Dm644 install/sddm-numlock.conf "$pkgdir/usr/lib/sddm/sddm.conf.d/zz-clockmost-numlock.conf"
+  # the login (v2 stage 4): the SDDM theme + the tang gate pam_exec runs (wiring by hand: login/README.md)
+  install -d "$pkgdir/usr/share/sddm/themes/clockmost"
+  install -m644 login/sddm-theme/* "$pkgdir/usr/share/sddm/themes/clockmost/"
+  install -Dm755 login/tang-gate "$pkgdir/usr/lib/clockmost-shell/tang-gate"
   install -Dm644 install/clockmost-shell.desktop "$pkgdir/etc/xdg/autostart/clockmost-shell.desktop"
   install -Dm644 install/org.clockmost.shell.desktop "$pkgdir/usr/share/applications/org.clockmost.shell.desktop"
 
