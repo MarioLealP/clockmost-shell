@@ -59,6 +59,9 @@ PanelWindow {
             lineHeight: 0.8
         }
 
+        // along the bottom, right of the line, left of the hero; bottom edge on the 1260 dot row
+        SystemReadout { x: 568; y: 1260 - height }
+
         HeroSlices { x: 1640; y: 125 }
         XMarks {}
 
