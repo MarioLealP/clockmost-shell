@@ -38,8 +38,8 @@ PanelWindow {
 
         SectionStage {
             id: stage
-            x: 470
-            y: 104
+            x: 472 // on the grid (dots at x 16 + 24k, y 12 + 24k on 3440 x 1440)
+            y: 108
             sections: ({
                 ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
                 ENDER: secEnder, ELEGOO: secElegoo, SYSTEMS: secSystems
@@ -63,7 +63,7 @@ PanelWindow {
         XMarks {}
 
         GroundBarcode { x: 96; anchors.bottom: parent.bottom; anchors.bottomMargin: 140 }
-        DateStack { anchors.right: parent.right; anchors.rightMargin: 110; anchors.bottom: parent.bottom; anchors.bottomMargin: 150 }
+        DateStack { anchors.right: parent.right; anchors.rightMargin: 88; anchors.bottom: parent.bottom; anchors.bottomMargin: 132 } // right edge with the Felt column, baseline on a dot row
     }
 
     Component { id: secRoom; SecRoom {} }
@@ -98,6 +98,6 @@ PanelWindow {
     Component { id: secSystems; SecSystems {} }
 
     // fixed: the controls don't pan
-    HaList { visible: root.main; x: 84; y: 104 }
-    FeltColumn { visible: root.main; anchors.right: parent.right; anchors.rightMargin: 96; y: 104 }
+    HaList { visible: root.main; x: 88; y: 108 } // two dots in from the corner mark, the row under it
+    FeltColumn { visible: root.main; anchors.right: parent.right; anchors.rightMargin: 88; y: 108 } // mirrors the HA list
 }

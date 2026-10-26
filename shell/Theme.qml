@@ -23,13 +23,13 @@ Singleton {
     readonly property string body: GroundTheme.display // v2: Archivo
 
     // ds-topbar-v2 geometry
-    readonly property int band: 88 // v2: room for the 52px plates 18px down from the top edge
+    readonly property int band: 76 // v2: the 52px plates centred = top edge 12px down, on the first dot row
     readonly property int plateWidth: 320
     readonly property int plateHeight: 96
     readonly property int triBand: 5
     // the dock plate (ds-dock) and its gap to the bottom edge
     readonly property int dockPlateHeight: 84
-    readonly property int dockGapBottom: 14
+    readonly property int dockGapBottom: 36 // v2: the plate's bottom edge on the dot row of the bottom corner marks (1404)
 
     // letter-spacing in CSS is em-relative; Qt wants pixels
     function em(sizePx, ems) {
