@@ -63,6 +63,7 @@ ShellRoot {
         function open(section: string): void { HaSections.current = section.toUpperCase(); }
         function close(): void { HaSections.current = ""; }
         function art(): void { HeroArt.next(); } // swap the hero's picture now
+        function marks(): void { HeroArt.markPokes++; } // the X marks' re-strike + focus pull now
     }
     Variants {
         model: root.groundOff ? [] : Quickshell.screens

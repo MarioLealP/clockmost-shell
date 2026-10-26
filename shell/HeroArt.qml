@@ -13,6 +13,7 @@ Singleton {
     readonly property string folder: Quickshell.env("HOME") + "/.config/clockmost/ground-art"
     property var files: [] // file:// urls
     property int requests: 0
+    property int markPokes: 0 // IPC ground marks: the X marks re-strike + focus pull now (preview)
 
     function next() {
         if (files.length > 1)
