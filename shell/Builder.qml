@@ -12,6 +12,8 @@ Item {
     id: root
 
     property real speed: 1 // > 1 = quicker (tab switches)
+    property real traceMin: 100 // framed shapes wider than this (and > 40 tall) get the orange trace
+    property real originX: -1 // >= 0: parts also build outward from this x (the drawer's deck, from its centre)
     property color cover: GroundTheme.bg // the labels' covers
     property real clock: 0
     property real total: 600
@@ -55,16 +57,20 @@ Item {
                 const isRect = c.border !== undefined && c.radius !== undefined;
                 const isImage = c.fillMode !== undefined && c.source !== undefined && c.sourceSize !== undefined;
                 const leaf = c.children.length === 0 || c.children.every(x => x.width <= 0 || !x.visible);
+                // something that draws (input-only items - MouseAreas, plain Items - get no cover)
+                const drawn = c.color !== undefined || isImage || c.fragmentShader !== undefined;
+                // outward from originX: the distance of the part's centre from it
+                const out = originX >= 0 ? Math.abs(p.x + c.width / 2 - originX) * 0.45 : 0;
                 if (isText) {
                     const big = c.font.pixelSize >= 40 && /\d/.test(c.text);
-                    list.push({ item: c, kind: big ? "roll" : "type", start: (260 + p.y * 0.35 + p.x * 0.05) * k, dur: (big ? 520 : 200) * k });
-                } else if (isRect && c.border.width > 0 && c.width > 100 && c.height > 40) {
-                    list.push({ item: c, kind: "trace", start: p.y * 0.2 * k, dur: 420 * k });
+                    list.push({ item: c, kind: big ? "roll" : "type", start: (260 + p.y * 0.35 + (originX >= 0 ? out : p.x * 0.05)) * k, dur: (big ? 520 : 200) * k });
+                } else if (isRect && c.border.width > 0 && c.width > traceMin && c.height > 40) {
+                    list.push({ item: c, kind: "trace", start: (p.y * 0.2 + out) * k, dur: 420 * k });
                     walk(c);
                 } else if (isRect && leaf && (c.height <= 2 || c.width <= 2)) {
                     list.push({ item: c, kind: "line", start: p.y * 0.25 * k, dur: 240 * k });
-                } else if (leaf || isImage) {
-                    list.push({ item: c, kind: "pop", start: (200 + p.y * 0.3 + p.x * 0.05) * k, dur: 220 * k });
+                } else if ((leaf && drawn) || isImage) {
+                    list.push({ item: c, kind: "pop", start: (200 + p.y * 0.3 + (originX >= 0 ? out : p.x * 0.05)) * k, dur: 220 * k });
                     if (isImage)
                         walk(c);
                 } else {

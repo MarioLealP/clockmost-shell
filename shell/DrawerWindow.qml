@@ -4,6 +4,7 @@
 // and a spec line under it. No query = every app, most launched first. ← → (or the wheel) walk the deck, Enter opens
 // the featured app, a side square click features it, the featured one's click opens it. Solid colours only (cm-1jun).
 import QtQuick
+import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 
@@ -57,7 +58,38 @@ PanelWindow {
         Drawer.close();
     }
 
-    visible: Drawer.open
+    // motion (Mario 2026-10-26): the panel comes in as two halves cut on a diagonal through its middle - the left one
+    // drops in from above the screen, the right one rises from below - they meet, the seam flashes orange, then the
+    // Builder plays the contents in stages (frames then details, the deck from its centre outward). Closing is that
+    // backwards: the contents go, the halves part off the screen.
+    property real slide: 0 // 0 = the halves off screen .. 1 = met
+    property real seam: 0 // the orange flash along the cut
+    SequentialAnimation {
+        id: opening
+        NumberAnimation { target: root; property: "slide"; from: 0; to: 1; duration: 460; easing.type: Easing.InOutQuart }
+        ScriptAction {
+            script: {
+                body.visible = true;
+                builder.speed = 1.2;
+                builder.prepare([body]);
+                builder.run();
+            }
+        }
+        NumberAnimation { target: root; property: "seam"; from: 1; to: 0; duration: 380; easing.type: Easing.InQuad }
+    }
+    SequentialAnimation {
+        id: closing
+        NumberAnimation { target: builder; property: "clock"; to: 0; duration: builder.total; easing.type: Easing.InQuad }
+        ScriptAction {
+            script: {
+                body.visible = false;
+                builder.finish();
+            }
+        }
+        NumberAnimation { target: root; property: "slide"; to: 0; duration: 340; easing.type: Easing.InQuart }
+    }
+
+    visible: Drawer.open || slide > 0.001
     anchors {
         top: true
         bottom: true
@@ -97,6 +129,20 @@ PanelWindow {
                 root.query = "";
                 root.selected = 0;
                 search.forceActiveFocus();
+                root.seam = 0;
+                closing.stop();
+                builder.finish();
+                body.visible = false;
+                opening.restart();
+            } else if (opening.running) {
+                opening.stop();
+                builder.finish();
+                body.visible = false;
+                closing.restart();
+            } else {
+                builder.speed = 2.4;
+                builder.prepare([body], true);
+                closing.restart();
             }
         }
     }
@@ -114,15 +160,64 @@ PanelWindow {
         scale: root.s
         transformOrigin: Item.TopLeft
 
-        Rectangle {
+        Item {
             id: panel
             width: 1296
             height: col.height + 36 + 40
             x: Math.round((parent.width - width) / 2)
             y: Math.round((parent.height - height) / 2)
-            color: GroundTheme.bg
-            border.width: 1
-            border.color: GroundTheme.lineSolid
+
+            // the background as its two halves: the cut runs from (w/2 + lean, 0) to (w/2 - lean, h)
+            readonly property real lean: height * 0.3
+            readonly property real offTop: y + height + 40 // far enough to start fully above the screen
+            readonly property real offBottom: scaled.height - y + 40
+            Item {
+                y: -panel.offTop * (1 - root.slide)
+                width: parent.width
+                height: parent.height
+                Shape {
+                    anchors.fill: parent
+                    preferredRendererType: Shape.CurveRenderer
+                    ShapePath {
+                        strokeWidth: -1
+                        fillColor: GroundTheme.bg
+                        PathPolyline { path: [Qt.point(0, 0), Qt.point(panel.width / 2 + panel.lean, 0), Qt.point(panel.width / 2 - panel.lean, panel.height), Qt.point(0, panel.height)] }
+                    }
+                }
+                Rectangle { width: panel.width / 2 + panel.lean; height: 1; color: GroundTheme.lineSolid }
+                Rectangle { width: 1; height: panel.height; color: GroundTheme.lineSolid }
+                Rectangle { y: panel.height - 1; width: panel.width / 2 - panel.lean; height: 1; color: GroundTheme.lineSolid }
+            }
+            Item {
+                y: panel.offBottom * (1 - root.slide)
+                width: parent.width
+                height: parent.height
+                Shape {
+                    anchors.fill: parent
+                    preferredRendererType: Shape.CurveRenderer
+                    ShapePath {
+                        strokeWidth: -1
+                        fillColor: GroundTheme.bg
+                        PathPolyline { path: [Qt.point(panel.width / 2 + panel.lean, 0), Qt.point(panel.width, 0), Qt.point(panel.width, panel.height), Qt.point(panel.width / 2 - panel.lean, panel.height)] }
+                    }
+                }
+                Rectangle { x: panel.width / 2 + panel.lean; width: panel.width / 2 - panel.lean; height: 1; color: GroundTheme.lineSolid }
+                Rectangle { x: panel.width - 1; width: 1; height: panel.height; color: GroundTheme.lineSolid }
+                Rectangle { x: panel.width / 2 - panel.lean; y: panel.height - 1; width: panel.width / 2 + panel.lean; height: 1; color: GroundTheme.lineSolid }
+            }
+            // the seam, flashing orange as the halves meet and cooling into the background
+            Shape {
+                anchors.fill: parent
+                visible: root.seam > 0.01
+                preferredRendererType: Shape.CurveRenderer
+                ShapePath {
+                    strokeWidth: 4
+                    strokeColor: Qt.tint(GroundTheme.bg, Qt.rgba(GroundTheme.acc.r, GroundTheme.acc.g, GroundTheme.acc.b, root.seam))
+                    fillColor: "transparent"
+                    capStyle: ShapePath.FlatCap
+                    PathPolyline { path: [Qt.point(panel.width / 2 + panel.lean, 0), Qt.point(panel.width / 2 - panel.lean, panel.height)] }
+                }
+            }
 
             // swallow clicks inside; the wheel walks the deck. MouseArea.onWheel, not a WheelHandler (on metal that
             // never fired)
@@ -137,6 +232,12 @@ PanelWindow {
                     }
                 }
             }
+
+            // everything on the panel: switched off (never faded) while the halves move
+            Item {
+                id: body
+                anchors.fill: parent
+                visible: false
 
             Column {
                 id: col
@@ -346,10 +447,19 @@ PanelWindow {
                 Row {
                     spacing: 8
                     Repeater {
-                        model: Math.ceil(parent.parent.width / 16) + 2
+                        model: Math.max(0, Math.ceil(parent.parent.width / 16) + 2)
                         Rectangle { width: 8; height: 20; y: -6; color: GroundTheme.acc; rotation: 45 }
                     }
                 }
+            }
+            }
+
+            Builder {
+                id: builder
+                anchors.fill: parent
+                z: 10
+                traceMin: 60
+                originX: width / 2
             }
         }
     }
