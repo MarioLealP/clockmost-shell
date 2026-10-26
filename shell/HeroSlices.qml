@@ -74,7 +74,7 @@ Item {
         Rectangle { y: parent.height - 2; width: parent.width; height: 2; color: GroundTheme.ink }
     }
     Rectangle { // top-right bracket
-        x: root.width - 220; y: -70; width: 300; height: 260
+        x: root.width - 280; y: -70; width: 300; height: 260 // right line 20 px outside the last pane, clear of the Felt column
         color: "transparent"
         Rectangle { width: parent.width; height: 2; color: GroundTheme.ink }
         Rectangle { x: parent.width - 2; width: 2; height: parent.height; color: GroundTheme.ink }
