@@ -27,24 +27,23 @@ PanelWindow {
     RegMarks { anchors.fill: parent }
 
     // the poster. Opening an HA section only moves the orange line out of the way - everything else stays still
-    // (Mario 2026-10-25: "just shift the orange bar, keep everything else still"). No motion yet: it jumps.
+    // (Mario 2026-10-25: "just shift the orange bar, keep everything else still"). Motion: GroundLine + SectionStage.
     Item {
         id: pan
         visible: root.main
         width: parent.width
         height: parent.height
 
-        GroundLine { id: line; targetX: HaSections.current !== "" ? 1620 : 920; y: -140 }
+        GroundLine { id: line; targetX: HaSections.current !== "" ? 1620 : 920; y: -140; onAway: stage.lineAway() }
 
-        // the section shows once the line has left its resting spot (it would cross the section on its way out)
-        Loader {
+        SectionStage {
+            id: stage
             x: 470
             y: 104
-            active: HaSections.current !== "" && line.x > 1000
-            sourceComponent: ({
+            sections: ({
                 ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
                 ENDER: secEnder, ELEGOO: secElegoo, SYSTEMS: secSystems
-            })[HaSections.current] ?? null
+            })
         }
 
         Text {
