@@ -52,8 +52,21 @@ Singleton {
         return "APP";
     }
 
+    // Start a program in its own systemd scope (app-<name>-<time>.scope under app.slice), the way Plasma does, so it
+    // never lives in the shell's unit: restarting or upgrading the shell can't take apps down with it.
+    function run(command, name, workingDirectory) {
+        const unit = "app-" + String(name || command[0]).replace(/[^A-Za-z0-9_.-]/g, "-") + "-" + Date.now();
+        Quickshell.execDetached(["systemd-run", "--user", "--scope", "--collect", "--quiet", "--slice=app.slice", "--unit=" + unit, "--",
+            "env", "-C", workingDirectory || Quickshell.env("HOME")].concat(command));
+    }
+    // a desktop entry or one of its actions; terminal apps open in kitty
+    function exec(e, action) {
+        const cmd = (action ?? e).command;
+        run(e.runInTerminal ? ["kitty", "--"].concat(cmd) : cmd, e.id, e.workingDirectory);
+    }
+
     function launch(e) {
-        e.execute();
+        exec(e);
         const u = Object.assign({}, usage);
         u[e.id] = (u[e.id] || 0) + 1;
         usage = u;

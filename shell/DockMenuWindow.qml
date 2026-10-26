@@ -39,7 +39,7 @@ PanelWindow {
         const out = [];
         const actions = sl.entry?.actions ?? [];
         for (const a of actions)
-            out.push({ label: a.name, run: () => a.execute() });
+            out.push({ label: a.name, run: () => Apps.exec(sl.entry, a) });
         if (actions.length)
             out.push({ separator: true });
         if (sl.entry)

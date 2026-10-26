@@ -44,7 +44,7 @@ CCTab {
                 if (root.player?.canRaise)
                     root.player.raise();
                 else
-                    Quickshell.execDetached(["spotify-launcher"]);
+                    Apps.run(["spotify-launcher"], "spotify");
                 ControlCenter.close();
             }
         }

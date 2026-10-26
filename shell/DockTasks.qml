@@ -90,9 +90,9 @@ Item {
         onClicked: {
             const e = DesktopEntries.byId("org.kde.plasma-systemmonitor");
             if (e)
-                e.execute();
+                Apps.exec(e);
             else
-                Quickshell.execDetached(["kitty", "--title", "Task manager", "top"]);
+                Apps.run(["kitty", "--title", "Task manager", "top"], "task-manager");
         }
     }
 }
