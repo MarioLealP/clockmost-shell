@@ -1,13 +1,18 @@
-// MISC: now playing (local media players) + the shopping list (todo items fetched on open; click = done).
+// MISC: now playing (local media players) + the shopping list (todo items fetched on open): type + Enter adds, click
+// = done, done items listed dim below (click = back on the list), CLEAR DONE removes them.
 import QtQuick
 
 Column {
     id: root
 
     property var items: []
+    property var done: []
 
     function load() {
-        HaClient.request({ type: "todo/item/list", entity_id: "todo.shopping_list" }, r => root.items = (r?.items ?? []).filter(i => i.status === "needs_action"));
+        HaClient.request({ type: "todo/item/list", entity_id: "todo.shopping_list" }, r => {
+            root.items = (r?.items ?? []).filter(i => i.status === "needs_action");
+            root.done = (r?.items ?? []).filter(i => i.status === "completed");
+        });
     }
 
     spacing: 18
@@ -77,10 +82,70 @@ Column {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: HaClient.call("todo", "update_item", "todo.shopping_list", { item: modelData.uid, status: "completed" })
+                    onClicked: { HaClient.call("todo", "update_item", "todo.shopping_list", { item: modelData.uid, status: "completed" }); reload.restart(); }
                 }
             }
         }
-        Text { visible: root.items.length === 0; text: "NOTHING TO BUY"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 12 }
+        Text { visible: root.items.length === 0; topPadding: 6; bottomPadding: 6; text: "NOTHING TO BUY"; color: GroundTheme.ink2; font.family: GroundTheme.mono; font.pixelSize: 12 }
+        // add: type, Enter
+        Rectangle {
+            width: 560
+            height: 38
+            color: "transparent"
+            border.width: 1.5
+            border.color: add.activeFocus ? GroundTheme.acc : GroundTheme.line
+            Text {
+                x: 12
+                anchors.verticalCenter: parent.verticalCenter
+                visible: add.text === ""
+                text: "+  ADD ITEM"
+                color: GroundTheme.ink2
+                font.family: GroundTheme.mono
+                font.pixelSize: 12
+                font.letterSpacing: 2
+            }
+            TextInput {
+                id: add
+                x: 12
+                width: parent.width - 24
+                anchors.verticalCenter: parent.verticalCenter
+                color: GroundTheme.ink
+                font.family: GroundTheme.mono
+                font.pixelSize: 13
+                selectionColor: GroundTheme.acc
+                clip: true
+                onAccepted: {
+                    const t = text.trim();
+                    if (t === "")
+                        return;
+                    HaClient.call("todo", "add_item", "todo.shopping_list", { item: t });
+                    text = "";
+                    reload.restart();
+                }
+                Keys.onEscapePressed: { text = ""; focus = false; }
+            }
+            MouseArea { anchors.fill: parent; cursorShape: Qt.IBeamCursor; onClicked: add.forceActiveFocus() }
+        }
+        // done: dim, click = back on the list
+        Repeater {
+            model: root.done
+            Item {
+                required property var modelData
+                width: 560
+                height: 28
+                Text { anchors.verticalCenter: parent.verticalCenter; text: "●  " + modelData.summary; color: GroundTheme.ink2; opacity: 0.6; font.family: GroundTheme.mono; font.pixelSize: 12; font.strikeout: true }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: { HaClient.call("todo", "update_item", "todo.shopping_list", { item: modelData.uid, status: "needs_action" }); reload.restart(); }
+                }
+            }
+        }
+        SecButton {
+            visible: root.done.length > 0
+            label: "CLEAR DONE  ·  " + root.done.length
+            onFired: { HaClient.call("todo", "remove_completed_items", "todo.shopping_list"); reload.restart(); }
+        }
     }
+    Timer { id: reload; interval: 600; onTriggered: root.load() }
 }
