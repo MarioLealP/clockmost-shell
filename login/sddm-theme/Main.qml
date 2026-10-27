@@ -29,7 +29,8 @@ Rectangle {
 
     readonly property string user: userModel.lastUser || userModel.data(userModel.index(0, 0), Qt.UserRole + 1)
     readonly property int session: sessionModel.lastIndex
-    readonly property string tangUrl: config.tangUrl || ""
+    // any of these answering will do (the gate's sealed file opens with either: clevis sss t=1)
+    readonly property var tangUrls: String(config.tangUrls || "").split(",").map(u => u.trim()).filter(u => u !== "")
 
     // what the next lap's end does: tang answered, or the cutoff passed
     property bool tangUp: false
@@ -93,20 +94,22 @@ Rectangle {
         }
     }
 
-    // ask tang every half second until it answers (or the field is up)
+    // ask the tangs every half second until one answers (or the field is up)
     Timer {
         interval: 500
         repeat: true
         triggeredOnStart: true
-        running: !root.tangUp && !root.wantField && root.tangUrl !== ""
+        running: !root.tangUp && !root.wantField && root.tangUrls.length > 0
         onTriggered: {
-            const x = new XMLHttpRequest();
-            x.onreadystatechange = () => {
-                if (x.readyState === XMLHttpRequest.DONE && x.status === 200 && !root.wantField)
-                    root.tangUp = true;
-            };
-            x.open("GET", root.tangUrl + "/adv");
-            x.send();
+            for (const url of root.tangUrls) {
+                const x = new XMLHttpRequest();
+                x.onreadystatechange = () => {
+                    if (x.readyState === XMLHttpRequest.DONE && x.status === 200 && !root.wantField)
+                        root.tangUp = true;
+                };
+                x.open("GET", url + "/adv");
+                x.send();
+            }
         }
     }
     Timer {
@@ -115,7 +118,7 @@ Rectangle {
         onTriggered: root.wantField = true
     }
     Component.onCompleted: {
-        if (tangUrl === "")
+        if (tangUrls.length === 0)
             wantField = true;
         intro.start();
     }

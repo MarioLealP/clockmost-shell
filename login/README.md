@@ -1,7 +1,7 @@
 # The login (v2 stage 4)
 
 One user, no choices. The SDDM theme (`/usr/share/sddm/themes/clockmost`) shows a loading screen while it asks the
-tang server on the home LAN (`theme.conf` `tangUrl`) every half second. When tang answers, it logs in with an empty
+tang servers on the home LAN (`theme.conf` `tangUrls`, any one will do) every half second. When tang answers, it logs in with an empty
 password, and the **tang gate** (`/usr/lib/clockmost-shell/tang-gate`, run by `pam_exec`) checks it for real: it
 passes only if the password is empty, it's the first such login this boot, and tang unlocks the sealed file
 `/etc/clockmost/tang-gate.jwe`. No tang within `cutoff` seconds, or the gate says no: the password field.
@@ -10,10 +10,10 @@ The gate proves "this PC is on the home LAN", not "this is the user". The lock s
 
 ## Wiring (by hand, per machine)
 
-Sealed file (random content - the proof is that tang can unlock it):
+Sealed file (random content - the proof is that a tang can unlock it; `sss` with `t: 1` = any one of them):
 
     sudo install -d -m 755 /etc/clockmost
-    head -c 32 /dev/urandom | base64 | sudo sh -c 'umask 077; clevis encrypt tang "{\"url\":\"http://TANG:7654\"}" -y > /etc/clockmost/tang-gate.jwe'
+    head -c 32 /dev/urandom | base64 | sudo sh -c 'umask 077; clevis encrypt sss "{\"t\":1,\"pins\":{\"tang\":[{\"url\":\"http://TANG1\"},{\"url\":\"http://TANG2\"}]}}" -y > /etc/clockmost/tang-gate.jwe'
 
 `/etc/pam.d/sddm`, first two auth lines (only `USER` gets the gate; anything else falls through to the password):
 
