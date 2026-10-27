@@ -8,7 +8,7 @@
 // waits (every change starts at a lap's end), then
 //   tang -> it grows back into a line, turning on to a "\" diagonal, splits, and the strokes leave along it
 //   no tang -> it squares up and flattens into the orange mark of a rule; the hairline grows out, the field rises
-//   field + Enter -> it all pulls back into the block, then the same exit.
+//   field + Enter -> it all pulls back into the block, which turns once full circle, then the same exit.
 // Unhurried on purpose (Mario: "a tad slower"): the intro alone covers most of the ~3 s tang needs at boot.
 import QtQuick
 
@@ -167,7 +167,10 @@ Rectangle {
             NumberAnimation { target: root; property: "half"; to: root.bold / 2; duration: 320; easing.type: Easing.InOutCubic }
             NumberAnimation { target: root; property: "thick"; to: root.bold; duration: 320; easing.type: Easing.InOutCubic }
         }
-        ScriptAction { script: exit.start() }
+        // the password went in: one full turn of the block (Mario), landing on the exit's diagonal so the exit's own
+        // turn has nothing left to do ("it does a tiny slow spin, remove that")
+        NumberAnimation { target: spinner; property: "rotation"; from: 0; to: 360 + root.exitSlant; duration: 900; easing.type: Easing.InOutCubic }
+        ScriptAction { script: { bar.rotation = root.exitSlant; spinner.rotation = 0; exit.start(); } }
     }
 
     // ---- the pieces ----
