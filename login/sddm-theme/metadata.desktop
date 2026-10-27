@@ -6,3 +6,4 @@ Type=sddm-theme
 Version=0.1
 MainScript=Main.qml
 ConfigFile=theme.conf
+QtVersion=6
