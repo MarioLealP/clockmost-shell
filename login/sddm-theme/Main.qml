@@ -2,7 +2,14 @@
 // on the home LAN comes up, then a no-password login that the tang gate (pam_exec, /usr/lib/clockmost-shell/tang-gate)
 // checks for real. No tang within the cutoff, or the gate says no: the loading turns into the password field. Either
 // way a login that goes through moves on to phase 2 (the desktop loading).
-// Functional pass: the loading pieces are placeholders until the motion pass.
+//
+// Motion (Mario 2026-10-27, his sketch): two thick strokes come in along a diagonal, one from the top, one from the
+// bottom, meet in the middle as one slanted line, and shrink into a block; the block turns a quarter per lap while it
+// waits (every change starts at a lap's end), then
+//   tang -> it grows back into a line, turning on to a "\" diagonal, splits, and the strokes leave along it
+//   no tang -> it squares up and flattens into the orange mark of a rule; the hairline grows out, the field rises
+//   field + Enter -> it all pulls back into the block, then the same exit.
+// Unhurried on purpose (Mario: "a tad slower"): the intro alone covers most of the ~3 s tang needs at boot.
 import QtQuick
 
 Rectangle {
@@ -11,6 +18,7 @@ Rectangle {
     readonly property color bg: "#1a1a18"
     readonly property color ink: "#e8e6df"
     readonly property color ink2: "#8a8881"
+    readonly property color line: "#3a3a37"
     readonly property color acc: "#ff5f1f"
     readonly property string mono: "JetBrains Mono"
     readonly property string display: archivo.status === FontLoader.Ready ? archivo.name : "sans-serif"
@@ -19,45 +27,83 @@ Rectangle {
         source: "file:///usr/share/clockmost-shell/assets/fonts/Archivo-Variable.ttf"
     }
 
-    // wait = phase 1 (looking for tang), field = the password, go = phase 2 (logging in)
-    property string mode: "wait"
-    property bool wrong: false
     readonly property string user: userModel.lastUser || userModel.data(userModel.index(0, 0), Qt.UserRole + 1)
     readonly property int session: sessionModel.lastIndex
     readonly property string tangUrl: config.tangUrl || ""
 
-    function login(pw) {
-        mode = "go";
-        sddm.login(user, pw, session);
-    }
-    function fallBack() {
-        mode = "field";
-        pass.forceActiveFocus();
-    }
+    // what the next lap's end does: tang answered, or the cutoff passed
+    property bool tangUp: false
+    property bool wantField: false
+    property bool inField: false
+    property bool wrong: false
+    property string pw: ""
+
+    // the bar: two strokes of length `half` either side of the centre, `reach` apart from it, `thick` wide, turned by
+    // `bar.rotation` (the lap's quarter turn on top: `spinner`)
+    readonly property real slant: -60 // the entrance's diagonal: "/" (Qt turns clockwise)
+    readonly property real exitSlant: 42 // the exit's: it keeps turning past flat into a "\" (Mario: "60º more")
+    property real half: 300
+    property real reach: Math.hypot(width, height) / 2 + 40
+    property real rule: 0 // the field's hairline, half its width
+    property real fieldP: 0 // 0 = field hidden .. 1 = shown
+    readonly property real bold: 36
+    property real thick: bold
 
     color: bg
+
+    // how far from the centre to the screen's edge along a line at `deg`
+    function edgeAlong(deg) {
+        const r = deg * Math.PI / 180;
+        return Math.min(width / 2 / Math.max(Math.abs(Math.cos(r)), 1e-6), height / 2 / Math.max(Math.abs(Math.sin(r)), 1e-6));
+    }
+
+    function lapEnd() {
+        if (tangUp) {
+            pw = "";
+            exit.start();
+        } else if (wantField) {
+            toField.start();
+        } else {
+            pulse.start();
+        }
+    }
+    function submit() {
+        if (pass.text === "" || !inField)
+            return;
+        pw = pass.text;
+        inField = false;
+        fromField.start();
+    }
 
     Connections {
         target: sddm
         function onLoginFailed() {
-            root.wrong = pass.text !== "";
+            // the gate said no (e.g. after a logout) or a wrong password: back to a bar, then the field
+            root.wrong = root.pw !== "";
+            root.pw = "";
             pass.text = "";
-            root.mode = "field";
-            pass.forceActiveFocus();
+            root.tangUp = false;
+            root.reach = 0;
+            root.half = root.bold / 2;
+            root.thick = root.bold;
+            bar.rotation = 0;
+            spinner.rotation = 0;
+            bar.visible = true;
+            toField.start();
         }
     }
 
-    // ask tang every half second; the first answer starts the no-password login
+    // ask tang every half second until it answers (or the field is up)
     Timer {
         interval: 500
         repeat: true
         triggeredOnStart: true
-        running: root.mode === "wait" && root.tangUrl !== ""
+        running: !root.tangUp && !root.wantField && root.tangUrl !== ""
         onTriggered: {
             const x = new XMLHttpRequest();
             x.onreadystatechange = () => {
-                if (x.readyState === XMLHttpRequest.DONE && x.status === 200 && root.mode === "wait")
-                    root.login("");
+                if (x.readyState === XMLHttpRequest.DONE && x.status === 200 && !root.wantField)
+                    root.tangUp = true;
             };
             x.open("GET", root.tangUrl + "/adv");
             x.send();
@@ -65,48 +111,112 @@ Rectangle {
     }
     Timer {
         interval: (Number(config.cutoff) || 9) * 1000
-        running: root.mode === "wait"
-        onTriggered: root.fallBack()
+        running: !root.tangUp
+        onTriggered: root.wantField = true
     }
-    Component.onCompleted: if (tangUrl === "") fallBack()
+    Component.onCompleted: {
+        if (tangUrl === "")
+            wantField = true;
+        intro.start();
+    }
 
-    // phase 1 / phase 2 placeholder: a turning orange frame
+    // ---- motion ----
+
+    SequentialAnimation {
+        id: intro
+        PauseAnimation { duration: 300 }
+        NumberAnimation { target: root; property: "reach"; to: 0; duration: 1100; easing.type: Easing.InOutQuart }
+        NumberAnimation { target: root; property: "half"; to: root.bold / 2; duration: 750; easing.type: Easing.InOutCubic }
+        ScriptAction { script: root.lapEnd() }
+    }
+    SequentialAnimation {
+        id: pulse
+        // a square turned a quarter looks the same: back to 0 at the lap's end, no jump
+        NumberAnimation { target: spinner; property: "rotation"; from: 0; to: 90; duration: 700; easing.type: Easing.InOutCubic }
+        ScriptAction { script: spinner.rotation = 0 }
+        ScriptAction { script: root.lapEnd() }
+    }
+    SequentialAnimation {
+        id: exit
+        // it turns on to the exit's diagonal while it grows, then the strokes leave along it
+        ParallelAnimation {
+            NumberAnimation { target: bar; property: "rotation"; to: root.exitSlant; duration: 700; easing.type: Easing.InOutCubic }
+            NumberAnimation { target: root; property: "half"; to: 300; duration: 700; easing.type: Easing.InOutCubic }
+        }
+        NumberAnimation { target: root; property: "reach"; to: root.edgeAlong(root.exitSlant) + 40; duration: 1000; easing.type: Easing.InOutQuart }
+        ScriptAction { script: sddm.login(root.user, root.pw, root.session) }
+    }
+    SequentialAnimation {
+        id: toField
+        NumberAnimation { target: bar; property: "rotation"; to: 0; duration: 450; easing.type: Easing.OutCubic }
+        ParallelAnimation {
+            NumberAnimation { target: root; property: "half"; to: 116; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { target: root; property: "thick"; to: 6; duration: 400; easing.type: Easing.OutCubic }
+        }
+        NumberAnimation { target: root; property: "rule"; from: 116; to: 600; duration: 520; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "fieldP"; to: 1; duration: 420; easing.type: Easing.OutCubic }
+        ScriptAction { script: { root.inField = true; pass.forceActiveFocus(); } }
+    }
+    SequentialAnimation {
+        id: fromField
+        NumberAnimation { target: root; property: "fieldP"; to: 0; duration: 180; easing.type: Easing.InCubic }
+        NumberAnimation { target: root; property: "rule"; to: 116; duration: 240; easing.type: Easing.InCubic }
+        ScriptAction { script: root.rule = 0 }
+        ParallelAnimation {
+            NumberAnimation { target: root; property: "half"; to: root.bold / 2; duration: 320; easing.type: Easing.InOutCubic }
+            NumberAnimation { target: root; property: "thick"; to: root.bold; duration: 320; easing.type: Easing.InOutCubic }
+        }
+        ScriptAction { script: exit.start() }
+    }
+
+    // ---- the pieces ----
+
+    // the field's hairline (under the bar, which is its orange mark)
+    Rectangle {
+        visible: root.rule > 0
+        x: root.width / 2 - root.rule
+        y: root.height / 2 - height / 2
+        width: root.rule * 2
+        height: 1
+        color: root.line
+    }
+
     Item {
-        anchors.centerIn: parent
-        width: 96
-        height: 96
-        visible: root.mode !== "field"
+        id: bar
+        x: root.width / 2
+        y: root.height / 2
+        rotation: root.slant
+        Item {
+            id: spinner
         Rectangle {
-            anchors.fill: parent
-            color: "transparent"
-            border.width: 3
-            border.color: root.acc
-            RotationAnimation on rotation {
-                from: 0
-                to: 360
-                duration: root.mode === "go" ? 600 : 1500
-                loops: Animation.Infinite
-            }
+            x: -root.reach - root.half
+            y: -root.thick / 2
+            width: root.half
+            height: root.thick
+            color: root.acc
         }
-        Text {
-            anchors.top: parent.bottom
-            anchors.topMargin: 48
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: root.mode === "go" ? "ENTERING" : "LOOKING FOR HOME"
-            color: root.ink2
-            font.family: root.mono
-            font.pixelSize: 12
-            font.letterSpacing: 3
+        Rectangle {
+            x: root.reach
+            y: -root.thick / 2
+            width: root.half
+            height: root.thick
+            color: root.acc
+        }
         }
     }
 
-    // the fallback: the password as the poster, like the drawer's search
-    Column {
-        anchors.centerIn: parent
-        spacing: 24
-        visible: root.mode === "field"
+    // the field: › PASSWORD▌ above the rule, rising out of it; the hint under it
+    Item {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.height / 2 - 18 - 104
+        width: head.width
+        height: 104
+        clip: true
+        visible: root.fieldP > 0
         Row {
-            anchors.horizontalCenter: parent.horizontalCenter
+            id: head
+            y: (1 - root.fieldP) * 110
+            height: 104
             spacing: 18
             Text {
                 anchors.baseline: shown.baseline
@@ -118,6 +228,7 @@ Rectangle {
             }
             Text {
                 id: shown
+                anchors.verticalCenter: parent.verticalCenter
                 text: pass.text === "" ? "PASSWORD" : "•".repeat(pass.text.length)
                 color: pass.text === "" ? "#2e2e2b" : root.ink
                 font.family: root.display
@@ -126,22 +237,25 @@ Rectangle {
                 font.pixelSize: 104
             }
             Rectangle {
-                anchors.verticalCenter: shown.verticalCenter
+                anchors.verticalCenter: parent.verticalCenter
                 width: 14
                 height: 84
                 color: root.acc
                 transform: Translate { x: -12 }
             }
         }
-        Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: root.wrong ? "WRONG PASSWORD" : "HOME NOT FOUND · TYPE YOUR PASSWORD"
-            color: root.wrong ? root.acc : root.ink2
-            font.family: root.mono
-            font.pixelSize: 12
-            font.letterSpacing: 3
-        }
     }
+    Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.height / 2 + 28
+        opacity: root.fieldP
+        text: root.wrong ? "WRONG PASSWORD" : "HOME NOT FOUND · TYPE YOUR PASSWORD"
+        color: root.wrong ? root.acc : root.ink2
+        font.family: root.mono
+        font.pixelSize: 12
+        font.letterSpacing: 3
+    }
+
     TextInput {
         id: pass
         width: 1
@@ -149,7 +263,7 @@ Rectangle {
         opacity: 0
         echoMode: TextInput.Password
         onTextChanged: if (text !== "") root.wrong = false
-        Keys.onReturnPressed: if (text !== "") root.login(text)
-        Keys.onEnterPressed: if (text !== "") root.login(text)
+        Keys.onReturnPressed: root.submit()
+        Keys.onEnterPressed: root.submit()
     }
 }
