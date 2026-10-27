@@ -134,7 +134,8 @@ Rectangle {
         // a square turned a quarter looks the same: back to 0 at the lap's end, no jump
         NumberAnimation { target: spinner; property: "rotation"; from: 0; to: 90; duration: 700; easing.type: Easing.InOutCubic }
         ScriptAction { script: spinner.rotation = 0 }
-        ScriptAction { script: root.lapEnd() }
+        // later, not here: start() on the pulse while its own last step runs is ignored (the loop froze after a lap)
+        ScriptAction { script: Qt.callLater(root.lapEnd) }
     }
     SequentialAnimation {
         id: exit
