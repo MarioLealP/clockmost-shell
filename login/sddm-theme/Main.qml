@@ -84,6 +84,7 @@ Rectangle {
             root.pw = "";
             pass.text = "";
             root.tangUp = false;
+            root.color = root.bg;
             root.reach = 0;
             root.half = root.bold / 2;
             root.thick = root.bold;
@@ -148,6 +149,9 @@ Rectangle {
             NumberAnimation { target: root; property: "half"; to: 300; duration: 700; easing.type: Easing.InOutCubic }
         }
         NumberAnimation { target: root; property: "reach"; to: root.edgeAlong(root.exitSlant) + 40; duration: 1000; easing.type: Easing.InOutQuart }
+        // then dim to black: the two KWins' handover blanks the screens for a few frames, so the sequence takes that
+        // beat on purpose (the splash brightens back up from black)
+        ColorAnimation { target: root; property: "color"; to: "#000000"; duration: 280; easing.type: Easing.InQuad }
         // every screen plays it; the no-password login goes in from the primary screen only (each screen's copy asked
         // at once on the first real boot - SDDM dropped the spare: "Existing authentication ongoing"). A typed
         // password goes in from the screen it was typed on.
