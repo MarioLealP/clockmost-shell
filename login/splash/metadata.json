@@ -1,0 +1,11 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "clockmost" }],
+        "Description": "The clockmost startup splash only: plain graphite between the login and the shell building in",
+        "Id": "org.clockmost.splash",
+        "License": "MIT",
+        "Name": "clockmost splash",
+        "Version": "0.1"
+    }
+}

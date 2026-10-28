@@ -49,11 +49,16 @@ package() {
   install -d "$pkgdir/usr/share/sddm/themes/clockmost"
   install -m644 login/sddm-theme/* "$pkgdir/usr/share/sddm/themes/clockmost/"
   install -Dm755 login/tang-gate "$pkgdir/usr/lib/clockmost-shell/tang-gate"
+  # the startup splash (graphite only; ksplashrc points at it via setup.d/20-clockmost-boot.sh)
+  install -Dm644 login/splash/metadata.json "$pkgdir/usr/share/plasma/look-and-feel/org.clockmost.splash/metadata.json"
+  install -Dm644 login/splash/contents/splash/Splash.qml \
+    "$pkgdir/usr/share/plasma/look-and-feel/org.clockmost.splash/contents/splash/Splash.qml"
   install -Dm644 install/clockmost-shell.desktop "$pkgdir/etc/xdg/autostart/clockmost-shell.desktop"
   install -Dm644 install/org.clockmost.shell.desktop "$pkgdir/usr/share/applications/org.clockmost.shell.desktop"
 
   install -Dm755 install/clockmost-desktop-setup "$pkgdir/usr/bin/clockmost-desktop-setup"
   install -Dm644 install/setup.d/10-clockmost-shell.sh "$pkgdir/usr/share/clockmost-desktop/setup.d/10-clockmost-shell.sh"
+  install -Dm644 install/setup.d/20-clockmost-boot.sh "$pkgdir/usr/share/clockmost-desktop/setup.d/20-clockmost-boot.sh"
 
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
   install -Dm644 shell/assets/fonts/Archivo-OFL.txt "$pkgdir/usr/share/licenses/$pkgname/Archivo-OFL.txt"
