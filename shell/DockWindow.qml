@@ -120,7 +120,7 @@ PanelWindow {
         onTriggered: if (!root.hoverItem && !preview.hovered) root.previewKey = ""
     }
     property bool lingering: false
-    readonly property bool shown: !covered || hovered || lingering || Drawer.open || menuHere || dragIndex >= 0
+    readonly property bool shown: GroundTheme.dockIn && (!covered || hovered || lingering || Drawer.open || menuHere || dragIndex >= 0)
     readonly property bool menuHere: DockMenu.open && (DockMenu.screenName === "" || DockMenu.screenName === screen?.name)
 
     property real p: shown ? 1 : 0
@@ -215,7 +215,7 @@ PanelWindow {
             anchors.bottomMargin: 4
             width: 140
             height: 4
-            opacity: 1 - root.p
+            opacity: GroundTheme.dockIn ? 1 - root.p : 0 // not before the dock's own entrance either
             onPaint: {
                 const ctx = getContext("2d");
                 ctx.reset();

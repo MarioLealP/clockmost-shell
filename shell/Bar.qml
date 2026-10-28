@@ -25,7 +25,7 @@ PanelWindow {
     }
     property bool revealed: false
     readonly property bool hovered: hudHover.hovered || edge.containsMouse
-    readonly property bool shown: !covered || revealed || hovered || ControlCenter.open || Drawer.open
+    readonly property bool shown: GroundTheme.introDone && (!covered || revealed || hovered || ControlCenter.open || Drawer.open)
 
     // 0 = hidden .. 1 = shown. Reveal: the clock plate drops first, the band + groups follow (Mario);
     // hide mirrors it: the band leaves first, then the plate pulls up. No overshoot (Mario: no bounce).

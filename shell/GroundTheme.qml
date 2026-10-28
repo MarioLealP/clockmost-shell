@@ -22,6 +22,21 @@ Singleton {
     // KDE's startup splash covers the screen for a moment after login: the build-in waits until it's gone (5 s at
     // most), or it would play underneath it. A restart of the shell finds no splash and starts at once.
     property bool splashUp: true
+    // the bar and dock wait for the main ground's build-in, then make their own entrance (ipc: ground intro replays
+    // it all); a ground that never says so (no ground, a failed load) doesn't keep them away for more than 8 s
+    property bool introDone: false
+    property bool dockIn: false
+    readonly property Timer introFailsafe: Timer {
+        running: !introDone
+        interval: 8000
+        onTriggered: introDone = true
+    }
+    readonly property Timer dockAfter: Timer {
+        running: introDone && !dockIn
+        interval: 160 // the dock a beat after the bar
+        onTriggered: dockIn = true
+    }
+    onIntroDoneChanged: if (!introDone) dockIn = false
     readonly property Process splashWatch: Process {
         running: true
         command: ["sh", "-c", "for i in $(seq 50); do busctl --user status org.kde.KSplash >/dev/null 2>&1 || exit 0; sleep 0.1; done"]

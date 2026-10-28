@@ -31,12 +31,13 @@ PanelWindow {
     }
     SequentialAnimation {
         id: intro
-        ScriptAction { script: { root.dotsP = 0; root.marksP = 0; root.pieces = 0; line.split = 1; } }
+        ScriptAction { script: { root.dotsP = 0; root.marksP = 0; root.pieces = 0; line.split = 1; if (root.main) GroundTheme.introDone = false; } }
         NumberAnimation { target: root; property: "dotsP"; to: 1; duration: 900; easing.type: Easing.InOutCubic }
         NumberAnimation { target: root; property: "marksP"; to: 1; duration: 260; easing.type: Easing.OutCubic }
         ScriptAction { script: line.enter() }
         PauseAnimation { duration: 280 }
         NumberAnimation { target: root; property: "pieces"; to: 8; duration: 1100 }
+        ScriptAction { script: if (root.main) GroundTheme.introDone = true }
     }
     Component.onCompleted: if (!GroundTheme.splashUp) intro.restart()
     Connections {
