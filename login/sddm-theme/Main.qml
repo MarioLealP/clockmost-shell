@@ -148,7 +148,10 @@ Rectangle {
             NumberAnimation { target: root; property: "half"; to: 300; duration: 700; easing.type: Easing.InOutCubic }
         }
         NumberAnimation { target: root; property: "reach"; to: root.edgeAlong(root.exitSlant) + 40; duration: 1000; easing.type: Easing.InOutQuart }
-        ScriptAction { script: sddm.login(root.user, root.pw, root.session) }
+        // every screen plays it; the no-password login goes in from the primary screen only (each screen's copy asked
+        // at once on the first real boot - SDDM dropped the spare: "Existing authentication ongoing"). A typed
+        // password goes in from the screen it was typed on.
+        ScriptAction { script: if (root.pw !== "" || primaryScreen) sddm.login(root.user, root.pw, root.session) }
     }
     SequentialAnimation {
         id: toField
