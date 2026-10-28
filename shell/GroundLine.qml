@@ -29,6 +29,12 @@ Item {
         ready = true;
     }
     onTargetXChanged: if (ready) move.restart()
+    // the startup build-in: off-screen at once, then the usual landing
+    function enter() {
+        move.stop();
+        split = 1;
+        land.restart();
+    }
 
     Rectangle {
         width: parent.width

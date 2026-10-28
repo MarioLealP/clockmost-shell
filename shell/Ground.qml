@@ -1,6 +1,10 @@
 // The v2 desktop ("ground"): a Background layer surface under the windows, above plasmashell's desktop (spike
 // 2026-10-25). The main screen gets the poster; side screens only the base, dots and corners (Mario: no line there).
+// At startup it builds in (boot phase 2, Mario 2026-10-28: "first the grey background, then the dots, then load stuff
+// in"): the graphite is there at once, the dots spread out from the centre, the corners come, the line lands, then the
+// pieces rise in from left to right. Replay: ipc call ground intro.
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 
@@ -17,14 +21,63 @@ PanelWindow {
     anchors { left: true; right: true; top: true; bottom: true }
     color: GroundTheme.bg
 
-    DotGrid {
-        anchors.fill: parent
-        pitch: 24
-        radius: 1.2
-        color: GroundTheme.line
+    // ---- the startup build-in ----
+    property real dotsP: 0 // the dots' circle, 0 = none .. 1 = past the corners
+    property real marksP: 0
+    property real pieces: 0 // how many pieces are in (each takes one unit to rise in)
+    // the piece at place k (left to right): 0 = waiting .. 1 = in
+    function piece(k) {
+        return Math.max(0, Math.min(1, pieces - k));
+    }
+    SequentialAnimation {
+        id: intro
+        ScriptAction { script: { root.dotsP = 0; root.marksP = 0; root.pieces = 0; line.split = 1; } }
+        NumberAnimation { target: root; property: "dotsP"; to: 1; duration: 900; easing.type: Easing.InOutCubic }
+        NumberAnimation { target: root; property: "marksP"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+        ScriptAction { script: line.enter() }
+        PauseAnimation { duration: 280 }
+        NumberAnimation { target: root; property: "pieces"; to: 8; duration: 1100 }
+    }
+    Component.onCompleted: intro.restart()
+    Connections {
+        target: GroundTheme
+        function onIntroPokesChanged() { intro.restart(); }
     }
 
-    RegMarks { anchors.fill: parent }
+    Item {
+        anchors.fill: parent
+        layer.enabled: root.dotsP < 1
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: dotsMask
+        }
+        DotGrid {
+            anchors.fill: parent
+            pitch: 24
+            radius: 1.2
+            color: GroundTheme.line
+        }
+    }
+    // the dots' reveal: a circle growing from the centre (the login ended there)
+    Item {
+        id: dotsMask
+        anchors.fill: parent
+        layer.enabled: true
+        visible: false
+        Rectangle {
+            readonly property real r: root.dotsP * Math.hypot(root.width, root.height) / 2
+            x: root.width / 2 - r
+            y: root.height / 2 - r
+            width: r * 2
+            height: r * 2
+            radius: r
+        }
+    }
+
+    RegMarks {
+        anchors.fill: parent
+        opacity: root.marksP
+    }
 
     // a press on the bare ground closes the app drawer (its input is only its own panel)
     MouseArea {
@@ -52,6 +105,7 @@ PanelWindow {
 
         SectionStage {
             id: stage
+            opacity: root.piece(5)
             x: 472 // on the grid (dots at x 16 + 24k, y 12 + 24k on 3440 x 1440)
             y: 108
             sections: ({
@@ -63,6 +117,8 @@ PanelWindow {
         Text {
             x: 96
             y: 545
+            opacity: root.piece(1)
+            transform: Translate { y: (1 - root.piece(1)) * 16 }
             text: "✖✖✖✖✖✖✖✖✖✖\n✖✖✖✖✖✖✖✖✖✖"
             color: GroundTheme.faint
             font.family: GroundTheme.display
@@ -74,11 +130,11 @@ PanelWindow {
         }
 
 
-        HeroSlices { x: 1640; y: 125 }
-        XMarks {}
+        HeroSlices { x: 1640; y: 125; opacity: root.piece(3); transform: Translate { y: (1 - root.piece(3)) * 16 } }
+        XMarks { opacity: root.piece(4); transform: Translate { y: (1 - root.piece(4)) * 16 } }
 
-        GroundBarcode { x: 96; anchors.bottom: parent.bottom; anchors.bottomMargin: 140 }
-        DateStack { anchors.right: parent.right; anchors.rightMargin: 88; anchors.bottom: parent.bottom; anchors.bottomMargin: 132 } // right edge with the Felt column, baseline on a dot row
+        GroundBarcode { x: 96; anchors.bottom: parent.bottom; anchors.bottomMargin: 140; opacity: root.piece(2); transform: Translate { y: (1 - root.piece(2)) * 16 } }
+        DateStack { anchors.right: parent.right; anchors.rightMargin: 88; anchors.bottom: parent.bottom; anchors.bottomMargin: 132; opacity: root.piece(6); transform: Translate { y: (1 - root.piece(6)) * 16 } } // right edge with the Felt column, baseline on a dot row
     }
 
     Component { id: secRoom; SecRoom {} }
@@ -113,6 +169,6 @@ PanelWindow {
     Component { id: secSystems; SecSystems {} }
 
     // fixed: the controls don't pan
-    HaList { visible: root.main; x: 88; y: 108 } // two dots in from the corner mark, the row under it
-    FeltColumn { visible: root.main; anchors.right: parent.right; anchors.rightMargin: 88; y: 108 } // mirrors the HA list
+    HaList { visible: root.main; x: 88; y: 108; opacity: root.piece(0); transform: Translate { y: (1 - root.piece(0)) * 16 } } // two dots in from the corner mark, the row under it
+    FeltColumn { visible: root.main; anchors.right: parent.right; anchors.rightMargin: 88; y: 108; opacity: root.piece(7); transform: Translate { y: (1 - root.piece(7)) * 16 } } // mirrors the HA list
 }

@@ -16,6 +16,8 @@ Singleton {
     readonly property color faintSolid: Qt.tint(bg, faint)
     function over(c) { return Qt.tint(bg, c); }
     readonly property color accInk: "#111110"
+    // bumped to replay every ground's startup build-in (ipc: ground intro)
+    property int introPokes: 0
 
     readonly property string mono: "JetBrains Mono"
     readonly property string display: archivo.status === FontLoader.Ready ? archivo.name : "Inter"

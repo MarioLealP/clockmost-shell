@@ -65,6 +65,7 @@ ShellRoot {
         function close(): void { HaSections.current = ""; }
         function art(): void { HeroArt.next(); } // swap the hero's picture now
         function marks(): void { HeroArt.markPokes++; } // the X marks' re-strike + focus pull now
+        function intro(): void { GroundTheme.introPokes++; } // replay the startup build-in
     }
     Variants {
         model: root.groundOff ? [] : Quickshell.screens
