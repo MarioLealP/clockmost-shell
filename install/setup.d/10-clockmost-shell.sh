@@ -38,7 +38,7 @@ else
     # the dock's live previews: KWin grants window screencast only to apps listed in a .desktop file - refresh the cache
     kbuildsycoca6 >/dev/null 2>&1 || true
 
-    # a dev autostart entry would start a second shell next to the packaged one
+    # a dev autostart entry would start a second shell next to the packaged one (the session service)
     if grep -qs 'quickshell -p .*/src/clockmost-shell' "$HOME/.config/autostart/clockmost-shell.desktop"; then
         mv "$HOME/.config/autostart/clockmost-shell.desktop" "$HOME/.config/autostart/clockmost-shell.desktop.dev-off"
         echo "   dev autostart entry set aside (.dev-off)"

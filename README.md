@@ -54,7 +54,8 @@ side screens get the base, dots and corner marks.
 
 `pacman -S clockmost-shell`, then once as your user, in the Plasma session: `clockmost-desktop-setup`.
 The package: `/usr/bin/kwin-bridge`, `/usr/bin/clockmost-autoscroll` + its system unit (enabled on install), the
-Quickshell config in `/usr/share/clockmost-shell` started by `/etc/xdg/autostart/clockmost-shell.desktop`,
+Quickshell config in `/usr/share/clockmost-shell` started with the Plasma session by the user unit `clockmost-shell.service`
+(enabled for everyone via `plasma-core.target.wants`; off: `systemctl --user mask clockmost-shell`),
 `org.clockmost.shell.desktop` (KWin's screencast grant for the dock previews), `/dev/uinput` for the autoscroll
 service (`modules-load.d/clockmost-uinput.conf` + udev rule `60-clockmost-uinput.rules`: group input, applied on
 install) and numlock on at the SDDM login screen (`/usr/lib/sddm/sddm.conf.d/zz-clockmost-numlock.conf`).

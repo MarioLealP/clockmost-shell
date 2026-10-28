@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=clockmost shell
-Comment=Endfield bar, control center, dock, drawer and notifications (Quickshell)
-Exec=quickshell -p /usr/share/clockmost-shell
-X-KDE-autostart-phase=1

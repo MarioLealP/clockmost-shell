@@ -2,6 +2,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 
 Singleton {
     readonly property color bg: "#1a1a18"
@@ -18,6 +19,14 @@ Singleton {
     readonly property color accInk: "#111110"
     // bumped to replay every ground's startup build-in (ipc: ground intro)
     property int introPokes: 0
+    // KDE's startup splash covers the screen for a moment after login: the build-in waits until it's gone (5 s at
+    // most), or it would play underneath it. A restart of the shell finds no splash and starts at once.
+    property bool splashUp: true
+    readonly property Process splashWatch: Process {
+        running: true
+        command: ["sh", "-c", "for i in $(seq 50); do busctl --user status org.kde.KSplash >/dev/null 2>&1 || exit 0; sleep 0.1; done"]
+        onExited: splashUp = false
+    }
 
     readonly property string mono: "JetBrains Mono"
     readonly property string display: archivo.status === FontLoader.Ready ? archivo.name : "Inter"

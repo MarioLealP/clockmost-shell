@@ -38,10 +38,11 @@ PanelWindow {
         PauseAnimation { duration: 280 }
         NumberAnimation { target: root; property: "pieces"; to: 8; duration: 1100 }
     }
-    Component.onCompleted: intro.restart()
+    Component.onCompleted: if (!GroundTheme.splashUp) intro.restart()
     Connections {
         target: GroundTheme
         function onIntroPokesChanged() { intro.restart(); }
+        function onSplashUpChanged() { if (!GroundTheme.splashUp) intro.restart(); }
     }
 
     Item {

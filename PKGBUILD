@@ -53,7 +53,11 @@ package() {
   install -Dm644 login/splash/metadata.json "$pkgdir/usr/share/plasma/look-and-feel/org.clockmost.splash/metadata.json"
   install -Dm644 login/splash/contents/splash/Splash.qml \
     "$pkgdir/usr/share/plasma/look-and-feel/org.clockmost.splash/contents/splash/Splash.qml"
-  install -Dm644 install/clockmost-shell.desktop "$pkgdir/etc/xdg/autostart/clockmost-shell.desktop"
+  # the shell starts with Plasma's session (a user service, enabled for everyone), not in the autostart phase
+  install -Dm644 install/clockmost-shell.service "$pkgdir/usr/lib/systemd/user/clockmost-shell.service"
+  install -d "$pkgdir/usr/lib/systemd/user/plasma-core.target.wants"
+  ln -s ../clockmost-shell.service "$pkgdir/usr/lib/systemd/user/plasma-core.target.wants/clockmost-shell.service"
+  install -d "$pkgdir/usr/share/clockmost-desktop/empty" # what Plasma's desktop shows instead of ~/Desktop (setup.d/20)
   install -Dm644 install/org.clockmost.shell.desktop "$pkgdir/usr/share/applications/org.clockmost.shell.desktop"
 
   install -Dm755 install/clockmost-desktop-setup "$pkgdir/usr/bin/clockmost-desktop-setup"

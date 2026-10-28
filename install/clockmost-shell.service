@@ -1,0 +1,15 @@
+# The clockmost shell as a Plasma session service: it starts with Plasma's own shell instead of in the XDG autostart
+# phase, which came 3.4 s after plasmashell and left Plasma's desktop on screen in the middle of the boot's build-in
+# (desktop-environment-v2 stage 5). Enabled for every user by the package; off: systemctl --user mask clockmost-shell.
+[Unit]
+Description=clockmost shell
+PartOf=graphical-session.target
+After=plasma-kwin_wayland.service
+
+[Service]
+ExecStart=/usr/bin/quickshell -p /usr/share/clockmost-shell
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=plasma-core.target

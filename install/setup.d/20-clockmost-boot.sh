@@ -1,7 +1,7 @@
 #!/bin/bash
 # The boot, from the login to the desktop, in one colour (desktop-environment-v2 stage 5): KDE's startup splash is
-# clockmost's plain graphite one, and Plasma's own desktop (under the shell's ground) is that graphite too, so nothing
-# else shows while the shell starts. Off switch: "boot" in ~/.config/clockmost/setup-off.
+# clockmost's plain graphite one, and Plasma's own desktop (under the shell's ground) is that graphite too, showing an
+# empty folder instead of ~/Desktop's icons, so nothing else shows while the shell starts. Off switch: "boot" in ~/.config/clockmost/setup-off.
 set -eu
 off() { grep -qsx "$1" "${XDG_CONFIG_HOME:-$HOME/.config}/clockmost/setup-off"; }
 if off boot; then
@@ -18,8 +18,10 @@ if qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript '
         d.wallpaperPlugin = "org.kde.color";
         d.currentConfigGroup = ["Wallpaper", "org.kde.color", "General"];
         d.writeConfig("Color", "#1a1a18");
+        d.currentConfigGroup = ["General"];
+        d.writeConfig("url", "file:///usr/share/clockmost-desktop/empty");
     });' >/dev/null 2>&1; then
-    echo "   Plasma desktop under the ground: graphite"
+    echo "   Plasma desktop under the ground: graphite, no icons"
 else
     echo "   Plasma desktop: plasmashell not reachable - re-run inside the Plasma session"
 fi
