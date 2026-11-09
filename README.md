@@ -30,7 +30,7 @@ control center"). Design source: the mocks in `Benylin/clockmost-desktop` (`ds-t
 
 A desktop layer of our own under the windows: a `WlrLayer.Background` surface per screen (`Ground.qml`), above
 plasmashell's desktop and below every window (KWin stacking checked). Graphite, bone ink, one orange accent
-(`GroundTheme.qml`, Archivo bundled in `shell/assets/fonts` under the OFL). The ultrawide (DP-2) gets the poster;
+(`GroundTheme.qml`, Archivo bundled in `shell/assets/fonts` under the OFL). The ultrawide (the largest screen, whatever its connector) gets the poster;
 side screens get the base, dots and corner marks.
 
 - **Home Assistant** (`HaClient.qml`): WebSocket `subscribe_entities` as the HA user `clockmost-desktop`

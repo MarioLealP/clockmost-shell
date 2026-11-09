@@ -16,7 +16,8 @@ ShellRoot {
         Ground {
             required property var modelData
             screen: modelData
-            main: modelData.name === "DP-2"
+            // the ultrawide is main - by size, not connector name (DP-2/DP-3 swap when cables move)
+            main: modelData === Quickshell.screens.reduce((a, s) => s.width * s.height > a.width * a.height ? s : a)
         }
     }
 }
