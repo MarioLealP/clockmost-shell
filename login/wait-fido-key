@@ -1,0 +1,11 @@
+#!/bin/sh
+# For the lock screen's key slot (/etc/pam.d/kde-fingerprint, wiring: login/README.md): block until a YubiKey (USB
+# vendor 1050) is plugged in, then let pam_u2f ask for the touch. KDE keeps retrying this background check, but gives up
+# on it for good after a few instant failures - so with no key it waits here instead of failing. The lock screen kills
+# the worker when you unlock another way.
+while :; do
+    for u in /sys/class/hidraw/*/device/uevent; do
+        grep -qi '^HID_ID=0003:00001050:' "$u" 2>/dev/null && exit 0
+    done
+    sleep 1
+done

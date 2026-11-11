@@ -49,6 +49,7 @@ package() {
   install -d "$pkgdir/usr/share/sddm/themes/clockmost"
   install -m644 login/sddm-theme/* "$pkgdir/usr/share/sddm/themes/clockmost/"
   install -Dm755 login/tang-gate "$pkgdir/usr/lib/clockmost-shell/tang-gate"
+  install -Dm755 login/wait-fido-key "$pkgdir/usr/lib/clockmost-shell/wait-fido-key" # the lock screen's key slot
   # the startup splash (graphite only; ksplashrc points at it via setup.d/20-clockmost-boot.sh)
   install -Dm644 login/splash/metadata.json "$pkgdir/usr/share/plasma/look-and-feel/org.clockmost.splash/metadata.json"
   install -Dm644 login/splash/contents/splash/Splash.qml \

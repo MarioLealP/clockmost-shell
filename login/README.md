@@ -35,9 +35,31 @@ in KWin's environment; `clockmost-desktop-setup` (setup.d/30) puts that in a dro
 so plasmashell keeps `org.kde.plasma.desktop`. From the next login. Off: a line `lock` in
 `~/.config/clockmost/setup-off`, then `clockmost-desktop-setup`.
 
-It talks to PAM through `authenticator`: a key's "Please touch the device" (pam_u2f `cue`) arrives as `infoMessage`
-and shows TOUCH THE KEY; the password goes in with `respond()`. PAM keeps listening the whole time, so a touch unlocks
-without waking the screen first.
+It talks to PAM through `authenticator`: the field's password goes in with `respond()` to the interactive stack
+(`kde`); a success from any stack arrives as `onSucceeded`. The window activates itself (without that, a real lock
+gets no typing - `--testing` hides it). Never `stopAuthenticating()` + `startAuthenticating()` to restart PAM: stopping
+kills the worker and it doesn't come back ("Not connected to D-Bus server").
+
+### A YubiKey on the lock screen (by hand, per machine - Brigid has it)
+
+KDE runs a second, background check next to the password: the "fingerprint" stack (`kde-fingerprint`), retried for as
+long as the screen is locked. The key goes there, so it can be plugged in at any time and a touch unlocks. KDE drops
+that check for good after a few instant failures, so `/usr/lib/clockmost-shell/wait-fido-key` first waits (quietly)
+until a key is plugged in. Needs `pam-u2f` and a mapping file (`pamu2fcfg -o pam://clockmost -i pam://clockmost`).
+
+`/etc/pam.d/kde-fingerprint` (shadows `/usr/lib/pam.d/kde-fingerprint`; fail-closed - only a registered key's touch passes):
+
+    auth       requisite                      pam_exec.so quiet /usr/lib/clockmost-shell/wait-fido-key
+    auth       [success=done default=ignore]  pam_u2f.so  authfile=/etc/u2f_mappings origin=pam://clockmost appid=pam://clockmost cue pinverification=0
+    auth       required                       pam_deny.so
+    account    include                        system-local-login
+    password   required                       pam_deny.so
+    session    include                        system-local-login
+
+`/etc/pam.d/kde` = the password only (no `pam_u2f`: two stacks opening the key at once fight over it) - Arch's
+`system-auth` auth lines (faillock preauth, pam_unix, faillock authfail/authsucc), then `system-local-login` for
+account/password/session. Watch it: `QT_LOGGING_RULES="*.debug=true" /usr/lib/kscreenlocker_greet --testing --shell
+org.clockmost.lock` and `journalctl -t kscreenlocker_worker`.
 
 Test without locking (a window; unlocking for real quits it): `/usr/lib/kscreenlocker_greet --testing --shell
 org.clockmost.lock`.

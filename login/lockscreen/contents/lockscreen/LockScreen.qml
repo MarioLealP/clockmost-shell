@@ -5,10 +5,12 @@
 //   lock -> the two strokes come in along the diagonal and shrink into the orange block, which turns a quarter per lap
 //   key or mouse -> at a lap's end the block flattens into the field's orange mark, the hairline grows, the field rises
 //   Enter -> it pulls back into the block, which turns while the password is checked; wrong -> back to the field
-//   unlocked (password, or a touch on the YubiKey: /etc/pam.d/kde asks the key first) -> the strokes leave, quit.
-// PAM talks through `authenticator` (org.kde.kscreenlocker): the key's "Please touch the device" comes in as
-// infoMessage, the password prompt as promptForSecret.
+//   unlocked (password, or a touch on the YubiKey) -> the strokes leave, quit.
+// PAM talks through `authenticator` (org.kde.kscreenlocker): the field's password goes to the interactive stack
+// (/etc/pam.d/kde); a key, where wired (../README.md), is asked by the background "fingerprint" stack
+// (/etc/pam.d/kde-fingerprint), which KDE keeps retrying - its success arrives here as onSucceeded like any other.
 import QtQuick
+import QtQuick.Window
 
 Rectangle {
     id: root
@@ -41,7 +43,6 @@ Rectangle {
     property bool done: false // PAM said yes: leave at the next lap's end
     property bool keyAsks: false // pam_u2f is waiting for a touch
     property bool wrong: false
-    property string pending: "" // typed while PAM was still busy (pamTimeout)
 
     readonly property real slant: -60
     readonly property real exitSlant: 42
@@ -67,10 +68,14 @@ Rectangle {
         else if (!inField)
             pulse.start();
     }
+    // a key or the mouse: show the field and take the keyboard (KDE's own lock screen activates its window the same
+    // way - without it a real lock never gets the typing; --testing hid that). Never stop + start PAM here: stopping
+    // kills the worker and it doesn't come back.
     function wake() {
+        Window.window?.requestActivate();
+        pass.forceActiveFocus();
         if (!wantField && !done)
             wantField = true;
-        pass.forceActiveFocus();
     }
     function submit() {
         if (pass.text === "" || !inField)
@@ -79,10 +84,7 @@ Rectangle {
         pass.text = "";
         checking = true;
         wantField = false;
-        if (authenticator.pamTimeout)
-            pending = pw;
-        else
-            authenticator.respond(pw);
+        authenticator.respond(pw);
         fromField.start();
     }
 
@@ -108,12 +110,6 @@ Rectangle {
             if (/touch/i.test(authenticator.infoMessage))
                 root.keyAsks = true;
         }
-        function onPamTimeoutChanged() {
-            if (!authenticator.pamTimeout && root.pending !== "") {
-                authenticator.respond(root.pending);
-                root.pending = "";
-            }
-        }
     }
     onClearPassword: pass.text = ""
 
@@ -124,8 +120,9 @@ Rectangle {
         running: !authenticator.unlocked && !root.done
         onTriggered: authenticator.startAuthenticating()
     }
+    // the PAM worker isn't up yet when this loads ("Worker not ready yet") - the heartbeat above starts it a second later
     Component.onCompleted: {
-        authenticator.startAuthenticating();
+        Window.window?.requestActivate();
         pass.forceActiveFocus();
         intro.start();
     }
@@ -298,9 +295,11 @@ Rectangle {
         y: root.height / 2 + (root.inField || root.fieldP > 0 ? 28 * root.s : 60 * root.s)
         opacity: root.done ? 0 : Math.max(root.fieldP, root.keyAsks && !root.checking ? 1 : 0)
         Behavior on opacity { NumberAnimation { duration: 200 } }
+        // the key is asked by kde-fingerprint in the background (its "touch" message doesn't reach this QML), so the
+        // field always offers both
         text: root.wrong ? "WRONG PASSWORD"
-            : root.keyAsks ? (root.inField ? "TOUCH THE KEY · OR TYPE YOUR PASSWORD" : "TOUCH THE KEY")
-            : "TYPE YOUR PASSWORD"
+            : root.inField || root.fieldP > 0 ? "TOUCH THE KEY · OR TYPE YOUR PASSWORD"
+            : "TOUCH THE KEY"
         color: root.wrong ? root.acc : root.ink2
         font.family: root.mono
         font.pixelSize: 12
