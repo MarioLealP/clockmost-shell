@@ -4,7 +4,8 @@ import QtQuick
 Rectangle {
     id: root
 
-    property var sections: HaSections.sections
+    property bool felt: false // the laptop: Felt is the first section (her column has no room on the right)
+    property var sections: felt ? [{ name: "FELT", summary: HaSections.felt() }].concat(HaSections.sections) : HaSections.sections
     readonly property string current: HaSections.current
 
     width: 354

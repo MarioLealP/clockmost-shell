@@ -12,6 +12,9 @@ PanelWindow {
     id: root
 
     property bool main: false
+    // a 1920-wide laptop screen (Brigid, Mario 2026-11-11): no picture area, and Felt moves into the list as its first
+    // section (01 FELT) instead of the right column - the ultrawide keeps the full poster
+    readonly property bool compact: width < 2400
 
     WlrLayershell.layer: WlrLayer.Background
     WlrLayershell.namespace: "clockmost-ground"
@@ -111,7 +114,7 @@ PanelWindow {
             x: 472 // on the grid (dots at x 16 + 24k, y 12 + 24k on 3440 x 1440)
             y: 108
             sections: ({
-                ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
+                FELT: secFelt, ROOM: secRoom, MISC: secMisc, TODAY: secToday, NEWS: secNews,
                 ENDER: secEnder, ELEGOO: secElegoo, SYSTEMS: secSystems
             })
         }
@@ -132,13 +135,20 @@ PanelWindow {
         }
 
 
-        HeroSlices { x: 1640; y: 125; opacity: root.piece(3); transform: Translate { y: (1 - root.piece(3)) * 16 } }
-        XMarks { opacity: root.piece(4); transform: Translate { y: (1 - root.piece(4)) * 16 } }
+        // the picture area: loaded only where it fits (the art swaps + X-mark timers don't run on the laptop)
+        Loader {
+            active: !root.compact
+            sourceComponent: Item {
+                HeroSlices { x: 1640; y: 125; opacity: root.piece(3); transform: Translate { y: (1 - root.piece(3)) * 16 } }
+                XMarks { opacity: root.piece(4); transform: Translate { y: (1 - root.piece(4)) * 16 } }
+            }
+        }
 
         GroundBarcode { x: 96; anchors.bottom: parent.bottom; anchors.bottomMargin: 140; opacity: root.piece(2); transform: Translate { y: (1 - root.piece(2)) * 16 } }
         DateStack { anchors.right: parent.right; anchors.rightMargin: 88; anchors.bottom: parent.bottom; anchors.bottomMargin: 132; opacity: root.piece(6); transform: Translate { y: (1 - root.piece(6)) * 16 } } // right edge with the Felt column, baseline on a dot row
     }
 
+    Component { id: secFelt; FeltColumn { viaHa: true } } // no tray on the laptop: chat through HA
     Component { id: secRoom; SecRoom {} }
     Component { id: secMisc; SecMisc {} }
     Component { id: secToday; SecToday {} }
@@ -171,6 +181,6 @@ PanelWindow {
     Component { id: secSystems; SecSystems {} }
 
     // fixed: the controls don't pan
-    HaList { visible: root.main; x: 88; y: 108; opacity: root.piece(0); transform: Translate { y: (1 - root.piece(0)) * 16 } } // two dots in from the corner mark, the row under it
-    FeltColumn { visible: root.main; anchors.right: parent.right; anchors.rightMargin: 88; y: 108; opacity: root.piece(7); transform: Translate { y: (1 - root.piece(7)) * 16 } } // mirrors the HA list
+    HaList { visible: root.main; felt: root.compact; x: 88; y: 108; opacity: root.piece(0); transform: Translate { y: (1 - root.piece(0)) * 16 } } // two dots in from the corner mark, the row under it
+    FeltColumn { visible: root.main && !root.compact; anchors.right: parent.right; anchors.rightMargin: 88; y: 108; opacity: root.piece(7); transform: Translate { y: (1 - root.piece(7)) * 16 } } // mirrors the HA list
 }

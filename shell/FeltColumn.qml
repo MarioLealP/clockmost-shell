@@ -20,12 +20,28 @@ Rectangle {
     property real sentAt: 0
     property int typed: 0 // the overtype cursor's position
     property string oldLine: "" // what the new line types over
+    // without the tray (the laptop, Mario 2026-11-11: "I only want the chat from HA"): talk to her through HA's Assist
+    // (conversation.felt, her HA conversation agent) on the shell's own HA connection - only replies to what you say,
+    // no lines of her own
+    property bool viaHa: false
+    property string convId: ""
     readonly property var api: ["busctl", "--user", "--json=short"]
     readonly property var obj: ["org.clockmost.Felt", "/org/clockmost/Felt", "org.clockmost.Felt"]
 
     function say(text) {
         if (text.trim() === "")
             return;
+        if (root.viaHa) {
+            HaClient.request({ type: "conversation/process", text: text.trim(), agent_id: "conversation.felt",
+                conversation_id: root.convId || undefined }, r => {
+                root.convId = r?.conversation_id ?? root.convId;
+                root.showLine(r?.response?.speech?.plain?.speech ?? "(no answer)", Date.now() / 1000, "HA", false);
+            });
+            root.sentAt = Date.now() / 1000;
+            root.thinking = true;
+            thinkTimeout.restart();
+            return;
+        }
         sayProc.command = ["busctl", "--user", "call"].concat(root.obj, ["Say", "s", text.trim()]);
         sayProc.running = true;
         root.sentAt = Date.now() / 1000;
@@ -48,10 +64,32 @@ Rectangle {
         return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
+    // a new line (from the tray, or HA's reply): types over the old one; one already there at startup shows without
+    function showLine(text, at, source, first) {
+        root.lastAt = at;
+        root.oldLine = first ? "" : root.lastLine;
+        root.lastLine = text;
+        root.lastMeta = Qt.formatTime(new Date(at * 1000), "hh:mm") + "  ·  " + String(source).toUpperCase();
+        line.open = false;
+        if (first) {
+            root.typed = Math.max(text.length, root.oldLine.length);
+            return;
+        }
+        root.thinking = false;
+        thinkTimeout.stop();
+        typing.restart();
+    }
+    Binding {
+        target: root
+        property: "state"
+        when: root.viaHa
+        value: HaClient.connected ? "VIA HA" : "OFFLINE"
+    }
+
     // polled: the tray emits no change signals yet; 3 s is plenty for a line on the desktop
     Timer {
         interval: 3000
-        running: true
+        running: !root.viaHa
         repeat: true
         triggeredOnStart: true
         onTriggered: {
@@ -77,19 +115,7 @@ Rectangle {
                 try {
                     const l = JSON.parse(JSON.parse(text).data);
                     if (!l.text || l.at === root.lastAt) return;
-                    const first = root.lastAt < 0;
-                    root.lastAt = l.at;
-                    root.oldLine = first ? "" : root.lastLine;
-                    root.lastLine = l.text;
-                    root.lastMeta = Qt.formatTime(new Date(l.at * 1000), "hh:mm") + "  ·  " + String(l.source).toUpperCase();
-                    line.open = false;
-                    if (first) {
-                        root.typed = Math.max(l.text.length, root.oldLine.length); // there before the shell started: no show
-                        return;
-                    }
-                    root.thinking = false;
-                    thinkTimeout.stop();
-                    typing.restart();
+                    root.showLine(l.text, l.at, l.source, root.lastAt < 0); // there before the shell started: no show
                 } catch (e) {}
             }
         }
