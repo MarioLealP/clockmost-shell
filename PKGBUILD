@@ -53,6 +53,11 @@ package() {
   install -Dm644 login/splash/metadata.json "$pkgdir/usr/share/plasma/look-and-feel/org.clockmost.splash/metadata.json"
   install -Dm644 login/splash/contents/splash/Splash.qml \
     "$pkgdir/usr/share/plasma/look-and-feel/org.clockmost.splash/contents/splash/Splash.qml"
+  # the lock screen (v2 item 15): a Plasma/Shell package kscreenlocker_greet loads via PLASMA_DEFAULT_SHELL in KWin's
+  # environment (per user: setup.d/30-clockmost-lock.sh)
+  install -Dm644 login/lockscreen/metadata.json "$pkgdir/usr/share/plasma/shells/org.clockmost.lock/metadata.json"
+  install -Dm644 login/lockscreen/contents/lockscreen/LockScreen.qml \
+    "$pkgdir/usr/share/plasma/shells/org.clockmost.lock/contents/lockscreen/LockScreen.qml"
   # the shell starts with Plasma's session (a user service, enabled for everyone), not in the autostart phase
   install -Dm644 install/clockmost-shell.service "$pkgdir/usr/lib/systemd/user/clockmost-shell.service"
   install -d "$pkgdir/usr/lib/systemd/user/plasma-core.target.wants"
@@ -63,6 +68,7 @@ package() {
   install -Dm755 install/clockmost-desktop-setup "$pkgdir/usr/bin/clockmost-desktop-setup"
   install -Dm644 install/setup.d/10-clockmost-shell.sh "$pkgdir/usr/share/clockmost-desktop/setup.d/10-clockmost-shell.sh"
   install -Dm644 install/setup.d/20-clockmost-boot.sh "$pkgdir/usr/share/clockmost-desktop/setup.d/20-clockmost-boot.sh"
+  install -Dm644 install/setup.d/30-clockmost-lock.sh "$pkgdir/usr/share/clockmost-desktop/setup.d/30-clockmost-lock.sh"
 
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
   install -Dm644 shell/assets/fonts/Archivo-OFL.txt "$pkgdir/usr/share/licenses/$pkgname/Archivo-OFL.txt"

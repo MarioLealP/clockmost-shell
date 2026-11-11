@@ -6,7 +6,8 @@ password, and the **tang gate** (`/usr/lib/clockmost-shell/tang-gate`, run by `p
 passes only if the password is empty, it's the first such login this boot, and tang unlocks the sealed file
 `/etc/clockmost/tang-gate.jwe`. No tang within `cutoff` seconds, or the gate says no: the password field.
 
-The gate proves "this PC is on the home LAN", not "this is the user". The lock screen (`/etc/pam.d/kde`) is untouched.
+The gate proves "this PC is on the home LAN", not "this is the user". The lock screen's PAM (`/etc/pam.d/kde`) is untouched by
+the package.
 
 ## Wiring (by hand, per machine)
 
@@ -24,3 +25,19 @@ Sealed file (random content - the proof is that a tang can unlock it; `sss` with
 
 Test the theme without logging out: `sddm-greeter-qt6 --test-mode --theme /usr/share/sddm/themes/clockmost`.
 Gate log: `journalctl -t tang-gate`.
+
+## The lock screen
+
+`lockscreen/` = the Plasma/Shell package `org.clockmost.lock` (`/usr/share/plasma/shells/org.clockmost.lock`), only a
+`contents/lockscreen/LockScreen.qml`: the login's pieces and motion, quicker. KDE's lock program
+(`kscreenlocker_greet`, started by KWin) loads the lock screen from the shell package named by `PLASMA_DEFAULT_SHELL`
+in KWin's environment; `clockmost-desktop-setup` (setup.d/30) puts that in a drop-in on `plasma-kwin_wayland.service`,
+so plasmashell keeps `org.kde.plasma.desktop`. From the next login. Off: a line `lock` in
+`~/.config/clockmost/setup-off`, then `clockmost-desktop-setup`.
+
+It talks to PAM through `authenticator`: a key's "Please touch the device" (pam_u2f `cue`) arrives as `infoMessage`
+and shows TOUCH THE KEY; the password goes in with `respond()`. PAM keeps listening the whole time, so a touch unlocks
+without waking the screen first.
+
+Test without locking (a window; unlocking for real quits it): `/usr/lib/kscreenlocker_greet --testing --shell
+org.clockmost.lock`.

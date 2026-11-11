@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "Plasma/Shell",
+    "KPlugin": {
+        "Authors": [{ "Name": "clockmost" }],
+        "Description": "The clockmost lock screen only: kscreenlocker_greet loads it when KWin has PLASMA_DEFAULT_SHELL=org.clockmost.lock",
+        "Id": "org.clockmost.lock",
+        "License": "MIT",
+        "Name": "clockmost lock",
+        "Version": "0.1"
+    },
+    "X-Plasma-APIVersion": "2"
+}
