@@ -19,17 +19,35 @@ criteria = "safe-to-deploy"
 version = "6.0.0"
 notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. Process spawns only for D-Bus spec transports (unixexec:, launchd, ibus) or in tests; env reads = DBUS_*_BUS_ADDRESS, XDG_RUNTIME_DIR, PATH; base64/hex = SASL handshake."
 
+[[audits.zbus]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+delta = "6.0.0 -> 6.3.0"
+notes = "Reviewed by Claude 2026-11-17 (crates.io source): large delta (18k added lines, mostly new connection handover/socket_write and message parser modules plus tests). No build.rs. Added non-test unsafe read in context: peer-credential syscalls (getsockopt SO_PEERPIDFD/SO_PEERCRED, getpeereid, getpwuid_r/getgrouplist) and the message parser from_utf8_unchecked on name/path bytes the parser has validated, all with SAFETY comments. Added lines scanned for process/net/fs/env use: only the D-Bus TCP/unixexec transports, handover and tests. New deps (zoter, jiff) are optional features not in our lock. NOT read line by line."
+
 [[audits.zbus_macros]]
 who = "Benylin <lealmariop@gmail.com>"
 criteria = "safe-to-deploy"
 version = "6.0.0"
 notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. Proc macros: pure token generation, no fs/net/env/process at expansion."
 
+[[audits.zbus_macros]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+delta = "6.0.0 -> 6.3.0"
+notes = "Reviewed by Claude 2026-11-17 (crates.io source): proc-macro delta (478 added lines), no build.rs; added lines contain no unsafe, process, fs, net or env use."
+
 [[audits.zbus_utils]]
 who = "Benylin <lealmariop@gmail.com>"
 criteria = "safe-to-deploy"
 version = "6.0.0"
 notes = "reviewed 2026-10-17 (zbus 5->6 migration): no build.rs; no network/fs/process/env use outside the crate's stated purpose; no obfuscation, encoded payloads or off-purpose URLs. Helpers for zbus_macros; no unsafe."
+
+[[audits.zbus_utils]]
+who = "Benylin <lealmariop@gmail.com>"
+criteria = "safe-to-deploy"
+delta = "6.0.0 -> 6.1.0"
+notes = "Reviewed by Claude 2026-11-17 (crates.io source): helper delta (1041 added lines), no build.rs; added lines contain no unsafe, process, fs, net or env use."
 
 [[audits.zruntime]]
 who = "Benylin <lealmariop@gmail.com>"
