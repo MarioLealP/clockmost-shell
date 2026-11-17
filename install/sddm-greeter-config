@@ -1,0 +1,27 @@
+#!/bin/bash
+# sddm-greeter-config: the Wayland login screen's keyboard (cm-902f). The greeter runs kwin_wayland as the sddm user and
+# reads that user's own ~/.config (/var/lib/sddm/.config): kcminputrc for numlock, kxkbrc for the layout (the greeter's
+# KWin ignores the system XKB setting, and zz-clockmost-numlock.conf only reaches X11 greeters). Run from the package's
+# post_install / post_upgrade. Creates only what is missing and never touches a file that exists (hand edits and
+# kwinoutputconfig.json stay as they are). SDDM_CONFIG_DIR overrides the target, for tests.
+set -eu
+dir=${SDDM_CONFIG_DIR:-/var/lib/sddm/.config}
+
+# kcminputrc: [Keyboard] NumLock=0 (0 = turn numlock on)
+if [ ! -e "$dir/kcminputrc" ]; then
+    install -d -m 755 "$dir"
+    printf '[Keyboard]\nNumLock=0\n' >"$dir/kcminputrc"
+    chmod 644 "$dir/kcminputrc"
+fi
+
+# kxkbrc: the system X11 layout (localectl), pt when it can't be read - same source as setup.d/10-clockmost-shell.sh
+if [ ! -e "$dir/kxkbrc" ]; then
+    status=$(localectl status 2>/dev/null || true)
+    layout=$(printf '%s\n' "$status" | sed -n 's/^ *X11 Layout: //p')
+    variant=$(printf '%s\n' "$status" | sed -n 's/^ *X11 Variant: //p')
+    model=$(printf '%s\n' "$status" | sed -n 's/^ *X11 Model: //p')
+    install -d -m 755 "$dir"
+    printf '[Layout]\nUse=true\nLayoutList=%s\nVariantList=%s\nModel=%s\n' \
+        "${layout:-pt}" "$variant" "${model:-pc105}" >"$dir/kxkbrc"
+    chmod 644 "$dir/kxkbrc"
+fi
